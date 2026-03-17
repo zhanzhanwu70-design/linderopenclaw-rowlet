@@ -1,0 +1,134 @@
+{
+  "driver_model": "ELV系列 (F01)",
+  "manual_version": "Rev 9.1",
+  "release_date": "2023-01-22",
+  "manufacturer": "創盟電子工業股份有限公司",
+  "error_codes": {
+    "0": {
+      "status": "OK",
+      "description_zh": "正常",
+      "description_en": "Normal",
+      "severity": "OK",
+      "solution": "無需處理"
+    },
+    "1": {
+      "status": "ERROR",
+      "description_zh": "過電流 - 有大電流通過驅動器",
+      "description_en": "Overcurrent - There is high current passing through the driver",
+      "severity": "HIGH",
+      "solution": "檢查馬達接線是否短路、負載是否過重"
+    },
+    "2": {
+      "status": "ERROR",
+      "description_zh": "過負載 - 負載超過額定 5 秒以上",
+      "description_en": "Overload - Applied load exceeds rated load for 5 seconds or more",
+      "severity": "HIGH",
+      "solution": "減少負載、調高轉矩限制"
+    },
+    "3": {
+      "status": "ERROR",
+      "description_zh": "馬達回授訊號錯誤 - 霍爾訊號異常或未連接",
+      "description_en": "Motor feedback signal error - Hall signal is abnormal or not connected",
+      "severity": "HIGH",
+      "solution": "檢查霍爾感測器連接線"
+    },
+    "4": {
+      "status": "ERROR",
+      "description_zh": "過電壓 - 電源輸入電壓過高",
+      "description_en": "Overvoltage - Power input voltage is higher than upper limit",
+      "severity": "HIGH",
+      "solution": "檢查電源供應器電壓是否過高"
+    },
+    "5": {
+      "status": "ERROR",
+      "description_zh": "低電壓 - 電源輸入電壓過低",
+      "description_en": "Undervoltage - Power input voltage is lower than lower limit",
+      "severity": "HIGH",
+      "solution": "檢查電源供應器電壓是否過低"
+    },
+    "6": {
+      "status": "ERROR",
+      "description_zh": "驅動器過溫 - 驅動器溫度過高",
+      "description_en": "Driver overtemperature - The temperature of the driver is too high",
+      "severity": "HIGH",
+      "solution": "改善散熱環境"
+    },
+    "7": {
+      "status": "ERROR",
+      "description_zh": "啟動失敗 - 馬達卡死或動力線鬆脫",
+      "description_en": "Startup failure - The motor cannot start",
+      "severity": "HIGH",
+      "solution": "檢查馬達是否卡死、動力線是否鬆脫"
+    },
+    "8": {
+      "status": "ERROR",
+      "description_zh": "EEP 資料錯誤 - 無法用 ALM-RST 解除",
+      "description_en": "EEP data error - Cannot be cleared using ALM-RST",
+      "severity": "HIGH",
+      "solution": "聯繫原廠"
+    },
+    "10": {
+      "status": "ERROR",
+      "description_zh": "馬達過溫 - 馬達溫度過高",
+      "description_en": "Motor overtemperature - Motor temperature is too high",
+      "severity": "HIGH",
+      "solution": "讓馬達降溫、檢查散熱"
+    },
+    "12": {
+      "status": "ERROR",
+      "description_zh": "過速度 - 轉速超過設定上限",
+      "description_en": "Overspeed - Motor speed exceeds the set upper limit",
+      "severity": "HIGH",
+      "solution": "調高速度上限、檢查負載"
+    },
+    "13": {
+      "status": "ERROR",
+      "description_zh": "Encoder 錯誤 - Encoder 未連接/位置Overflow/沒有Z訊號",
+      "description_en": "Encoder error - Encoder not connected / position overflow / no Z signal",
+      "severity": "HIGH",
+      "solution": "檢查 Encoder 連接線"
+    },
+    "14": {
+      "status": "ERROR",
+      "description_zh": "初期運轉禁止 - FWD/REV 輸入作動時接主電源",
+      "description_en": "Initial operation prohibited - FWD/REV input active when powering on",
+      "severity": "HIGH",
+      "solution": "確認 FWD/REV 輸入狀態後重新上電"
+    },
+    "15": {
+      "status": "ERROR",
+      "description_zh": "外部停止 - EXT-ERROR 輸入訊號作動",
+      "description_en": "External stop - EXT-ERROR input signal is active",
+      "severity": "HIGH",
+      "solution": "檢查 EXT-ERROR 輸入訊號"
+    },
+    "20": {
+      "status": "ERROR",
+      "description_zh": "霍爾序列錯誤 - 霍爾序列參數設定錯誤",
+      "description_en": "Hall sequence error - Hall sequence parameter setting error",
+      "severity": "HIGH",
+      "solution": "檢查霍爾參數設定"
+    },
+    "21": {
+      "status": "WARN",
+      "description_zh": "通訊指令錯誤 - 參數超出範圍或指令不支援",
+      "description_en": "Communication command error - Parameter out of range or command not supported",
+      "severity": "MEDIUM",
+      "solution": "檢查通訊參數設定"
+    },
+    "22": {
+      "status": "WARN",
+      "description_zh": "參數設定錯誤 - 參數設定值錯誤",
+      "description_en": "Parameter setting error - Parameter value is incorrect",
+      "severity": "MEDIUM",
+      "solution": "修正參數設定值"
+    }
+  },
+  "status_mapping": {
+    "OK": [0],
+    "ERROR": [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15, 20],
+    "WARN": [21, 22]
+  },
+  "created_at": "2026-03-15",
+  "source": "ELV系列使用手冊 Rev 9.1"
+}
