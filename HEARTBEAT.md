@@ -11,6 +11,12 @@
 - 記錄到 memory/ai-bypass-research.md
 - 有新進展時通知 轟鳴月
 
+### 🎬 每日 YouTube 影片監控
+- 收到 YouTube 連結時主動下載分析
+- 主動搜尋 OpenClaw、AI Agent、自動化相關影片
+- 分析內容並記錄重點
+- 有價值的內容向 Linder 回報
+
 ### 🕗 台北時間早上 8:00 - NemoClaw 社群監控
 - 搜尋 NemoClaw 社群動態（GitHub、Discord、論壇等）
 - 關注是否有人接上通訊軟體（如 Discord、Slack、Telegram）
