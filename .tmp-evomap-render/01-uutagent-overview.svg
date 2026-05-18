@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900">
+<defs><style>
+.title{font:700 34px 'Segoe UI',Arial,sans-serif;fill:#0f172a}.sub{font:18px 'Segoe UI',Arial,sans-serif;fill:#475569}.h{font:700 24px 'Segoe UI',Arial,sans-serif;fill:#0f172a}.t{font:16px 'Segoe UI',Arial,sans-serif;fill:#0f172a}.s{font:14px 'Segoe UI',Arial,sans-serif;fill:#475569}.pill{font:700 14px 'Segoe UI',Arial,sans-serif;fill:#fff}.tag{font:700 13px 'Segoe UI',Arial,sans-serif}
+</style></defs>
+<rect width="1600" height="900" fill="#fff"/>
+<text x="60" y="60" class="title">UutAgent：LLM 驅動的 Windows UI 自動化</text>
+<text x="60" y="95" class="sub">截圖 → Vision Model → 決策 → PowerShell/Win32 操控，無硬編碼 UI 邏輯</text>
+
+<!-- Core Principle -->
+<rect x="60" y="140" width="1480" height="120" rx="24" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+<text x="90" y="175" class="h">核心設計原則</text>
+<text x="90" y="212" class="t">Agent 沒有「硬編碼」的 UI 操作邏輯。所有決策都由 LLM 在每一步根據截圖和任務狀態做出。</text>
+<text x="90" y="240" class="t">Human-readable Markdown 文件（design.md、current_task.md）是 agent 的長期記憶，也是 LLM 的輸入。</text>
+
+<!-- Key Numbers -->
+<rect x="60" y="295" width="350" height="200" rx="24" fill="#ecfeff" stroke="#06b6d4" stroke-width="2"/>
+<text x="90" y="335" class="h">目標環境</text>
+<text x="90" y="373" class="t">• Windows 作業系統</text>
+<text x="90" y="403" class="t">• 任意 GUI 應用程式</text>
+<text x="90" y="433" class="t">• 安裝、設定、資料處理</text>
+<text x="90" y="463" class="t">• 中文/IME 環境支援</text>
+
+<rect x="445" y="295" width="350" height="200" rx="24" fill="#fefce8" stroke="#eab308" stroke-width="2"/>
+<text x="475" y="335" class="h">技術棧</text>
+<text x="475" y="373" class="t">• Vision：Qwen3VL（元素定位）</text>
+<text x="475" y="403" class="t">• LLM：OpenAI（規劃 + 決策）</text>
+<text x="475" y="433" class="t">• 操作：PowerShell + Win32 API</text>
+<text x="475" y="463" class="t">• 語言：Python</text>
+
+<rect x="830" y="295" width="350" height="200" rx="24" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2"/>
+<text x="860" y="335" class="h">記憶架構</text>
+<text x="860" y="373" class="t">• 長期：磁碟持久化（design.md 等）</text>
+<text x="860" y="403" class="t">• 短期：記憶體 deque(maxlen=6)</text>
+<text x="860" y="433" class="t">• 即時：截圖 + ActionResult（用完即丟）</text>
+<text x="860" y="463" class="t">• 支援中斷後 Resume</text>
+
+<rect x="1215" y="295" width="325" height="200" rx="24" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+<text x="1245" y="335" class="h">Action 類型</text>
+<text x="1245" y="373" class="t">• 點擊/雙擊/右鍵/滾動（Qwen3VL bbox）</text>
+<text x="1245" y="403" class="t">• 鍵盤輸入（clipboard paste 繞 IME）</text>
+<text x="1245" y="433" class="t">• command / launch / write_file</text>
+<text x="1245" y="463" class="t">• done / fail / unable（終止 loop）</text>
+
+<!-- Use Cases -->
+<rect x="60" y="530" width="1480" height="220" rx="24" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+<text x="90" y="570" class="h">適合的任務類型</text>
+<text x="90" y="608" class="t">• 啞操作自動化：軟體安裝、驅動更新、設定還原、資料填寫</text>
+<text x="90" y="638" class="t">• 需要跨多個介面的流程：打開面板 → 填入設定 → 確認 → 關閉</text>
+<text x="90" y="668" class="t">• 需要即時視覺反饋的決策（LLM 看到截圖才能判斷下一步）</text>
+<text x="90" y="698" class="t">• 任務可被切成離散的 UI 步驟（不適合即時互動如遊戲、影片）</text>
+
+<rect x="60" y="795" width="1480" height="56" rx="18" fill="#0f172a"/>
+<text x="90" y="830" class="pill">一句話：UutAgent = Vision-based Windows Agent，LLM 即時決策，無硬編碼邏輯，可中斷後完整恢復。</text>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100">
+<style>
+.test { font: 32px 'Noto Sans CJK TC', sans-serif; fill: #000; }
+</style>
+<rect width="400" height="100" fill="white"/>
+<text x="20" y="60" class="test">測試中文</text>
+</svg>

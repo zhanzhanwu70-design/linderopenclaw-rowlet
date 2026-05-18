@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900">
+<defs><style>
+.title{font:700 34px 'Segoe UI',Arial,sans-serif;fill:#0f172a}.sub{font:18px 'Segoe UI',Arial,sans-serif;fill:#475569}.h{font:700 22px 'Segoe UI',Arial,sans-serif;fill:#0f172a}.t{font:16px 'Segoe UI',Arial,sans-serif;fill:#0f172a}.s{font:13px 'Segoe UI',Arial,sans-serif;fill:#475569}.pill{font:700 14px 'Segoe UI',Arial,sans-serif;fill:#fff}.bold{font:700 16px 'Segoe UI',Arial,sans-serif;fill:#0f172a}.mono{font:15px 'Consolas',monospace;fill:#334155}
+</style></defs>
+<rect width="1600" height="900" fill="#fff"/>
+<text x="60" y="60" class="title">UutAgent：四階段執行架構</text>
+<text x="60" y="95" class="sub">Phase 0 規劃 → Phase 1 主 Loop → Phase 2 Teardown → Phase 3 Learn</text>
+
+<!-- Phase flow boxes -->
+<rect x="60" y="135" width="330" height="110" rx="20" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="3"/>
+<text x="225" y="175" font-size="28" font-weight="700" fill="#8b5cf6" text-anchor="middle">Phase 0</text>
+<text x="225" y="200" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">PLAN</text>
+<text x="225" y="222" font-size="13" fill="#475569" text-anchor="middle">planner.py</text>
+
+<text x="390" y="190" font-size="28" fill="#94a3b8" text-anchor="middle">→</text>
+
+<rect x="425" y="135" width="330" height="110" rx="20" fill="#eff6ff" stroke="#3b82f6" stroke-width="3"/>
+<text x="590" y="175" font-size="28" font-weight="700" fill="#3b82f6" text-anchor="middle">Phase 1</text>
+<text x="590" y="200" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">ACT (主 Loop)</text>
+<text x="590" y="222" font-size="13" fill="#475569" text-anchor="middle">loop.py</text>
+
+<text x="755" y="190" font-size="28" fill="#94a3b8" text-anchor="middle">→</text>
+
+<rect x="790" y="135" width="330" height="110" rx="20" fill="#ecfeff" stroke="#06b6d4" stroke-width="3"/>
+<text x="955" y="175" font-size="28" font-weight="700" fill="#06b6d4" text-anchor="middle">Phase 2</text>
+<text x="955" y="200" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">TEARDOWN</text>
+<text x="955" y="222" font-size="13" fill="#475569" text-anchor="middle">獨立 LLM + system prompt</text>
+
+<text x="1120" y="190" font-size="28" fill="#94a3b8" text-anchor="middle">→</text>
+
+<rect x="1155" y="135" width="330" height="110" rx="20" fill="#fefce8" stroke="#eab308" stroke-width="3"/>
+<text x="1320" y="175" font-size="28" font-weight="700" fill="#eab308" text-anchor="middle">Phase 3</text>
+<text x="1320" y="200" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">LEARN</text>
+<text x="1320" y="222" font-size="13" fill="#475569" text-anchor="middle">reflection / frustration</text>
+
+<!-- Phase 0 detail -->
+<rect x="60" y="280" width="1480" height="135" rx="20" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2"/>
+<text x="90" y="310" class="h">Phase 0 — Planning（planner.py）</text>
+<text x="90" y="345" class="bold">LLM 一次產生四個檔案：</text>
+<text x="90" y="375" class="mono">propose.md</text><text x="230" y="375" class="s">任務目標、成功條件、teardown 意圖</text>
+<text x="400" y="375" class="mono">design.md</text><text x="530" y="375" class="s">UI 假設（初始為 [ASSUMED]）</text>
+<text x="710" y="375" class="mono">current_task.md</text><text x="870" y="375" class="s">步驟清單，含 verify: 條件</text>
+<text x="90" y="405" class="mono">teardown_task.md</text><text x="250" y="405" class="s">獨立清理步驟，Phase 2 執行</text>
+<text x="90" y="435" class="s">Resume 機制：若 propose.md 已存在（任務中斷），Phase 0 略過，直接從當前狀態繼續 Phase 1。</text>
+
+<!-- Phase 1 Loop -->
+<rect x="60" y="445" width="1480" height="210" rx="20" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+<text x="90" y="475" class="h">Phase 1 — 主 Loop（loop.py）</text>
+<text x="90" y="508" class="bold">每一步流程：</text>
+
+<rect x="90" y="525" width="140" height="45" rx="10" fill="#dbeafe"/>
+<text x="160" y="555" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">截圖</text>
+
+<text x="235" y="550" font-size="20" fill="#94a3b8" text-anchor="middle">→</text>
+
+<rect x="260" y="525" width="200" height="45" rx="10" fill="#dbeafe"/>
+<text x="360" y="555" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">Build user_message</text>
+
+<text x="465" y="550" font-size="20" fill="#94a3b8" text-anchor="middle">→</text>
+
+<rect x="490" y="525" width="180" height="45" rx="10" fill="#86efac"/>
+<text x="580" y="555" font-size="14" font-weight="700" fill="#16a34a" text-anchor="middle">LLM Call</text>
+
+<text x="675" y="550" font-size="20" fill="#94a3b8" text-anchor="middle">→</text>
+
+<rect x="710" y="525" width="200" height="45" rx="10" fill="#fde68a"/>
+<text x="810" y="555" font-size="14" font-weight="700" fill="#d97706" text-anchor="middle">dispatch(action)</text>
+
+<text x="915" y="550" font-size="20" fill="#94a3b8" text-anchor="middle">→</text>
+
+<rect x="940" y="525" width="140" height="45" rx="10" fill="#fed7aa"/>
+<text x="1010" y="555" font-size="14" font-weight="700" fill="#c2410c" text-anchor="middle">wait</text>
+
+<text x="1085" y="550" font-size="20" fill="#94a3b8" text-anchor="middle">→</text>
+
+<rect x="1110" y="525" width="140" height="45" rx="10" fill="#dbeafe"/>
+<text x="1180" y="555" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">next</text>
+
+<text x="90" y="600" class="s">user_message = system_prompt + history(deque maxlen=6) + design.md + current_task.md + task_journal(condensed) + last_action_result + 截圖</text>
+<text x="90" y="625" class="s">Apply updates first：design_update → 覆寫 design.md；task_update + replan → 覆寫 current_task.md 並 append [REPLAN]</text>
+<text x="90" y="650" class="s">status = done/fail/unable → verify 條件審查 → finalize() → Phase 2 &nbsp;&nbsp;|&nbsp;&nbsp; status = continue → dispatch → wait → screenshot → next iteration</text>
+
+<!-- Phase 2 -->
+<rect x="60" y="680" width="720" height="165" rx="20" fill="#ecfeff" stroke="#06b6d4" stroke-width="2"/>
+<text x="90" y="710" class="h">Phase 2 — Teardown</text>
+<text x="90" y="745" class="t">• 使用獨立 LLM client + teardown_system.md（最多 20 步）</text>
+<text x="90" y="773" class="t">• 執行 teardown_task.md：關閉應用、還原設定</text>
+<text x="90" y="801" class="t">• Teardown 失敗 → main result 降級（PASS → FAIL）</text>
+<text x="90" y="829" class="s">目標（清理）和 main loop（執行任務）不同，用獨立 prompt 避免混淆。</text>
+
+<!-- Phase 3 -->
+<rect x="820" y="680" width="720" height="165" rx="20" fill="#fefce8" stroke="#eab308" stroke-width="2"/>
+<text x="850" y="710" class="h">Phase 3 — Learn</text>
+<text x="850" y="745" class="t">• append_reflection()：REPLAN 時寫入 reflection/{id}.md</text>
+<text x="850" y="773" class="t">• write_frustration()：UNABLE 時寫入 frustration/{id}.md</text>
+<text x="850" y="801" class="t">• FAIL 不觸發 frustration（完成了流程，只是條件不符）</text>
+<text x="850" y="829" class="s">路徑由 .env 的 REFLECTION_FOLDER_PATH / FRUSTRATION_FOLDER_PATH 控制。</text>
+</svg>
