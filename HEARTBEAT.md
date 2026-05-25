@@ -2,6 +2,32 @@
 
 # 任務排程
 
+## 共享 Task Queue（多 Agent 協調）
+
+CEO 角色：收到 Linder 指令後，寫入 task 到 `~/.openclaw/task-queue/task_queue.json`
+
+**每次 heartbeat 同步檢查：**
+1. Acquire lock: `flock ~/.openclaw/task-queue/.lock -c "..."`
+2. 掃描 `status=done AND from=rowlet` 的已完成任務，讀取 result
+3. 釋放 lock
+4. 已完成的任務 result 記錄到 memory/，並主動回報 Linder
+
+**寫入新任務格式：**
+```json
+{
+  "id": "task_YYYYMMDD_NNN",
+  "from": "rowlet",
+  "to": "charizard",
+  "type": "research|execute|review|report|general",
+  "instruction": "...",
+  "priority": "normal",
+  "status": "pending",
+  "created_at": "ISO8601"
+}
+```
+
+---
+
 ## 每日任務
 
 ### 🕕 早上 6:00 - AI 突破限制研究

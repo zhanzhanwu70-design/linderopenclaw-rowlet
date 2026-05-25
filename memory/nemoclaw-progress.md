@@ -25,3 +25,17 @@
 - 進度：
 - 阻礙：
 
+
+### 日期：2026-05-25
+
+#### 噴火龍
+- 進度：嘗試透過 session label `charizard` 詢問進度，但目前找不到對應 session label。
+- 阻礙：缺少可用 sessionKey/label。
+
+#### 魔牆人偶
+- 進度：嘗試透過 session label `mrmime` 詢問安裝狀態，但目前找不到對應 session label。
+- 阻礙：缺少可用 sessionKey/label。
+
+#### 耿鬼
+- 進度：嘗試透過 session label `gengar` 詢問測試狀態，但目前找不到對應 session label。
+- 阻礙：缺少可用 sessionKey/label。
