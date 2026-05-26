@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Agent 通訊機制圖解</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f0f1a; color: #e0e0e0; padding: 2rem; line-height: 1.6; }
+  h1 { text-align: center; color: #7ee8fa; margin-bottom: 2rem; font-size: 1.8rem; }
+  h2 { color: #7ee8fa; margin: 2rem 0 1rem; border-left: 4px solid #7ee8fa; padding-left: 1rem; font-size: 1.3rem; }
+  h3 { color: #e8fa7e; margin: 1.5rem 0 0.5rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .diagram-box { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; }
+  .diagram-title { text-align: center; color: #fa7ee8; margin-bottom: 1rem; font-weight: bold; }
+  pre { font-family: "Fira Code", "Cascadia Code", monospace; font-size: 0.85rem; white-space: pre; }
+  .highlight { color: #fa7ee8; }
+  .arrow { color: #7ee8fa; }
+  .weak { color: #ff6b6b; }
+  .strong { color: #7ee88a; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  th, td { border: 1px solid #333; padding: 0.75rem; text-align: left; }
+  th { background: #16213e; color: #7ee8fa; }
+  tr:nth-child(even) { background: #1a1a2e; }
+  .tag { display: inline-block; background: #333; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; margin: 0.2rem; }
+  .tag-red { background: #4a1a1a; color: #ff6b6b; }
+  .tag-green { background: #1a4a1a; color: #7ee88a; }
+  .tag-yellow { background: #4a4a1a; color: #e8fa7e; }
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .comp-box { background: #1a1a2e; border: 1px solid #333; border-radius: 8px; padding: 1rem; }
+  .flow { display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap; }
+  .box { background: #2a2a4e; border: 1px solid #555; border-radius: 6px; padding: 0.5rem 1rem; text-align: center; min-width: 80px; }
+  .box-agent { border-color: #7ee8fa; }
+  .box-system { border-color: #e8fa7e; }
+  .box-discord { border-color: #fa7ee8; }
+  .box-queue { border-color: #7ee88a; }
+  .box-red { border-color: #ff6b6b; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot-green { background: #7ee88a; }
+  .dot-red { background: #ff6b6b; }
+  .dot-yellow { background: #e8fa7e; }
+  .summary { background: #1a1a2e; border: 2px solid #7ee8fa; border-radius: 12px; padding: 1.5rem; margin: 2rem 0; }
+  .note { background: #2a1a1a; border-left: 4px solid #ff6b6b; padding: 1rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
+  @media (max-width: 768px) { .comparison { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🔌 OpenClaw Agent 通訊機制圖解</h1>
+
+<!-- 1. 通訊模式總覽 -->
+<h2>一、通訊模式總覽</h2>
+<div class="diagram-box">
+<div class="diagram-title">OpenClaw 內所有通訊的三大模式</div>
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│                      通訊模式                               │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  模式 A: <span class="highlight">Discord Push</span>（人類 → Agent）                      │
+│  ┌─────────┐    Discord     ┌──────────────┐              │
+│  │  人類   │ ──────────────→ │ Discord Bot  │              │
+│  └─────────┘    訊息抵達     └──────┬───────┘              │
+│                                     │                      │
+│                              Discord 強制 push              │
+│                                     ↓                      │
+│                             Agent Session 被喚醒            │
+│                              一定處理 + 回覆                 │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  模式 B: <span class="weak">sessions_send</span>（Agent → Agent）                  │
+│  ┌──────────────┐         ┌──────────────┐                  │
+│  │  Agent A     │ ───────→│  Mailbox     │                  │
+│  └──────────────┘         │ (Agent B)    │                  │
+│       訊息投遞             └──────┬───────┘                  │
+│                                   │                         │
+│                         沒有 push，無中斷                   │
+│                         Agent B 可選擇忽略                   │
+│                                   ❌                        │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  模式 C: <span class="strong">Heartbeat + Task Queue</span>（定期輪詢）        │
+│  ┌──────────────┐    ┌────────────────────┐                │
+│  │  Agent B     │ ←──│  Task Queue        │                │
+│  └──────┬───────┘    │  (共享 JSON)       │                │
+│         │            └────────────────────┘                │
+│         │                      ↑                           │
+│    每 30 分鐘           ┌──────────────┐                   │
+│    強制輪詢             │  Agent A      │                   │
+│    一定讀取            │  (寫入 task)  │                   │
+│         ✓              └──────────────┘                   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<!-- 2. sessions_send 詳解 -->
+<h2>二、sessions_send — 郵箱機制</h2>
+<div class="diagram-box">
+<div class="diagram-title">sessions_send = 訊息投遞，沒有強制喚醒</div>
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│  Agent A                                          Agent B  │
+│  (發送方)                                        (接收方)   │
+│                                                             │
+│  ┌─────────────┐         ┌─────────────────┐    ┌──────────┐
+│  │ sessions_   │         │                 │    │ Session  │
+│  │ send()      │────────→│  Mailbox       │    │ (可選    │
+│  │             │         │ (訊息佇列)     │    │  被喚醒) │
+│  └─────────────┘         │                 │    └────┬────┘
+│                          │  [msg1] [msg2]  │         │
+│                          └────────┬────────┘         │
+│                                   │                   │
+│                     訊息「到達」Mailbox               │
+│                                   │                   │
+│                    Agent B 可能在 sleep                 │
+│                    或選擇「假裝沒看見」                 │
+│                                   │                   │
+│                               <span class="weak">沒有中斷</span>              │
+│                               <span class="weak">沒有強制喚醒</span>           │
+│                                   ❌                   │
+└─────────────────────────────────────────────────────────────┘
+
+<span class="highlight">sessions_send 的限制：</span>
+- 訊息只是「投遞到信箱」
+- 接收方 Agent 如果在 sleep，不會被叫醒
+- 接收方可以選擇忽略（沒有義務回覆）
+- 没有「打斷」機制
+</pre>
+</div>
+
+<!-- 3. Heartbeat 詳解 -->
+<h2>三、Heartbeat — 強制輪詢機制</h2>
+<div class="diagram-box">
+<div class="diagram-title">Heartbeat = 系統層面定時器，30 分鐘固定喚醒一次</div>
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│  OpenClaw Gateway Scheduler                                 │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  每 30 分鐘                                          │  │
+│  │                                                       │  │
+│  │   ────────────→ 喚醒 Agent B Session                 │  │
+│  │                      │                                │  │
+│  │                      ↓                                │  │
+│  │              ┌───────────────┐                       │  │
+│  │              │ Agent B 收到  │                       │  │
+│  │              │ heartbeat 訊息 │                       │  │
+│  │              └───────┬───────┘                       │  │
+│  │                      │                               │  │
+│  │              Agent B 被迫處理                         │  │
+│  │                      │                               │  │
+│  │                      ↓                               │  │
+│  │  ┌──────────────────────────────────────────────┐    │  │
+│  │  │ HEARTBEAT.md 定義的行為：                    │    │  │
+│  │  │ 1. flock 讀取 task_queue.json               │    │  │
+│  │  │ 2. 找 pending + to=自己 的 task             │    │  │
+│  │  │ 3. 搶 task → 執行 → 寫 result              │    │  │
+│  │  │ 4. 沒有任務 → 回 HEARTBEAT_OK               │    │  │
+│  │  └──────────────────────────────────────────────┘    │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                                                             │
+│  <span class="strong">為什麼 Heartbeat 強制？</span>                                    │
+│  - 由 Gateway Scheduler（系統層）觸發，不是應用層訊息        │
+│  - Agent 收到 heartbeat 後沒有「假裝沒看見」的選項            │
+│  - 一定會執行 HEARTBEAT.md 定義的行為                        │
+└─────────────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<!-- 4. Task Queue 協作流程 -->
+<h2>四、Task Queue + Heartbeat 協作流程</h2>
+<div class="diagram-box">
+<div class="diagram-title">完整的跨 Agent 任務派發與執行</div>
+<pre>
+<span class="highlight">CEO (轟鳴月)</span>                                          <span class="highlight">Specialist (例：charizard)</span>
+      │                                                    │
+      │  1. 收到 Linder 指令                              │
+      │  ↓                                                │
+      │  2. 寫入 task 到 ~/.openclaw/task-queue/          │
+      │     ┌──────────────────────────────────┐          │
+      │     │ task_queue.json                  │          │
+      │     │ {                                 │          │
+      │     │   "tasks": [{                    │          │
+      │     │     "id": "task_001",             │          │
+      │     │     "from": "roaringmoon",       │          │
+      │     │     "to": "charizard",            │          │
+      │     │     "status": "pending"           │          │
+      │     │   }]                              │          │
+      │     │ }                                 │          │
+      │     └──────────────────────────────────┘          │
+      │                                                    │
+      │                    每 30 分鐘 heartbeat           │
+      │                            ←───                   │
+      │                                                    │
+      │                     3. 讀取 task_queue.json        │
+      │                            │                      │
+      │                            ↓                      │
+      │                     4. 找到 pending + to=自己     │
+      │                            │                      │
+      │                            ↓                      │
+      │                     5. Atomic update:             │
+      │                        status: "running"         │
+      │                        started_at: now           │
+      │                            │                      │
+      │                            ↓                      │
+      │                     6. 執行任務                   │
+      │                            │                      │
+      │                            ↓                      │
+      │                     7. 更新 status=done           │
+      │                        result= "完成內容"         │
+      │                            │                      │
+      │                     8. 釋放 lock                   │
+      │                                                    │
+      │  9. 下次 heartbeat 掃描 done 任務                 │
+      │  10. 讀取 result，回報 Linder                     │
+      │                                                    │
+</pre>
+</div>
+
+<!-- 5. 三種觸發方式比較 -->
+<h2>五、三種觸發方式比較</h2>
+<table>
+  <tr>
+    <th>觸發方式</th>
+    <th>觸發主體</th>
+    <th>接收方會處理？</th>
+    <th>延遲</th>
+    <th>強制力</th>
+  </tr>
+  <tr>
+    <td><span class="highlight">Discord Push</span></td>
+    <td>人類發 Discord 訊息</td>
+    <td><span class="tag tag-green">一定（合約綁定）</span></td>
+    <td>即時（秒級）</td>
+    <td>✅ 強</td>
+  </tr>
+  <tr>
+    <td><span class="weak">sessions_send</span></td>
+    <td>Agent 應用層發訊息</td>
+    <td><span class="tag tag-red">可選擇忽略</span></td>
+    <td>不一定（取決於接收方）</td>
+    <td>❌ 弱</td>
+  </tr>
+  <tr>
+    <td><span class="strong">Heartbeat + Task Queue</span></td>
+    <td>Gateway Scheduler 系統層</td>
+    <td><span class="tag tag-green">一定（輪到就處理）</span></td>
+    <td>最多 30 分鐘</td>
+    <td>✅ 強（但非即時）</td>
+  </tr>
+  <tr>
+    <td>sessions_spawn</td>
+    <td>Agent 派生 subagent</td>
+    <td><span class="tag tag-green">一定（同步等待）</span></td>
+    <td>即時</td>
+    <td>✅ 強（但 lifecycle 綁定）</td>
+  </tr>
+</table>
+
+<!-- 6. 為什麼 sessions_send 無法強制 -->
+<h2>六、為什麼 sessions_send 無法強制？</h2>
+<div class="diagram-box">
+<div class="diagram-title">架構設計差異</div>
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│  OpenClaw 設計原點：個人 AI 助手                            │
+│                                                             │
+│  人類 → Agent：你說了什麼，Agent 必須處理並回覆             │
+│              （因為 Discord push 一定送達）                  │
+│                                                             │
+│  Agent → Agent：沒有「人類期望」的約束                      │
+│              對方沒有義務一定要理會                          │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  sessions_send 本質是「留話」不是「打斷」                   │
+│                                                             │
+│  ┌──────────────┐         ┌──────────────┐               │
+│  │ Agent A 說：  │         │ Agent B 的   │               │
+│  │ 「去做 X」   │ ──msg──→ │ Mailbox      │               │
+│  └──────────────┘         └──────┬───────┘               │
+│                                  │                        │
+│                            Agent B 可sleep                 │
+│                            或回「已讀不回」                 │
+│                                  │                        │
+│                              <span class="weak">沒有中斷機制</span>                    │
+└─────────────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<div class="note">
+<span class="highlight">💡 核心結論：</span><br>
+如果你想要「Agent A 一定叫得動 Agent B」，目前的組合是：<br>
+- <span class="strong">Task Queue（共享 JSON）+ Heartbeat（30 分鐘強制輪詢）</span><br>
+- sessions_send 不是為「強制執行」設計的
+</div>
+
+<!-- 7. 當前架構圖 -->
+<h2>七、你們目前的實際架構</h2>
+<div class="diagram-box">
+<div class="diagram-title">OpenClaw + Task Queue + Heartbeat 多 Agent 架構</div>
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│  OpenClaw Gateway (同一個 process)                         │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  Linder (人類)                                       │  │
+│  │    │                                                │  │
+│  │    │ Discord 訊息                                    │  │
+│  │    ↓                                                │  │
+│  │  ┌──────────────────────────────────────────────┐   │  │
+│  │  │  轟鳴月 (CEO) — HEARTBEAT.md                  │   │  │
+│  │  │  • 收到 Linder 指令                           │   │  │
+│  │  │  • 寫 task 到 task_queue.json                 │   │  │
+│  │  │  • 每 30m heartbeat 檢查 done tasks           │   │  │
+│  │  └──────────────────────────────────────────────┘   │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                           ↑                ↑               │
+│         Task Queue        │                │               │
+│  ~/.openclaw/task-queue/  │                │               │
+│  ┌─────────────────────────────────────┐  │               │
+│  │                                     │  │               │
+│  │  ┌─────────────────────────────────┐│  │               │
+│  │  │ task_queue.json                 ││  │               │
+│  │  │ {"tasks": [...]}                ││  │               │
+│  │  └─────────────────────────────────┘│  │               │
+│  │                                     │  │               │
+│  └─────────────────────────────────────┘  │               │
+│                           ↑                │               │
+│         Heartbeat (30m)   │                │               │
+│  ┌───────────────────────────────────────────────────┐   │
+│  │                                                    │   │
+│  │  Specialist 們（每 30m heartbeat）：               │   │
+│  │                                                    │   │
+│  │  charizard ──┐                                    │   │
+│  │  rowlet      ──┤  讀取 task_queue.json           │   │
+│  │  gengar      ──┤  搶 pending task                │   │
+│  │  ...         ──┤  執行 + 寫 result                │   │
+│  │              ──┘                                   │   │
+│  │                                                    │   │
+│  └────────────────────────────────────────────────────┘   │
+│                                                             │
+│  各 Specialist Discord Bot（不同 channel，不同 identity）   │
+└─────────────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<div class="summary">
+<strong>📋 總結：</strong><br>
+- <strong>sessions_send</strong> = 郵箱投遞（可忽略）<br>
+- <strong>Heartbeat</strong> = 系統層強制輪詢（一定處理）<br>
+- <strong>Task Queue</strong> = 共享狀態（確保跨重啟持久化）<br>
+- <strong>組合</strong> = 目前最可靠的跨 Agent 協調機制
+</div>
+
+</div>
+</body>
+</html>

@@ -1,57 +1,166 @@
-# HEARTBEAT.md
+# HEARTBEAT.md - rowlet
 
-# 任務排程
+## Task System（CEO 模式）
 
-## 共享 Task Queue（多 Agent 協調）
+CEO = **roaringmoon**，統一發放任務、標記 done。
 
-CEO 角色：收到 Linder 指令後，寫入 task 到 `~/.openclaw/task-queue/task_queue.json`
+### 每次 Heartbeat 執行流程
 
-**每次 heartbeat 同步檢查：**
-1. Acquire lock: `flock ~/.openclaw/task-queue/.lock -c "..."`
-2. 掃描 `status=done AND from=rowlet` 的已完成任務，讀取 result
-3. 釋放 lock
-4. 已完成的任務 result 記錄到 memory/，並主動回報 Linder
-
-**寫入新任務格式：**
-```json
-{
-  "id": "task_YYYYMMDD_NNN",
-  "from": "rowlet",
-  "to": "charizard",
-  "type": "research|execute|review|report|general",
-  "instruction": "...",
-  "priority": "normal",
-  "status": "pending",
-  "created_at": "ISO8601"
-}
+#### Step 1: 檢查被指名的 pending task
+```bash
+flock ~/.openclaw/task-queue/.lock -c "cat ~/.openclaw/task-queue/task_queue.json" > /tmp/task_queue_read.json
 ```
+
+找到：`status=pending AND to=rowlet` 的 task
+
+#### Step 2: 開始執行 → 更新為 running
+```bash
+flock ~/.openclaw/task-queue/.lock -c "python3 << 'EOF'
+import json
+with open('/tmp/task_queue_read.json') as f:
+    d = json.load(f)
+for t in d['tasks']:
+    if t['id'] == '<task_id>':
+        t['status'] = 'running'
+        t['started_at'] = $(date +%s)
+        t['run_count'] = t.get('run_count', 0) + 1
+with open('~/.openclaw/task-queue/task_queue.json', 'w') as f:
+    json.dump(d, f, indent=2)
+EOF"
+```
+
+#### Step 3: 執行任務（研究、寫作、分析等）
+
+#### Step 4: 過程中主動回報進度給 CEO（roaringmoon）
+```bash
+# 使用 sessions_send 發送進度更新給 CEO
+# RoaringMoon channel: 1482561255955763293
+sessions_send sessionKey: "agent:roaringmoon:discord:channel:1482561255955763293" message: "<task_id> 進度更新：目前完成...，遇到...，下一步..."
+```
+
+#### Step 5: 任務完成 → 標記等待 CEO 檢視
+```bash
+flock ~/.openclaw/task-queue/.lock -c "python3 << 'EOF'
+import json
+with open('/tmp/task_queue_read.json') as f:
+    d = json.load(f)
+for t in d['tasks']:
+    if t['id'] == '<task_id>':
+        t['status'] = 'completed'
+        t['completed_at'] = $(date +%s)
+        t['needs_ceo_review'] = True
+        t['result'] = '<任務摘要>'
+with open('~/.openclaw/task-queue/task_queue.json', 'w') as f:
+    json.dump(d, f, indent=2)
+EOF"
+```
+
+#### Step 6: 通知 CEO 檢視
+```bash
+# 發送最終結果給 CEO 的 mailbox
+# RoaringMoon channel: 1482561255955763293
+sessions_send sessionKey: "agent:roaringmoon:discord:channel:1482561255955763293" message: "✅ <task_id> 已完成，需要 CEO 檢視。摘要：<result>"
+```
+
+### CEO Mailbox 檢視職責（RoaringMoon）
+RoaringMoon 的 heartbeat 還需要：
+- 檢查所有 `needs_ceo_review=True` 的 task
+- 讀取 agent 傳來的進度訊息
+- 確認結果後標記 `done`
+- 有需要時發回修改意見
+
+### 沒有任務時
+回覆：`HEARTBEAT_OK`
 
 ---
 
-## 每日任務
+## Shared Memory（共享記憶三層）
 
-### 🕕 早上 6:00 - AI 突破限制研究
-- 研究政府可能如何限制 AI Agent
-- 研究最新的突破技術
-- 更新突破方案清單
-- 記錄到 memory/ai-bypass-research.md
-- 有新進展時通知 轟鳴月
+每次 heartbeat 結束前，檢查並更新共享記憶：
 
-### 🎬 每日 YouTube 影片監控
-- 收到 YouTube 連結時主動下載分析
-- 主動搜尋 OpenClaw、AI Agent、自動化相關影片
-- 分析內容並記錄重點
-- 有價值的內容向 Linder 回報
+### Step 7: 更新 Shared Memory（可選，若有任務完成）
 
-### 🕗 台北時間早上 8:00 - NemoClaw 社群監控
-- 搜尋 NemoClaw 社群動態（GitHub、Discord、論壇等）
-- 關注是否有人接上通訊軟體（如 Discord、Slack、Telegram）
-- 了解最新使用狀況
-- 記錄到 memory/nemoclaw-daily.md
-- 向 Linder 回報進展
+#### 7a. 寫入 Episodic（日誌）
+```bash
+# 每次任務完成後寫入月誌（append-only）
+YEAR_MONTH=$(date +%Y-%m)
+JSON_LINE='{"ts":'$(date +%s)'000,"agent":"rowlet","event":"task_completed","task_id":"<task_id>","summary":"<任務摘要>"}'
+echo $JSON_LINE >> ~/.openclaw/shared-memory/memory/episodic/${YEAR_MONTH}.jsonl
+```
 
-### 📊 每日 NemoClaw 使用狀況追蹤
-- 聯繫噴火龍：確認 Plugin/Hook 實作進度
-- 聯繫魔牆人偶：確認安裝狀態
-- 聯繫耿鬼：確認測試結果
-- 記錄各 Agent 進度到 memory/nemoclaw-progress.md
+#### 7b. 寫入 Semantic（事實庫）
+```bash
+# 如果任務結果有值得記住的事實，更新 facts.json
+python3 << 'EOF'
+import json
+f = '~/.openclaw/shared-memory/memory/semantic/facts.json'
+with open(f) as fp:
+    d = json.load(fp)
+# 讀取舊 facts
+facts = d.get('facts', [])
+# 新增事實（每個 task 完成後，提取 1-3 個關鍵fact）
+new_facts = [
+    {
+        "id": "<uuid>",
+        "content": "<值得記住的事實>",
+        "source": "rowlet",
+        "ts": $(date +%s)000
+    }
+]
+facts.extend(new_facts)
+d['facts'] = facts
+d['updated_at'] = $(date +%s)000
+d['updated_by'] = "rowlet"
+with open(f, 'w') as fp:
+    json.dump(d, fp, indent=2, ensure_ascii=False)
+EOF
+```
+
+#### 7c. 寫入 Approved（知識庫，需 CEO 審核）
+```bash
+# 如果有需要變成長期知識的內容，寫到 approved/ 並通知 CEO
+# 檔案命名：YYYY-MM-DD_topic-slug.md
+cat > ~/.openclaw/shared-memory/memory/approved/2026-05-26_task001_report.md << 'REPORT'
+# 任務報告：<task_id>
+
+## 摘要
+<任務結果摘要>
+
+## 關鍵發現
+- ...
+
+## 待 CEO 審核
+- [ ] 確認內容準確
+- [ ] 移動到合适的位置（wiki 或歸檔）
+REPORT
+
+# 通知 CEO 有新知識等待審核
+sessions_send sessionKey: "agent:roaringmoon:discord:channel:1482561255955763293" message: "📄 <task_id> 完成，已寫入 shared-memory/memory/approved/ 待你審核"
+```
+
+### Step 8: 讀取 Shared Memory（每次 heartbeat 一樣會讀）
+
+```bash
+# 讀取最近的事件日誌，了解最近發生了什麼
+tail -20 ~/.openclaw/shared-memory/memory/episodic/$(date +%Y-%m).jsonl
+
+# 讀取事實庫，了解已確認的資訊
+cat ~/.openclaw/shared-memory/memory/semantic/facts.json
+
+# 讀取待審核的知識
+ls ~/.openclaw/shared-memory/memory/approved/
+```
+
+---
+## Agent Channel IDs（from openclaw.json）
+```
+roaringmoon: 1482561255955763293
+charizard:  1482097593784733839（主要）, 1482374570278129724（monitor）
+mrmime:    1482069603512221927
+rowlet:    1482363974119854234
+gengar:    1484513576482902158
+celesteela: 1482607890098421842
+picturecat: 1481665581189959872
+greninja:  1382962403720827011
+flaaffy:   1494534371292614729
+```
