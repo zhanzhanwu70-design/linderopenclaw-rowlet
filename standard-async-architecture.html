@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>標準異步架構圖解</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f1117; color: #e8e8e8; padding: 2rem; line-height: 1.7; }
+  h1 { text-align: center; color: #7ee8fa; margin-bottom: 2rem; font-size: 2rem; }
+  h2 { color: #7ee8fa; margin: 2.5rem 0 1rem; border-left: 4px solid #7ee8fa; padding-left: 0.8rem; font-size: 1.3rem; }
+  h3 { color: #e8fa7e; margin: 1.5rem 0 0.5rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .diagram-box { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; }
+  .diagram-title { text-align: center; color: #fa7ee8; margin-bottom: 1rem; font-weight: bold; }
+  pre { font-family: "Fira Code", "Cascadia Code", monospace; font-size: 0.8rem; white-space: pre; line-height: 1.4; }
+  .highlight { color: #fa7ee8; }
+  .arrow { color: #7ee8fa; }
+  .strong { color: #7ee88a; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  th, td { border: 1px solid #333; padding: 0.75rem; text-align: left; }
+  th { background: #16213e; color: #7ee8fa; }
+  tr:nth-child(even) { background: #1a1a2e; }
+  .tag { display: inline-block; background: #333; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; margin: 0.2rem; }
+  .tag-green { background: #1a4a1a; color: #7ee88a; }
+  .tag-yellow { background: #4a4a1a; color: #e8fa7e; }
+  .tag-red { background: #4a1a1a; color: #ff6b6b; }
+  .tag-blue { background: #1a1a4a; color: #7ee8fa; }
+  .comp-box { background: #1a1a2e; border: 1px solid #333; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; }
+  .box { display: inline-block; background: #2a2a4e; border: 1px solid #555; border-radius: 6px; padding: 0.5rem 1rem; text-align: center; min-width: 80px; }
+  .box-mgr { border-color: #fa7ee8; }
+  .box-pool { border-color: #7ee88a; }
+  .box-mq { border-color: #7ee8fa; }
+  .box-client { border-color: #e8fa7e; }
+  .summary-box { background: #1a1a2e; border: 2px solid #7ee8fa; border-radius: 12px; padding: 1.5rem; margin: 2rem 0; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🔌 標準異步架構圖解</h1>
+
+<!-- 1. 核心對比 -->
+<h2>一、同步 vs 異步 核心差異</h2>
+<div class="diagram-box">
+<div class="diagram-title">同步架構：所有步驟串聯，一個錯全部停擺</div>
+<pre>
+┌──────────────────────────────────────────────────────┐
+│                    同步架構                          │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  Step1 ──→ Step2 ──→ Step3 ──→ ... ──→ Result      │
+│     │         │         │                           │
+│    失敗!    被迫停止  被迫停止                        │
+│     │                                            │
+│     └────────→ 全域影響 ←─────────────────┘       │
+│                                                      │
+│  問題：                                              │
+│  • 10% 的邏輯，90% 處理意外情況                      │
+│  • 一個環節失敗，全部受影響                          │
+│  • 影響會疊加，難以計算後果                          │
+│  • 應對方式：直接終止 ＝ 效能瓶頸                    │
+└──────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<div class="diagram-box">
+<div class="diagram-title">異步架構：步驟解耦，統一管理，彈性調度</div>
+<pre>
+┌──────────────────────────────────────────────────────┐
+│                    異步架構                          │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  Client ──→ Task Created ──→ Immediate Return        │
+│                     │                               │
+│                     ↓                               │
+│               ┌─────────────┐                        │
+│               │  管理池    │  ← 只負責管理和追蹤     │
+│               │ (Manager)  │                        │
+│               └─────┬──────┘                        │
+│                     │                               │
+│                     ↓                               │
+│               ┌─────────────┐                        │
+│               │  任務池    │  ← 分配資源處理步驟    │
+│               │ (Workers)  │  ← 可彈性擴展           │
+│               └─────┬──────┘                        │
+│                     │                               │
+│              Step1 │ Step2 │ Step3 │               │
+│              （獨立執行，互不影響）                  │
+└──────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<!-- 2. 標準異步架構元件 -->
+<h2>二、標準異步架構的四大元件</h2>
+
+<div class="two-col">
+<div class="comp-box">
+<h3>1️⃣ 管理池（Manager Pool）</h3>
+<pre>
+職責：
+• 創建任務，分配 task_id
+• 立即返回給客戶端（不等執行）
+• 追蹤任務狀態
+• 管理任務的生命周期
+
+不處理實際工作，只管「誰做完什麼」</pre>
+</div>
+<div class="comp-box">
+<h3>2️⃣ 任務池（Worker Pool）</h3>
+<pre>
+職責：
+• 從佇列取任務
+• 執行具體步驟
+• 按負載彈性擴展
+
+特點：
+• 失敗不影響其他任務
+• 可以分配不同資源給不同任務
+• 第三方服務慢就多投放資源</pre>
+</div>
+</div>
+
+<div class="two-col">
+<div class="comp-box">
+<h3>3️⃣ 消息佇列（Message Queue）</h3>
+<pre>
+職責：
+• 任務的暫存和路由
+• 確保任務只被處理一次
+• （exactly once delivery）
+
+代表工具：
+• RabbitMQ（功能豐富）
+• Kafka（高吞吐量）
+• Redis Queue（輕量）</pre>
+</div>
+<div class="comp-box">
+<h3>4️⃣ 重試池（Retry Pool）</h3>
+<pre>
+職責：
+• 專門處理失敗任務的重新執行
+• 第三方服務故障時，讓任務等著
+• 恢復後全力清理堆積
+
+實作方式：
+• 固定頻率重試
+• 指數退避（Exponential backoff）
+• 獨立出來，不浪費正常任務池資源</pre>
+</div>
+</div>
+
+<!-- 3. 完整流程圖 -->
+<h2>三、完整異步任務流程</h2>
+<div class="diagram-box">
+<div class="diagram-title">電子商務下單 → 異步任務流水線</div>
+<pre>
+┌──────────────────────────────────────────────────────────────────┐
+│                                                             │
+│  客戶端                    管理池                  任務池       │
+│                                                             │
+│  ┌─────────┐            ┌─────────┐         ┌──────────────┐   │
+│  │ 下單請求 │ ────────→ │ 建立任務 │ ──────→ │ Task Queue  │   │
+│  │         │            │ 返回ID   │         │              │   │
+│  └─────────┘            └─────────┘         └──────┬───────┘   │
+│       │                                           │           │
+│       │ 客戶端自己           追蹤進度              │           │
+│       │ 根據ID查詢                     ┌──────────┴────────┐  │
+│       │ ←───────────────────────  ┌────────────┐            │  │
+│       │                     status│  Workers  │              │  │
+│       │                     └────────────┘            │  │
+│       │                        │                      │  │
+│       │                   ┌─────┴──────┐              │  │
+│       │                   ↓            ↓              │  │
+│       │           ┌───────────┐ ┌───────────┐         │  │
+│       │           │ 庫存鎖定  │ │ 支付處理  │         │  │
+│       │           └─────┬─────┘ └─────┬─────┘         │  │
+│       │                 ↓            ↓                  │  │
+│       │           ┌───────────┐ ┌───────────┐         │  │
+│       │           │ 庫存扣除  │ │ 發貨通知  │         │  │
+│       │           └─────┬─────┘ └─────┬─────┘         │  │
+│       │                 ↓            ↓                  │  │
+│       │           ┌───────────┐ ┌───────────┐         │  │
+│       │           │ 物流追蹤  │ │ 更新訂單  │         │  │
+│       │           └─────┬─────┘ └─────┬─────┘         │  │
+│       │                 └─────┬──────┘                  │  │
+│       │                       ↓                          │  │
+│       │                 ┌─────────┐                    │  │
+│       │                 │ 結果回傳│                    │  │
+│       │                 └────┬────┘                    │  │
+│       │                      ↓                          │  │
+│       │            客戶端根據ID取得最終結果              │  │
+│       │                                              │  │
+└──────────────────────────────────────────────────────────────────┘
+
+每個步驟獨立執行，任何一個失敗只影響自己，
+不會連鎖導致全盤崩潰。</pre>
+</div>
+
+<!-- 4. Retry 機制 -->
+<h2>四、Retry 機制（重試池）</h2>
+<div class="diagram-box">
+<div class="diagram-title">支付失敗時的 Retry 處理</div>
+<pre>
+┌──────────────────────────────────────────────────────┐
+│                    正常流程                          │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  ┌─────────┐    ┌─────────┐    ┌──────────────┐     │
+│  │ 建立任務│───→│ 執行支付│───→│ 支付成功     │     │
+│  └─────────┘    └─────────┘    └──────────────┘     │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────┐
+│                    失敗流程                          │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  ┌─────────┐    ┌─────────┐    ┌──────────────┐     │
+│  │ 建立任務│───→│ 執行支付│───→│ 支付失敗    │     │
+│  └─────────┘    └────┬────┘    └──────────────┘     │
+│                      ↓                              │
+│                ┌─────────────┐                      │
+│                │  重試池     │  ← 獨立出來         │
+│                │（Retrier） │  ← 不耗費主任務池     │
+│                └─────┬──────┘                      │
+│                      │                              │
+│              第三方服務故障？→ 暫停，等恢復        │
+│                      │                              │
+│              服務恢復 ──→ 再次投放到任務池         │
+│                      │                              │
+│              直到成功 or 超過重試次數放棄          │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<!-- 5. 實作工具比較 -->
+<h2>五、實作工具比較</h2>
+<table>
+  <tr>
+    <th>工具</th>
+    <th>類型</th>
+    <th>特點</th>
+    <th>適用場景</th>
+  </tr>
+  <tr>
+    <td><span class="highlight">RabbitMQ</span></td>
+    <td>消息佇列</td>
+    <td>功能豐富、routing 靈活、exactly once delivery、完整權限管理</td>
+    <td>中小型系統，需要豐富功能的企業應用</td>
+  </tr>
+  <tr>
+    <td><span class="highlight">Apache Kafka</span></td>
+    <td>事件流平臺</td>
+    <td>高吞吐量、持久化、分區、可擴展</td>
+    <td>大規模數據流、日志收集、事件驅動</td>
+  </tr>
+  <tr>
+    <td><span class="highlight">Redis Queue</span></td>
+    <td>輕量佇列</td>
+    <td>簡單、快速、天然適配快取生態</td>
+    <td>小型系統，快速原型，不需要完整 MQ 功能</td>
+  </tr>
+  <tr>
+    <td><span class="highlight">Postgres notify/listen</span></td>
+    <td>事件驅動（DIY）</td>
+    <td>不需要額外服務，用現有資料庫實現基本事件機制</td>
+    <td>已經在使用 Postgres，不想引入新服務</td>
+  </tr>
+  <tr>
+    <td><span class="highlight">ROS Action</span></td>
+    <td>輕量級異步請求</td>
+    <td>Goal/Feedback/Result 三件套，內建取消機制</td>
+    <td>機器人控制，導航，操作等長時間運行任務</td>
+  </tr>
+</table>
+
+<!-- 6. ROS Action 對照 -->
+<h2>六、ROS Action 對照</h2>
+<div class="diagram-box">
+<div class="diagram-title">ROS Action 也是一種異步模式，但比較輕量</div>
+<pre>
+┌──────────────────────────────────────────────────────┐
+│                   ROS Action 交互                    │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  ActionClient          ActionServer                   │
+│       │                     │                         │
+│       │── Goal ───────────→│                         │
+│       │←─ Feedback ────────│（持續回傳，非同步）       │
+│       │←─ Result ─────────│（任務完成後）             │
+│       │── Cancel ─────────→│（隨時可取消）             │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────┐
+│              ROS Action vs 完整 Async               │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  ┌────────────────────┐    ┌────────────────────────┐ │
+│  │      ROS Action     │    │   完整異步架構         │ │
+│  ├────────────────────┤    ├────────────────────────┤ │
+│  │ ✅ 非阻塞         │    │ ✅ 非阻塞              │ │
+│  │ ✅ Feedback      │    │ ✅ Feedback           │ │
+│  │ ✅ Cancel        │    │ ✅ Cancel             │ │
+│  │ ✅ 狀態追蹤       │    │ ✅ 狀態追蹤           │ │
+│  │ ❌ 動態資源分配   │    │ ✅ 管理池/任務池分離   │ │
+│  │ ❌ Retry 池      │    │ ✅ 獨立 Retry 池       │ │
+│  │ ❌ 訊息佇列      │    │ ✅ 消息佇列           │ │
+│  │ ❌ 排程器        │    │ ✅ 任務排程器          │ │
+│  └────────────────────┘    └────────────────────────┘ │
+│                                                      │
+│  ROS Action 是「專為長時間運行任務設計的             │
+│   輕量級異步交互模式」，不是完整的異步架構。          │
+│   適合機器人控制，但電子商務等複雜流程不夠。          │
+└──────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<!-- 7. 簡化版実装 -->
+<h2>七、最小化實作：用 Postgres DIY</h2>
+<div class="diagram-box">
+<div class="diagram-title">用 Postgres notify/listen + 觸發器 實現基本事件驅動</div>
+<pre>
+┌──────────────────────────────────────────────────────┐
+│                 Postgres 事件驅動                      │
+├──────────────────────────────────────────────────────┤
+                                                      │
+│  ┌──────────────┐    ┌────────────┐                   │
+│  │   任務表     │    │  觸發器    │                   │
+│  │ tasks       │───→│ Trigger   │──→notify channel   │
+│  │             │    │           │                   │
+│  └──────────────┘    └────────────┘                   │
+│                              │                        │
+│                              ↓                        │
+│                    ┌────────────────┐               │
+│                    │ LISTEN channel │──→ 任務池 Worker│
+│                    └────────────────┘               │
+│                                                      │
+│  SQL 示例：                                          │
+│                                                      │
+│  -- 新增任務（觸發 notify）                          │
+│  INSERT INTO tasks (payload) VALUES (...)           │
+│    RETURNING id;                                     │
+│                                                      │
+│  -- Worker 端                                        │
+│  LISTEN task_channel;                                │
+│  WHILE TRUE:                                         │
+│    WAITNOTIFY task_channel;                          │
+│    取出待處理任務 ──→ 執行 ──→ 更新狀態             │
+└──────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<!-- 8. 總結 -->
+<div class="summary-box">
+<strong>📋 標準異步架構核心原則：</strong><br><br>
+1. <strong>任務即創建即返回</strong> — 不等執行，馬上拿 task_id<br>
+2. <strong>步驟解耦</strong> — 每個步驟獨立，不連鎖失敗<br>
+3. <strong>管理/執行分離</strong> — 管理池只負責追蹤，任務池負責執行<br>
+4. <strong>Retry 獨立</strong> — 失敗任務進重試池，不耗費正常任務資源<br>
+5. <strong>消息佇列</strong> — 任務的暫存和路由，確保可靠傳遞<br><br>
+
+<strong>選擇建議：</strong><br>
+- 簡單需求：Postgres notify/listen 有時就夠用<br>
+- 中小型：Redis Queue 或 RabbitMQ<br>
+- 大規模高吞吐：Apache Kafka<br>
+- 機器人控制：ROS Action
+</div>
+
+</div>
+</body>
+</html>

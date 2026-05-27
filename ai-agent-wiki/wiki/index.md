@@ -13,6 +13,7 @@
 | `prompt-engineering` | 提示詞工程的最佳實踐 | engineering |
 | `harness-engineering` | AI Agent 的四大工程支柱 | engineering |
 | `vibe-coding` | 用「感覺」驅動的 AI 輔助開發方式 | methodology |
+| `context-window-management` | LLM Context 管理機制總整理（Sliding Window, Compression, Dependency Graph） | engineering |
 
 ---
 
@@ -49,6 +50,7 @@
 > 詳細記錄在 `/wiki/log.md`
 
 - **2026-05-07** — 建立初始 wiki 結構，納入 Karpathy LLM Wiki gist
+- **2026-05-26** — 新增 ContextWeaver source 条目（Agent 上下文處理 / Long-term Memory）
 
 ---
 

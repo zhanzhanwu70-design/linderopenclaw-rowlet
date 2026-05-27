@@ -3,7 +3,7 @@ title: "Raw Sources List"
 category: reference
 tags: [sources, references]
 created: 2026-05-07
-modified: 2026-05-07
+modified: 2026-05-26
 sources: []
 ---
 
@@ -58,3 +58,9 @@ sources: []
 ---
 
 _tags: [sources, references]_
+
+## Context & Memory 管理來源
+
+| 來源 | 描述 | 納入日期 |
+|------|------|----------|
+| [ContextWeaver (Wu et al., 2026)](wiki/sources/contextweaver-wu-2026.md) | Agent Context 管理：Dependency Graph + Validation Layer，針對 Tool-use 多步推理任務 | 2026-05-26 |
