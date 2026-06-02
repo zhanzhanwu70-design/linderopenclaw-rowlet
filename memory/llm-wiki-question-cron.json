@@ -1,0 +1,16 @@
+{
+  "questions": [
+    {
+      "ts": 1780385560,
+      "source": "wiki/sources/ai-dark-output-productivity-paradox.md",
+      "question": "AI 暗產出裡，「替代型暗產出」和「新增型暗產出」最大的差別是什麼？",
+      "mode": "manual"
+    },
+    {
+      "ts": 1780387004,
+      "source": "wiki/sources/fde-ai-enterprise-deployment.md",
+      "question": "FDE 到企業現場時，為什麼不是先寫 code，而是先做審計與診斷？",
+      "mode": "manual"
+    }
+  ]
+}

@@ -1,87 +1,57 @@
-# 架構師每日情報 2026-05-31
+# 架構師每日情報 2026-06-01
 
 ## 本日重點發現
 
-1. **Skill 從「手寫提示」走向「可演化的上下文資產」**：Agent Skills for Context Engineering 把 skills 定位為跨平台的 context / harness engineering 單元，重點是啟動時只載入名稱與描述、需要時再載入完整內容，降低注意力浪費。
-2. **Harness engineering 正在分層：runtime configuration 與 team architecture 開始分家**：revfactory/harness 將自身定義為 L3 Team-Architecture Factory，負責產生 agent team、skills、通訊協議與 review gates；而 Archon 類工具更偏 runtime determinism。這個分工值得吸收。
-3. **企業級 multi-agent architecture 重心轉向 formal governance**：〈Architecting Agentic Communities using Design Patterns〉把系統分成 LLM Agent、Agentic AI、Agentic Community 三層，並用 ODP Enterprise Language 表達角色、義務、權限、禁止與責任鏈。
-4. **Production agent lifecycle 逐漸收斂成 Build → Test → Deploy → Monitor**：LangChain 最新文章明確區分 agent frameworks、agent runtimes、agent harnesses，並把 durable execution、human-in-the-loop、sandbox、context hub、traces 視為生產級必備能力。
-5. **Skill artifact optimization 的研究焦點從「檢索 skill」推進到「內化 skill」**：SkillC 透過 paired skill-injected / skill-free rollouts 與 contrastive credit assignment，讓 RL 直接獎勵「不用外部 skill 也能成功」；這比單純優化 skill prompt 更接近能力蒸餾。
+1. **Skill optimization 正式變成「訓練外部文字狀態」問題**：SkillOpt 把 skill document 當成 frozen agent 的外部可訓練狀態，用 rollout、bounded edit、held-out validation gate、rejected-edit buffer 進行穩定優化。這比單純 prompt tuning 更接近可審計、可遷移的 domain adaptation。
+2. **Skill lifecycle 從生成走向治理：creation / memory / management / evaluation / refinement**：MUSE-Autoskill 把 skill 視為長期資產，加入 skill-level memory、unit tests、runtime feedback 與 cross-agent transfer。這是 OpenClaw skill 系統下一階段最值得吸收的方向。
+3. **Skill internalization RL 開始處理「依賴 skill」與「真正學會」的差異**：SkillC 用 skill-injected / skill-free paired rollouts 做 contrastive credit assignment，避免模型只在外部 skill 存在時表現好。
+4. **Harness engineering 的邊界愈來愈清楚：模型之外的 scaffolding 才是可靠 agent 的核心**：OpenHarness 與 awesome-harness-engineering 都把 tool-use、skills、memory、permissions、subagent delegation、cost tracking、hooks、observability 視為 agent harness 基礎層。
+5. **Agent 論文追蹤重點轉向 eval / trace / safety / orchestration 資料結構**：VoltAgent 的 2026 agent papers collection 顯示，browser agents、trajectory anomaly detection、claim-level evaluation、agentic uncertainty 等題目快速增加；可 replay 的 trajectory trace 會成為後續訓練與治理燃料。
 
 ## 詳細內容
 
-### 1. Agent Skills for Context Engineering
+### 1. SkillOpt：Executive Strategy for Self-Evolving Agent Skills
 
-- 連結：https://github.com/muratcankoylan/agent-skills-for-context-engineering
-- 類型：GitHub skill collection / context engineering reference
-- 摘要：此 repo 將 context engineering 定義為管理所有進入模型注意力預算的資訊：system prompts、tool definitions、retrieved documents、message history、tool outputs。它提供 context fundamentals、context degradation、context compression、multi-agent patterns、memory systems、tool design、filesystem context、evaluation、harness engineering 等技能。
-- 架構價值：
-  - skills 應採 **progressive disclosure**：先暴露 metadata，只有任務匹配時載入 SKILL.md。
-  - context budget 的核心瓶頸不是 token 上限，而是 attention scarcity、lost-in-the-middle、context clash。
-  - filesystem-context / hosted-agents / evaluation / harness-engineering 可組成一套長任務 agent operating system。
-- 對本地設計啟示：OpenClaw skills 可以明確拆成「觸發 metadata」「操作流程」「參考資料」「測試／評估」，避免每次啟動灌入過多低訊號文字。
+- 連結：https://arxiv.org/abs/2605.23904
+- 類型：arXiv paper（2026-05-22 v1；2026-05-25 v2）
+- 摘要：SkillOpt 將 skill 文件視為 frozen agent 的外部狀態，由 optimizer model 根據 scored rollouts 提出 bounded add/delete/replace edits；只有在 held-out validation score 嚴格提升時才接受更新。它還使用 textual learning-rate budget、rejected-edit buffer、epoch-wise slow/meta update 來穩定訓練。
+- 重要數據：論文聲稱在 6 個 benchmark、7 個 target models、3 種 execution harness（direct chat、Codex、Claude Code）共 52 個 cell 中全部 best 或 tied-best；GPT-5.5 direct chat 平均 no-skill accuracy 提升 +23.5 points，Codex loop +24.8，Claude Code loop +19.1。
+- 架構價值：skill 不只是 prompt，而是可版本化、可驗證、可移植的 domain adaptation artifact。對 OpenClaw 來說，skill repo 應加入 eval split、rollback、accepted/rejected edit log。
 
-### 2. revfactory/harness：team-architecture factory
+### 2. MUSE-Autoskill：Self-Evolving Agents via Skill Creation, Memory, Management, and Evaluation
 
-- 連結：https://github.com/revfactory/harness
-- 類型：Claude Code plugin / meta-skill / harness factory
-- 摘要：Harness 根據 domain description 自動產生 agent team definitions 與 skills，支援六種 team architecture：Pipeline、Fan-out/Fan-in、Expert Pool、Producer-Reviewer、Supervisor、Hierarchical Delegation。
-- 重要細節：
-  - 它自稱位於 L3 Meta-Factory / Team-Architecture Factory。
-  - 明確區分與 Archon 的分工：Archon 偏 deterministic runtime configuration；Harness 偏 team architecture、message protocols、review gates。
-  - 內建 validation：trigger verification、dry-run testing、with-skill vs without-skill comparison。
-- 對本地設計啟示：不要把「子代理生成」「runtime 設定」「workflow orchestration」混在同一層。較佳切法：
-  1. runtime/config factory；
-  2. team architecture factory；
-  3. skill artifact factory；
-  4. eval / trace / rollback layer。
+- 連結：https://arxiv.org/abs/2605.27366
+- 類型：arXiv paper（2026-05-26）
+- 摘要：MUSE-Autoskill 將 skill 系統拆成 creation、memory、management、evaluation、refinement 五階段。它在 agent runtime loop 內建立 skill_create tool，加入 short-term / long-term / skill-level memory，並以 unit tests 與 runtime feedback 觸發 refinement。
+- 重要數據：SkillsBench 上，MUSE-Autoskill with-skills overall 68.40%，比 no-skills baseline +15.21 pp；自生成 skills 在成功生成的 35 個 tasks 上達 87.94%；注入另一個 agent（Hermes）後提升 +10.51 pp。
+- 架構價值：最關鍵不是「自動寫 skill」，而是每個 skill 有自己的經驗記憶、測試、失敗回饋與跨代理轉移能力。這能解決目前 skill 靜態化、無驗證、無生命週期的問題。
 
-### 3. Architecting Agentic Communities using Design Patterns
+### 3. SkillC：Learning Autonomous Skill Internalization in LLM Agents via Contrastive Credit Assignment
 
-- 連結：https://arxiv.org/html/2601.03624v3
-- 類型：arXiv paper
-- 摘要：論文提出三層分類：LLM Agents（任務型自動化）、Agentic AI（有 agency 的目標導向系統）、Agentic Communities（AI agents 與 humans 透過正式角色、協議、治理結構協作）。核心貢獻是用 ISO ODP Enterprise Language formalism 表達 multi-agent community 的 roles、normative constraints、contracts、accountability chains。
-- 重要概念：
-  - Autonomy ≠ Agency。LLM Agent 可自主執行任務，但未必有獨立目標形成與策略調整。
-  - Agentic Community 必須有 traceability from actions to responsible parties。
-  - Deontic governance：義務、權限、禁止可以形成可機器檢查的治理規格。
-- 對本地設計啟示：multi-agent orchestration 不能只記「誰呼叫誰」。應記錄 delegation authority、approval boundary、responsibility chain、policy violation detection。
+- 連結：https://arxiv.org/abs/2605.27899
+- 類型：arXiv paper（2026-05-27）
+- 摘要：SkillC 針對 skill-internalization RL。它在同一次 policy update 中採樣 skill-injected 與 skill-free paired rollouts，用 Contrastive Skill Credit Assignment 將「有 skill 才成功」與「無 skill 也成功」分開計分，並用 dual-stream advantage estimator 引導模型往 skill-free success 靠近。
+- 重要數據：在 ALFWorld 與 WebShop，不使用 runtime skill access 時分別超過 prior skill-internalization baseline 5.5% 與 4.4%。
+- 架構價值：如果 OpenClaw 未來做 skill 強化，不應只量測 with-skill success。必須保留撤除測試：with-skill、without-skill、degraded-skill 三組對照，否則會訓練出依賴外掛的假能力。
 
-### 4. LangChain：The Agent Development Lifecycle
+### 4. OpenHarness：open agent harness with built-in personal agent ohmo
 
-- 連結：https://www.langchain.com/blog/the-agent-development-lifecycle
-- 類型：技術文章 / production lifecycle
-- 摘要：文章把 agent 生產流程歸納為 Build → Test → Deploy → Monitor。它區分三層工具：agent frameworks（組合模型、tools、prompts、retrieval）、agent runtimes（state、control flow、durability、human intervention）、agent harnesses（prompts、skills、MCP servers、hooks、middleware、filesystem）。
-- 重要細節：
-  - Test 應從代表性任務資料集開始，再由 production traces 擴充。
-  - Deploy 需要 durable execution、human-in-the-loop、sandbox / virtual filesystem、prompt/context hub。
-  - Monitor 不只看 latency/cost/error，也要看 full trajectory traces：inputs、model calls、tool calls、outputs、final action。
-- 對本地設計啟示：OpenClaw / local agents 應把 trace 變成 eval dataset 的原料，讓 cron、skills、subagents 的失敗樣本回流到測試集。
+- 連結：https://github.com/HKUDS/OpenHarness
+- 類型：GitHub repository / agent harness
+- 摘要：OpenHarness 宣稱提供 lightweight agent infrastructure：tool-use、skills、memory、multi-agent coordination。README 將 agent harness 定義為讓 LLM 變成 functional agent 的完整外部基礎設施，包含 streaming tool-call cycle、API retry、parallel tool execution、token/cost tracking、43 tools、on-demand skill loading、plugin ecosystem、context compression、persistent memory、permission rules、hooks、approval dialogs、subagent spawning、team registry 與 background task lifecycle。
+- 架構價值：OpenHarness 把 OpenClaw 類系統的元件名稱化：engine、toolkit、persistent context、permissions、multi-agent。這證明 harness 層已經形成共同語彙；後續比較框架時應按這些 capability matrix 評估，而不是只看 model 或 chat UI。
 
-### 5. SkillC：Learning Autonomous Skill Internalization in LLM Agents via Contrastive Credit Assignment
+### 5. awesome-harness-engineering / VoltAgent agent papers：情報索引本身變成架構資產
 
-- 連結：https://arxiv.org/html/2605.27899v1
-- 類型：arXiv paper
-- 摘要：SkillC 針對 skill-internalization RL。既有方法會逐步撤除 skills，但 policy update 無法分辨成功是依賴 skill 還是已經內化。SkillC 透過 paired skill-injected / skill-free rollouts，在同一 policy update 中估計 task-level contrastive gap，並用 dual-stream advantage estimator 把 credit 轉向 skill-free success。
-- 數據：在 ALFWorld 與 WebShop 中，不使用 runtime skill access 的情況下，分別超過最強 prior skill-internalization baseline 5.5% 與 4.4%。
-- 重要限制：效果依賴 contrastive signal quality；天花板任務或弱訊號任務可能退步。
-- 對本地設計啟示：若要用 RL 或自動評估優化 skills，不應只評估「帶 skill 成功率」。應同步評估 without-skill performance，否則會製造 skill dependency，而不是真正提升 agent 能力。
-
-### 6. RL for LLM-based Multi-Agent Systems through Orchestration Traces
-
-- 連結：https://arxiv.org/abs/2605.02801
-- 類型：arXiv paper
-- 摘要：此文將 multi-agent RL 的學習對象定義為 orchestration traces：包含 sub-agent spawning、delegation、communication、tool use、return、aggregation、stopping decisions 的 temporal interaction graphs。
-- 重要發現：
-  - reward design 至少有八類，包括 parallelism speedup、split correctness、aggregation quality。
-  - credit signal 可附著在 token 到 team 的八種單位上。
-  - orchestration learning 可拆成五個決策：when to spawn、whom to delegate、how to communicate、how to aggregate、when to stop。
-  - 截至 2026-05-04，作者在 curated pool 中未找到 explicit RL training method for stopping decision。
-- 對本地設計啟示：subagent 系統的 trace schema 應先標準化。沒有 replayable orchestration traces，就無法做可靠的 RL / offline evaluation / failure attribution。
+- 連結：https://github.com/ai-boost/awesome-harness-engineering
+- 連結：https://github.com/VoltAgent/awesome-ai-agent-papers
+- 類型：curated repository / research index
+- 摘要：awesome-harness-engineering 將 harness engineering 定義為 context delivery、tool interfaces、planning artifacts、verification loops、memory systems、sandboxes 等 scaffolding 的設計 discipline，並按 foundations、agent loop、planning、context compaction、tools、skills & MCP、permissions、memory、orchestration、verification、observability、human-in-the-loop 分類。VoltAgent 的 2026 agent papers collection 則聚合 agent engineering、memory、evaluation、workflows、autonomous systems 等研究。
+- 架構價值：這類 curated index 不只是閱讀清單，而是 taxonomy。可用來反推本地 agent stack 的缺口：是否有 permissions layer、eval harness、trace observability、memory lifecycle、skill governance、task runner、human approval boundary。
 
 ## 執行狀態
 
-- 任務完成時間：2026-05-31 18:02:19 UTC
-- 消耗 token：OpenClaw session_status 未提供本次精確 token；狀態顯示 context 0/1.0m，5h quota 剩餘 81%。
-- 搜尋／擷取狀態：已使用 web_search 與 web_fetch；本環境未偵測到 `graphifyy` / `graphify` CLI，因此以可用搜尋工具替代。
-- Wiki 同步：已準備同步至 `/home/node/.openclaw/workspace-rowlet/wiki/sources/architecture-daily-intel-2026-05-31.md`。
+- 任務完成時間：2026-06-01T18:03:00Z
+- 消耗 token：OpenClaw `session_status` 未提供本次精確 token；狀態顯示 context 0/1.0m，5h quota 剩餘 88%。
+- 搜尋／擷取狀態：已使用 web_search 與 web_fetch 擷取 arXiv、GitHub 內容；本環境未偵測到 `graphifyy` / `graphify` CLI，因此以 web_search + web_fetch + 既有 Graphify 報告輔助。
+- Wiki 同步：已同步至 `/home/node/.openclaw/workspace-rowlet/wiki/sources/architecture-daily-intel-2026-06-01.md`。
