@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06111f"/>
+      <stop offset="0.55" stop-color="#081827"/>
+      <stop offset="1" stop-color="#030712"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#18d4ff"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .title{font-family:DejaVu Sans,Arial,sans-serif;font-size:46px;font-weight:800;fill:#f8fafc;letter-spacing:.5px}
+      .subtitle{font-family:DejaVu Sans,Arial,sans-serif;font-size:22px;fill:#94a3b8}
+      .coreText{font-family:DejaVu Sans,Arial,sans-serif;font-size:30px;font-weight:800;fill:#ffffff;text-anchor:middle}
+      .coreSub{font-family:DejaVu Sans,Arial,sans-serif;font-size:17px;fill:#dbeafe;text-anchor:middle}
+      .num{font-family:DejaVu Sans,Arial,sans-serif;font-size:18px;font-weight:800;fill:#020617;text-anchor:middle}
+      .label{font-family:DejaVu Sans,Arial,sans-serif;font-size:21px;font-weight:800;fill:#e5f4ff}
+      .desc{font-family:DejaVu Sans,Arial,sans-serif;font-size:15px;fill:#b6c6d8}
+      .card{fill:#0b1b2e;stroke:#1e7497;stroke-width:1.6;rx:18;filter:url(#soft)}
+      .small{font-family:DejaVu Sans,Arial,sans-serif;font-size:16px;fill:#8fb7ca}
+      .footer{font-family:DejaVu Sans,Arial,sans-serif;font-size:20px;font-weight:700;fill:#67e8f9;text-anchor:middle}
+    </style>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="1536" height="1024" fill="url(#bg)"/>
+  <circle cx="190" cy="110" r="170" fill="#0e7490" opacity="0.12" filter="url(#glow)"/>
+  <circle cx="1320" cy="880" r="230" fill="#7c3aed" opacity="0.10" filter="url(#glow)"/>
+  <text x="72" y="78" class="title">Agent Harness: 12 Production Modules</text>
+  <text x="72" y="114" class="subtitle">The OS layer that turns a bare LLM into a reliable, tool-using, recoverable agent.</text>
+
+  <rect x="558" y="196" width="420" height="230" rx="34" fill="#061526" stroke="url(#core)" stroke-width="3" filter="url(#glow)"/>
+  <text x="768" y="275" class="coreText">AGENT HARNESS</text>
+  <text x="768" y="314" class="coreSub">orchestrates model + tools + memory</text>
+  <text x="768" y="343" class="coreSub">adds safety, state, feedback, recovery</text>
+  <text x="768" y="382" class="footer">Model intelligence is not enough; runtime architecture makes it production-grade.</text>
+
+  <!-- cards -->
+  <g transform="translate(64,170)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#22d3ee"/><text x="32" y="39" class="num">1</text>
+    <text x="62" y="33" class="label">Orchestration Loop</text>
+    <text x="62" y="58" class="desc">ReAct / TAO heartbeat: think, act, observe, repeat.</text>
+  </g>
+  <g transform="translate(64,294)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#22d3ee"/><text x="32" y="39" class="num">2</text>
+    <text x="62" y="33" class="label">Tools</text>
+    <text x="62" y="58" class="desc">Schemas, validation, sandbox execution, results.</text>
+  </g>
+  <g transform="translate(64,418)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#22d3ee"/><text x="32" y="39" class="num">3</text>
+    <text x="62" y="33" class="label">Memory</text>
+    <text x="62" y="58" class="desc">Short-term history + long-term persistent knowledge.</text>
+  </g>
+  <g transform="translate(64,542)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#22d3ee"/><text x="32" y="39" class="num">4</text>
+    <text x="62" y="33" class="label">Context Management</text>
+    <text x="62" y="58" class="desc">Compaction, masking, retrieval, delegation.</text>
+  </g>
+  <g transform="translate(64,666)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#22d3ee"/><text x="32" y="39" class="num">5</text>
+    <text x="62" y="33" class="label">Prompt Assembly</text>
+    <text x="62" y="58" class="desc">Priority stack: system, tools, memory, history, user.</text>
+  </g>
+  <g transform="translate(64,790)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#22d3ee"/><text x="32" y="39" class="num">6</text>
+    <text x="62" y="33" class="label">Structured Tool Calls</text>
+    <text x="62" y="58" class="desc">JSON / schema output instead of brittle free text.</text>
+  </g>
+
+  <g transform="translate(1147,170)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#a78bfa"/><text x="32" y="39" class="num">7</text>
+    <text x="62" y="33" class="label">State &amp; Checkpoints</text>
+    <text x="62" y="58" class="desc">Resume, rewind, debug long-running tasks.</text>
+  </g>
+  <g transform="translate(1147,294)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#a78bfa"/><text x="32" y="39" class="num">8</text>
+    <text x="62" y="33" class="label">Error Handling</text>
+    <text x="62" y="58" class="desc">Retry, return error to model, ask human, fail safe.</text>
+  </g>
+  <g transform="translate(1147,418)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#a78bfa"/><text x="32" y="39" class="num">9</text>
+    <text x="62" y="33" class="label">Guardrails</text>
+    <text x="62" y="58" class="desc">Input, output, and tool permission safety gates.</text>
+  </g>
+  <g transform="translate(1147,542)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#a78bfa"/><text x="32" y="39" class="num">10</text>
+    <text x="62" y="33" class="label">Verification &amp; Feedback</text>
+    <text x="62" y="58" class="desc">Tests, lint, screenshots, model judges, evidence.</text>
+  </g>
+  <g transform="translate(1147,666)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#a78bfa"/><text x="32" y="39" class="num">11</text>
+    <text x="62" y="33" class="label">Subagent Orchestration</text>
+    <text x="62" y="58" class="desc">Delegate specialist work; merge compact results.</text>
+  </g>
+  <g transform="translate(1147,790)">
+    <rect class="card" width="325" height="102"/>
+    <circle cx="32" cy="32" r="18" fill="#a78bfa"/><text x="32" y="39" class="num">12</text>
+    <text x="62" y="33" class="label">Initialization &amp; Env</text>
+    <text x="62" y="58" class="desc">Startup config, lifecycle, budgets, termination rules.</text>
+  </g>
+
+  <!-- connector lines -->
+  <g stroke="#1e7497" stroke-width="2" opacity="0.55" fill="none">
+    <path d="M389 221 C470 230, 520 245, 558 280"/>
+    <path d="M389 345 C470 345, 515 335, 558 320"/>
+    <path d="M389 469 C480 455, 518 405, 558 365"/>
+    <path d="M389 593 C495 560, 515 430, 558 390"/>
+    <path d="M389 717 C500 640, 520 430, 558 400"/>
+    <path d="M389 841 C505 710, 530 430, 558 412"/>
+    <path d="M1147 221 C1060 230, 1015 245, 978 280"/>
+    <path d="M1147 345 C1060 345, 1015 335, 978 320"/>
+    <path d="M1147 469 C1050 455, 1015 405, 978 365"/>
+    <path d="M1147 593 C1040 560, 1015 430, 978 390"/>
+    <path d="M1147 717 C1030 640, 1010 430, 978 400"/>
+    <path d="M1147 841 C1025 710, 1005 430, 978 412"/>
+  </g>
+
+  <text x="768" y="960" class="small" text-anchor="middle">Rule of thumb: demo agents need prompts; production agents need harness modules and evidence loops.</text>
+</svg>

@@ -11,6 +11,78 @@
       "source": "wiki/sources/fde-ai-enterprise-deployment.md",
       "question": "FDE 到企業現場時，為什麼不是先寫 code，而是先做審計與診斷？",
       "mode": "manual"
+    },
+    {
+      "ts": 1780387406,
+      "source": "wiki/sources/jetpack-version-platform-ros-matrix.md",
+      "question": "為什麼 ELLE_WS / ROS2 Humble / Orin AMR 會優先建議 JetPack 6.2.2，而不是 JetPack 7？",
+      "mode": "manual"
+    },
+    {
+      "ts": 1780387837,
+      "source": "wiki/sources/google-pichai-ai-organization-agent-search-agi.md",
+      "question": "Pichai 為什麼認為 Google 需要把 Google Brain 和 DeepMind 合併成一個核心模型團隊？",
+      "mode": "manual"
+    },
+    {
+      "ts": 1780394580,
+      "source": "wiki/concepts/預測心智 (The Predictive Mind).md",
+      "question": "在預測心智裡，注意力為什麼可以被理解成「精度權重」的調節？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1780405380,
+      "source": "wiki/sources/longllmlingua-prompt-compression.md",
+      "question": "LongLLMLingua 為什麼要用 question-aware 的 coarse-to-fine compression，而不是只做一般的 token 壓縮？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1780416253,
+      "source": "wiki/sources/A Survey of Frontiers in LLM Reasoning／ Inference Scaling, Learning to Reason, and Agentic Systems.md",
+      "question": "在 LLM Reasoning Frontiers 這篇 survey 裡，reasoner / verifier / refiner 三元件各自負責什麼？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1780426980,
+      "source": "wiki/sources/Two Tales of Persona in LLMs.md",
+      "question": "《Two Tales of Persona in LLMs》為什麼要把 role-playing 和 personalization 分開，而不是都叫 persona？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1780437867,
+      "source": "wiki/sources/Domain Specialization as the Key to Make Large Language Models Disruptive.md",
+      "question": "為什麼《Domain Specialization》說 domain specialization 不能只理解成 fine-tuning？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1780448760,
+      "source": "wiki/sources/self-rag-self-reflective-retrieval.md",
+      "question": "Self-RAG 為什麼把 retrieval 設計成「按需動作」，而不是每次固定塞入 top-k passages？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1779547439,
+      "source": "wiki/concepts/魅力型權威.md",
+      "question": "魅力型權威最大的弱點是什麼？支撐它的秩序一旦瓦解會發生什麼？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1749055560,
+      "source": "wiki/concepts/Multi-token Prediction (MTP).md",
+      "question": "MTP 的平行 output heads（Gloeckle）和順序 modules（DeepSeek-V3）兩種實作方式，主要的設計差異是什麼？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751686980,
+      "source": "wiki/concepts/async-architecture.md",
+      "question": "異步架構裡，「管理池」和「任務池」各自負責什麼，跟同步串聯有什麼關鍵差異？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751757160,
+      "source": "wiki/sources/memgpt-towards-llms-as-operating-systems.md",
+      "question": "MemGPT 把 recall storage 和 archival storage 分開，各自負責什麼類型的資料？",
+      "mode": "cron"
     }
   ]
 }
