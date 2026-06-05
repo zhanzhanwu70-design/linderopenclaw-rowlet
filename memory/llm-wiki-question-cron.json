@@ -1,6 +1,12 @@
 {
   "questions": [
     {
+      "ts": 1751729160,
+      "source": "wiki/concepts/bumblebee.md",
+      "question": "Bumblebee 和 SBOM / EDR 三者各自回答什麼問題？",
+      "mode": "cron"
+    },
+    {
       "ts": 1780385560,
       "source": "wiki/sources/ai-dark-output-productivity-paradox.md",
       "question": "AI 暗產出裡，「替代型暗產出」和「新增型暗產出」最大的差別是什麼？",
@@ -57,7 +63,7 @@
     {
       "ts": 1780448760,
       "source": "wiki/sources/self-rag-self-reflective-retrieval.md",
-      "question": "Self-RAG 為什麼把 retrieval 設計成「按需動作」，而不是每次固定塞入 top-k passages？",
+      "question": "Self-RAG 為什麼把 retrieval 設計成「按需求動」，而不是每次固定塞入 top-k passages？",
       "mode": "cron"
     },
     {
@@ -82,6 +88,66 @@
       "ts": 1751757160,
       "source": "wiki/sources/memgpt-towards-llms-as-operating-systems.md",
       "question": "MemGPT 把 recall storage 和 archival storage 分開，各自負責什麼類型的資料？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751837160,
+      "source": "wiki/sources/杜月笙的代價.md",
+      "question": "羅輯思維說杜月笙的故事不是「黑幫成功學」，而是一個社會流動的代價故事——節目怎麼論證這個框架？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751828820,
+      "source": "wiki/concepts/從身份到契約.md",
+      "question": "「從身份到契約」這個轉變，具體來說是什麼關係被什麼關係取代？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751829000,
+      "source": "wiki/concepts/context-control-plane.md",
+      "question": "Context Control Plane 把哪些本來分散的元件視為同一個可治理的架構層？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1779548160,
+      "source": "wiki/concepts/llm-dna.md",
+      "question": "LLM DNA 的 bi-Lipschitz 條件在說什麼？為什麼需要這個雙向約束？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751829000,
+      "source": "wiki/concepts/王朝崩潰.md",
+      "question": "王朝崩潰通常不只是單一原因——那具體是哪些維度同時失去「承重能力」才會導致整個秩序垮掉？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751829000,
+      "source": "wiki/sources/编排税-动态工作流的真相.md",
+      "question": "「編排稅」影片說：人類在 AI 工作流裡相當於 Python 的 GIL——這是什麼意思？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751829000,
+      "source": "wiki/concepts/oh-my-openagent.md",
+      "question": "Oh My OpenAgent 的 Team Mode 裡，mailbox message 是同步還是異步的？這對成員協作有什麼影響？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751829160,
+      "source": "wiki/sources/mem0-scalable-long-term-memory.md",
+      "question": "Mem0 說自己的記憶是「跨對話」的——它跟對話內的 context window 最大的不同是什麼？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751829340,
+      "source": "wiki/sources/anthropic-frontend-design-skill.md",
+      "question": "Anthropic 的前端 design skill 為什麼要把 CSS token 分成四層而不是直接寫死顏色？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1751917020,
+      "source": "wiki/sources/jacar-sino-japanese-war-1894-1895.md",
+      "question": "威海衛之戰（1895年2月）為什麼不是單純的海戰，而是「陸海夾攻」？日本第二軍做了什麼讓北洋艦隊陷入無處可退的境地？",
       "mode": "cron"
     }
   ]
