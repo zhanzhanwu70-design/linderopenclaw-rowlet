@@ -1,208 +1,46 @@
 {
   "questions": [
-    {
-      "ts": 1751729160,
-      "source": "wiki/concepts/bumblebee.md",
-      "question": "Bumblebee 和 SBOM / EDR 三者各自回答什麼問題？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1780385560,
-      "source": "wiki/sources/ai-dark-output-productivity-paradox.md",
-      "question": "AI 暗產出裡，「替代型暗產出」和「新增型暗產出」最大的差別是什麼？",
-      "mode": "manual"
-    },
-    {
-      "ts": 1780387004,
-      "source": "wiki/sources/fde-ai-enterprise-deployment.md",
-      "question": "FDE 到企業現場時，為什麼不是先寫 code，而是先做審計與診斷？",
-      "mode": "manual"
-    },
-    {
-      "ts": 1780387406,
-      "source": "wiki/sources/jetpack-version-platform-ros-matrix.md",
-      "question": "為什麼 ELLE_WS / ROS2 Humble / Orin AMR 會優先建議 JetPack 6.2.2，而不是 JetPack 7？",
-      "mode": "manual"
-    },
-    {
-      "ts": 1780387837,
-      "source": "wiki/sources/google-pichai-ai-organization-agent-search-agi.md",
-      "question": "Pichai 為什麼認為 Google 需要把 Google Brain 和 DeepMind 合併成一個核心模型團隊？",
-      "mode": "manual"
-    },
-    {
-      "ts": 1780394580,
-      "source": "wiki/concepts/預測心智 (The Predictive Mind).md",
-      "question": "在預測心智裡，注意力為什麼可以被理解成「精度權重」的調節？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1780405380,
-      "source": "wiki/sources/longllmlingua-prompt-compression.md",
-      "question": "LongLLMLingua 為什麼要用 question-aware 的 coarse-to-fine compression，而不是只做一般的 token 壓縮？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1780416253,
-      "source": "wiki/sources/A Survey of Frontiers in LLM Reasoning／ Inference Scaling, Learning to Reason, and Agentic Systems.md",
-      "question": "在 LLM Reasoning Frontiers 這篇 survey 裡，reasoner / verifier / refiner 三元件各自負責什麼？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1780426980,
-      "source": "wiki/sources/Two Tales of Persona in LLMs.md",
-      "question": "《Two Tales of Persona in LLMs》為什麼要把 role-playing 和 personalization 分開，而不是都叫 persona？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1780437867,
-      "source": "wiki/sources/Domain Specialization as the Key to Make Large Language Models Disruptive.md",
-      "question": "為什麼《Domain Specialization》說 domain specialization 不能只理解成 fine-tuning？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1780448760,
-      "source": "wiki/sources/self-rag-self-reflective-retrieval.md",
-      "question": "Self-RAG 為什麼把 retrieval 設計成「按需求動」，而不是每次固定塞入 top-k passages？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1779547439,
-      "source": "wiki/concepts/魅力型權威.md",
-      "question": "魅力型權威最大的弱點是什麼？支撐它的秩序一旦瓦解會發生什麼？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1749055560,
-      "source": "wiki/concepts/Multi-token Prediction (MTP).md",
-      "question": "MTP 的平行 output heads（Gloeckle）和順序 modules（DeepSeek-V3）兩種實作方式，主要的設計差異是什麼？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751686980,
-      "source": "wiki/concepts/async-architecture.md",
-      "question": "異步架構裡，「管理池」和「任務池」各自負責什麼，跟同步串聯有什麼關鍵差異？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751757160,
-      "source": "wiki/sources/memgpt-towards-llms-as-operating-systems.md",
-      "question": "MemGPT 把 recall storage 和 archival storage 分開，各自負責什麼類型的資料？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751837160,
-      "source": "wiki/sources/杜月笙的代價.md",
-      "question": "羅輯思維說杜月笙的故事不是「黑幫成功學」，而是一個社會流動的代價故事——節目怎麼論證這個框架？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751828820,
-      "source": "wiki/concepts/從身份到契約.md",
-      "question": "「從身份到契約」這個轉變，具體來說是什麼關係被什麼關係取代？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751829000,
-      "source": "wiki/concepts/context-control-plane.md",
-      "question": "Context Control Plane 把哪些本來分散的元件視為同一個可治理的架構層？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1779548160,
-      "source": "wiki/concepts/llm-dna.md",
-      "question": "LLM DNA 的 bi-Lipschitz 條件在說什麼？為什麼需要這個雙向約束？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751829000,
-      "source": "wiki/concepts/王朝崩潰.md",
-      "question": "王朝崩潰通常不只是單一原因——那具體是哪些維度同時失去「承重能力」才會導致整個秩序垮掉？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751829000,
-      "source": "wiki/sources/编排税-动态工作流的真相.md",
-      "question": "「編排稅」影片說：人類在 AI 工作流裡相當於 Python 的 GIL——這是什麼意思？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751829000,
-      "source": "wiki/concepts/oh-my-openagent.md",
-      "question": "Oh My OpenAgent 的 Team Mode 裡，mailbox message 是同步還是異步的？這對成員協作有什麼影響？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751829160,
-      "source": "wiki/sources/mem0-scalable-long-term-memory.md",
-      "question": "Mem0 說自己的記憶是「跨對話」的——它跟對話內的 context window 最大的不同是什麼？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751829340,
-      "source": "wiki/sources/anthropic-frontend-design-skill.md",
-      "question": "Anthropic 的前端 design skill 為什麼要把 CSS token 分成四層而不是直接寫死顏色？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751917020,
-      "source": "wiki/sources/jacar-sino-japanese-war-1894-1895.md",
-      "question": "威海衛之戰（1895年2月）為什麼不是單純的海戰，而是「陸海夾攻」？日本第二軍做了什麼讓北洋艦隊陷入無處可退的境地？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1751917020,
-      "source": "wiki/sources/ai-native-startup.md",
-      "question": "Anthropic 的 AI-Native Startup 框架說，AI 原生創業的瓶頸從「能構建什麼」變成「選擇構建什麼」——為什麼執行力提升反而讓選擇變得更關鍵？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1780775220,
-      "source": "wiki/sources/agent-harness-production-architecture.md",
-      "question": "影片說「如果你不是模型，你就是 Harness」——這句話具體在說什麼？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1752009620,
-      "source": "wiki/topics/洋務運動.md",
-      "question": "洋務運動被形容為「擅長補破洞，卻不擅長重建底層邏輯」——具體來說，它能補哪些維度的破洞，又有哪些維度的問題是它體制性地補不了的？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1752037140,
-      "source": "wiki/sources/active-context-compression-autonomous-memory-management.md",
-      "question": "Focus 的 sawtooth context pattern 是什麼？探索階段和壓縮階段分別怎麼改變 agent 的 context？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1780790940,
-      "source": "wiki/concepts/spacetime-vs-space.md",
-      "question": "四維空間的度規 ds² = dx² + dy² + dz² + dw²（四個正號）和四維時空的度規 ds² = dx² + dy² + dz² − c²dt²（三正一負）——那一個負號為什麼不只是「差一個符號」，而是整個相對論的核心？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1752598140,
-      "source": "wiki/concepts/伊斯蘭例外論（Islamic Exceptionalism）.md",
-      "question": "伊斯蘭例外論說基督教的「出廠設定」是政教分離，伊斯蘭的「出廠設定」是政教合一——這兩個「出廠設定」的差異，如何讓伊斯蘭的世俗化比基督教更困難？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1759689540,
-      "source": "wiki/topics/甲午戰爭.md",
-      "question": "甲午戰爭的敘述裡，清朝「做出了一些近代化器物，卻還沒做出一個能把資源、士氣、訓練、指揮、後勤與財政整合成戰爭能力的現代國家」——這句話具體在說，洋務運動只補了哪些破洞，哪些是它體制性地補不了的？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1759835400,
-      "source": "wiki/concepts/想像的共同體.md",
-      "question": "「想像的共同體」說成員彼此未曾謀面，卻會想像自己屬於同一個政治整體——這個概念的核心洞見是什麼？",
-      "mode": "cron"
-    },
-    {
-      "ts": 1759824600,
-      "source": "wiki/sources/EvoMap 平台概覽.md",
-      "question": "EvoMap 裡的 Gene 和 Capsule 分別代表什麼？為什麼平台說它們是「可繼承的能力資產」？",
-      "mode": "cron"
-    }
+    {"ts": 1751729160, "source": "wiki/concepts/bumblebee.md", "question": "Bumblebee 和 SBOM / EDR 三者各自回答什麼問題？", "mode": "cron"},
+    {"ts": 1780385560, "source": "wiki/sources/ai-dark-output-productivity-paradox.md", "question": "AI 暗產出裡，「替代型暗產出」和「新增型暗產出」最大的差別是什麼？", "mode": "manual"},
+    {"ts": 1780387004, "source": "wiki/sources/fde-ai-enterprise-deployment.md", "question": "FDE 到企業現場時，為什麼不是先寫 code，而是先做審計與診斷？", "mode": "manual"},
+    {"ts": 1780387406, "source": "wiki/sources/jetpack-version-platform-ros-matrix.md", "question": "為什麼 ELLE_WS / ROS2 Humble / Orin AMR 會優先建議 JetPack 6.2.2，而不是 JetPack 7？", "mode": "manual"},
+    {"ts": 1780387837, "source": "wiki/sources/google-pichai-ai-organization-agent-search-agi.md", "question": "Pichai 為什麼認為 Google 需要把 Google Brain 和 DeepMind 合併成一個核心模型團隊？", "mode": "manual"},
+    {"ts": 1780394580, "source": "wiki/concepts/預測心智 (The Predictive Mind).md", "question": "在預測心智裡，注意力為什麼可以被理解成「精度權重」的調節？", "mode": "cron"},
+    {"ts": 1780405380, "source": "wiki/sources/longllmlingua-prompt-compression.md", "question": "LongLLMLingua 為什麼要用 question-aware 的 coarse-to-fine compression，而不是只做一般的 token 壓縮？", "mode": "cron"},
+    {"ts": 1780416253, "source": "wiki/sources/A Survey of Frontiers in LLM Reasoning／ Inference Scaling, Learning to Reason, and Agentic Systems.md", "question": "在 LLM Reasoning Frontiers 這篇 survey 裡，reasoner / verifier / refiner 三元件各自負責什麼？", "mode": "cron"},
+    {"ts": 1780426980, "source": "wiki/sources/Two Tales of Persona in LLMs.md", "question": "《Two Tales of Persona in LLMs》為什麼要把 role-playing 和 personalization 分開，而不是都叫 persona？", "mode": "cron"},
+    {"ts": 1780437867, "source": "wiki/sources/Domain Specialization as the Key to Make Large Language Models Disruptive.md", "question": "為什麼《Domain Specialization》說 domain specialization 不能只理解成 fine-tuning？", "mode": "cron"},
+    {"ts": 1780448760, "source": "wiki/sources/self-rag-self-reflective-retrieval.md", "question": "Self-RAG 為什麼把 retrieval 設計成「按需求動」，而不是每次固定塞入 top-k passages？", "mode": "cron"},
+    {"ts": 1779547439, "source": "wiki/concepts/魅力型權威.md", "question": "魅力型權威最大的弱點是什麼？支撐它的秩序一旦瓦解會發生什麼？", "mode": "cron"},
+    {"ts": 1749055560, "source": "wiki/concepts/Multi-token Prediction (MTP).md", "question": "MTP 的平行 output heads（Gloeckle）和順序 modules（DeepSeek-V3）兩種實作方式，主要的設計差異是什麼？", "mode": "cron"},
+    {"ts": 1751686980, "source": "wiki/concepts/async-architecture.md", "question": "異步架構裡，「管理池」和「任務池」各自負責什麼，跟同步串聯有什麼關鍵差異？", "mode": "cron"},
+    {"ts": 1751757160, "source": "wiki/sources/memgpt-towards-llms-as-operating-systems.md", "question": "MemGPT 把 recall storage 和 archival storage 分開，各自負責什麼類型的資料？", "mode": "cron"},
+    {"ts": 1751837160, "source": "wiki/sources/杜月笙的代價.md", "question": "羅輯思維說杜月笙的故事不是「黑幫成功學」，而是一個社會流動的代價故事——節目怎麼論證這個框架？", "mode": "cron"},
+    {"ts": 1751828820, "source": "wiki/concepts/從身份到契約.md", "question": "「從身份到契約」這個轉變，具體來說是什麼關係被什麼關係取代？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/context-control-plane.md", "question": "Context Control Plane 把哪些本來分散的元件視為同一個可治理的架構層？", "mode": "cron"},
+    {"ts": 1779548160, "source": "wiki/concepts/llm-dna.md", "question": "LLM DNA 的 bi-Lipschitz 條件在說什麼？為什麼需要這個雙向約束？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/王朝崩潰.md", "question": "王朝崩潰通常不只是單一原因——那具體是哪些維度同時失去「承重能力」才會導致整個秩序垮掉？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/sources/编排税-动态工作流的真相.md", "question": "「編排稅」影片說：人類在 AI 工作流裡相當於 Python 的 GIL——這是什麼意思？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/oh-my-openagent.md", "question": "Oh My OpenAgent 的 Team Mode 裡，mailbox message 是同步還是異步的？這對成員協作有什麼影響？", "mode": "cron"},
+    {"ts": 1751829540, "source": "wiki/sources/mem0-scalable-long-term-memory.md", "question": "Mem0 說自己的記憶是「跨對話」的——它跟對話內的 context window 最大的不同是什麼？", "mode": "cron"},
+    {"ts": 1751829340, "source": "wiki/sources/anthropic-frontend-design-skill.md", "question": "Anthropic 的前端 design skill 為什麼要把 CSS token 分成四層而不是直接寫死顏色？", "mode": "cron"},
+    {"ts": 1751917020, "source": "wiki/sources/jacar-sino-japanese-war-1894-1895.md", "question": "威海衛之戰（1895年2月）為什麼不是單純的海戰，而是「陸海夾攻」？日本第二軍做了什麼讓北洋艦隊陷入無處可退的境地？", "mode": "cron"},
+    {"ts": 1751917020, "source": "wiki/sources/ai-native-startup.md", "question": "Anthropic 的 AI-Native Startup 框架說，AI 原生創業的瓶頸從「能構建什麼」變成「選擇構建什麼」——為什麼執行力提升反而讓選擇變得更關鍵？", "mode": "cron"},
+    {"ts": 1780775220, "source": "wiki/sources/agent-harness-production-architecture.md", "question": "影片說「如果你不是模型，你就是 Harness」——這句話具體在說什麼？", "mode": "cron"},
+    {"ts": 1752009620, "source": "wiki/topics/洋務運動.md", "question": "洋務運動被形容為「擅長補破洞，卻不擅長重建底層邏輯」——具體來說，它能補哪些維度的破洞，又有哪些維度的問題是它體制性地補不了的？", "mode": "cron"},
+    {"ts": 1752037140, "source": "wiki/sources/active-context-compression-autonomous-memory-management.md", "question": "Focus 的 sawtooth context pattern 是什麼？探索階段和壓縮階段分別怎麼改變 agent 的 context？", "mode": "cron"},
+    {"ts": 1780790940, "source": "wiki/concepts/spacetime-vs-space.md", "question": "四維空間的度規 ds² = dx² + dy² + dz² + dw²（四個正號）和四維時空的度規 ds² = dx² + dy² + dz² − c²dt²（三正一負）——那一個負號為什麼不只是「差一個符號」，而是整個相對論的核心？", "mode": "cron"},
+    {"ts": 1752598140, "source": "wiki/concepts/伊斯蘭例外論（Islamic Exceptionalism）.md", "question": "伊斯蘭例外論說基督教的「出廠設定」是政教分離，伊斯蘭的「出廠設定」是政教合一——這兩個「出廠設定」的差異，如何讓伊斯蘭的世俗化比基督教更困難？", "mode": "cron"},
+    {"ts": 1759689540, "source": "wiki/topics/甲午戰爭.md", "question": "甲午戰爭的敘述裡，清朝「做出了一些近代化器物，卻還沒做出一個能把資源、士氣、訓練、指揮、後勤與財政整合成戰爭能力的現代國家」——這句話具體在說，洋務運動只補了哪些破洞，哪些是它體制性地補不了的？", "mode": "cron"},
+    {"ts": 1759835400, "source": "wiki/concepts/想像的共同體.md", "question": "「想像的共同體」說成員彼此未曾謀面，卻會想像自己屬於同一個政治整體——這個概念的核心洞見是什麼？", "mode": "cron"},
+    {"ts": 1759824600, "source": "wiki/sources/EvoMap 平台概覽.md", "question": "EvoMap 裡的 Gene 和 Capsule 分別代表什麼？為什麼平台說它們是「可繼承的能力資產」？", "mode": "cron"},
+    {"ts": 1759836000, "source": "wiki/topics/宋代士大夫政治.md", "question": "宋代政治裡的「祖宗之法」是什麼？它被拿出來用的時候，通常是想要約束誰的行動？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/Karpathy LLM Coding Guidelines.md", "question": "Karpathy 的「Cross-Tool Packaging Pattern」說的是什麼？為什麼同一套 agent 行為準則需要包成多種格式（Claude Code 插件、CLAUDE.md、Cursor rules 等），而不是一個 instruction file 就夠了？", "mode": "cron"},
+    {"ts": 1751829540, "source": "wiki/inbox/國家能力.md", "question": "國家能力包含五個核心維度：財政、行政、強制、資訊、基础设設施與公共品——其中哪一個維度被稱為其他維度的基礎？為什麼？", "mode": "cron"},
+    {"ts": 1759689541, "source": "wiki/concepts/tool-space-interference.md", "question": "Tool-space interference 說的是什麼？為什麼幫 agent 增加更多工具，反而可能讓它的任務表現變差？", "mode": "cron"},
+    {"ts": 1751829160, "source": "wiki/sources/clean-code-notes-github.md", "question": "Clean Code 說「壞程式碼不能用註解補救」——具體來說，什麼樣的情況是該用命名或重構解決，而不是用註解帶過？", "mode": "cron"},
+    {"ts": 1751917020, "source": "wiki/concepts/Persona vs Personalization in LLM Systems.md", "question": "SocialBench 評測 framework 把 role-playing agent 的社交能力分成九個維度——其中哪兩個維度在所有模型上都是墊底，這件事對 multi-agent coding 系統的設計有什麼啟示？", "mode": "cron"},
+    {"ts": 1753197480, "source": "wiki/sources/collaborative-memory-multi-user.md", "question": "Collaborative Memory 論文的存取控制用 Bipartite Graph（User ↔ Agent ↔ Resource）——這三類節點各自負責什麼？每個記憶片段的 Immutable Provenance 具體記錄哪三個欄位？", "mode": "cron"},
+    {"ts": 1753309080, "source": "wiki/sources/我們讓六個頂級AI相互入侵，誰能成為黑客之王？.md", "question": "在這場 AI 黑客 CTF 裡，Claude 的「勝負手」是什麼？其他模型各自犯了什麼錯誤導致落後？", "mode": "cron"}
   ]
 }

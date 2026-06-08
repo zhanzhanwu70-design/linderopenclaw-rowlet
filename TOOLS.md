@@ -39,6 +39,19 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 Add whatever helps you do your job. This is your cheat sheet.
 -e 
+## Local Whisper.cpp Transcription
+
+本機轉錄已實作，不用 OpenAI Whisper API、不上傳音檔。
+
+- Source: `/home/node/.openclaw/local/whisper.cpp`
+- Model: `/home/node/.openclaw/local/whisper.cpp/models/ggml-small.bin`
+- Portable toolchain: `/home/node/.openclaw/local/toolchain`（CMake + Ninja + Zig，免 root）
+- Build/rebuild: `/home/node/.openclaw/local/bin/build-whispercpp`
+- Single/batch audio: `/home/node/.openclaw/local/bin/whispercpp-transcribe <wav-or-dir>`
+- YouTube audio + transcript: `/home/node/.openclaw/local/bin/youtube-whispercpp-transcribe <youtube-url> [output-dir]`
+
+Wrapper 預設使用 `-ng -nfa` CPU-only / no flash-attn，因為 dynamic/shared build 曾在 model load 後 `free(): invalid pointer`；目前 static build smoke test OK。
+
 ## API Key Reading
 
 When you need an API key, use:
