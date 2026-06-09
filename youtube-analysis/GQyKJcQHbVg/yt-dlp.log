@@ -1,0 +1,18 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=GQyKJcQHbVg
+[youtube] GQyKJcQHbVg: Downloading webpage
+WARNING: [youtube] No supported JavaScript runtime could be found. Only deno is enabled by default; to use another runtime add  --js-runtimes RUNTIME[:PATH]  to your command/config. YouTube extraction without a JS runtime has been deprecated, and some formats may be missing. See  https://github.com/yt-dlp/yt-dlp/wiki/EJS  for details on installing one
+[youtube] GQyKJcQHbVg: Downloading android vr player API JSON
+[info] GQyKJcQHbVg: Downloading subtitles: en, en-en, de-en
+[info] GQyKJcQHbVg: Downloading 1 format(s): 137+251
+[info] Writing video description to: /home/node/.openclaw/workspace-rowlet/youtube-analysis/GQyKJcQHbVg/GQyKJcQHbVg.description
+[info] Writing video subtitles to: /home/node/.openclaw/workspace-rowlet/youtube-analysis/GQyKJcQHbVg/GQyKJcQHbVg.en.vtt
+WARNING: The extractor specified to use impersonation for this download, but no impersonate target is available. If you encounter errors, then see  https://github.com/yt-dlp/yt-dlp#impersonation  for information on installing the required dependencies
+[download] Destination: /home/node/.openclaw/workspace-rowlet/youtube-analysis/GQyKJcQHbVg/GQyKJcQHbVg.en.vtt
+[download]    1.00KiB at  376.14KiB/s (00:00:00)[download]    2.18KiB at  443.05KiB/s (00:00:00)[download] 100% of    2.18KiB in 00:00:00 at 72.29KiB/s
+[info] Writing video subtitles to: /home/node/.openclaw/workspace-rowlet/youtube-analysis/GQyKJcQHbVg/GQyKJcQHbVg.en-en.vtt
+WARNING: The extractor specified to use impersonation for this download, but no impersonate target is available. If you encounter errors, then see  https://github.com/yt-dlp/yt-dlp#impersonation  for information on installing the required dependencies
+[download] Destination: /home/node/.openclaw/workspace-rowlet/youtube-analysis/GQyKJcQHbVg/GQyKJcQHbVg.en-en.vtt
+[download]    1.00KiB at  514.45KiB/s (00:00:00)[download]    2.18KiB at  741.89KiB/s (00:00:00)[download] 100% of    2.18KiB in 00:00:00 at 97.00KiB/s
+[info] Writing video subtitles to: /home/node/.openclaw/workspace-rowlet/youtube-analysis/GQyKJcQHbVg/GQyKJcQHbVg.de-en.vtt
+WARNING: The extractor specified to use impersonation for this download, but no impersonate target is available. If you encounter errors, then see  https://github.com/yt-dlp/yt-dlp#impersonation  for information on installing the required dependencies
+ERROR: Unable to download video subtitles for 'de-en': HTTP Error 429: Too Many Requests

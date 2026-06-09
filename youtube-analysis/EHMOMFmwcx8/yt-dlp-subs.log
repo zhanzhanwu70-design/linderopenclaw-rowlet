@@ -1,0 +1,17 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=EHMOMFmwcx8&t=6s
+[youtube] EHMOMFmwcx8: Downloading webpage
+WARNING: [youtube] No supported JavaScript runtime could be found. Only deno is enabled by default; to use another runtime add  --js-runtimes RUNTIME[:PATH]  to your command/config. YouTube extraction without a JS runtime has been deprecated, and some formats may be missing. See  https://github.com/yt-dlp/yt-dlp/wiki/EJS  for details on installing one
+[youtube] EHMOMFmwcx8: Downloading android vr player API JSON
+[info] EHMOMFmwcx8: Downloading subtitles: zh-TW, en, en-zh-TW, en-en, en-fil, en-id, en-ja, en-ko, en-ms, en-es, en-th, en-vi
+[info] EHMOMFmwcx8: Downloading 1 format(s): 399+251
+[info] Writing video subtitles to: /home/node/.openclaw/workspace-rowlet/youtube-analysis/EHMOMFmwcx8/EHMOMFmwcx8.zh-TW.vtt
+WARNING: The extractor specified to use impersonation for this download, but no impersonate target is available. If you encounter errors, then see  https://github.com/yt-dlp/yt-dlp#impersonation  for information on installing the required dependencies
+[download] Destination: /home/node/.openclaw/workspace-rowlet/youtube-analysis/EHMOMFmwcx8/EHMOMFmwcx8.zh-TW.vtt
+[download]    1.00KiB at  Unknown B/s (00:00:00)[download]    3.00KiB at    1.75MiB/s (00:00:00)[download]    7.00KiB at    2.94MiB/s (00:00:00)[download]   15.00KiB at    1.67MiB/s (00:00:00)[download]   29.25KiB at  827.80KiB/s (00:00:00)[download] 100% of   29.25KiB in 00:00:00 at 92.37KiB/s
+[info] Writing video subtitles to: /home/node/.openclaw/workspace-rowlet/youtube-analysis/EHMOMFmwcx8/EHMOMFmwcx8.en.vtt
+WARNING: The extractor specified to use impersonation for this download, but no impersonate target is available. If you encounter errors, then see  https://github.com/yt-dlp/yt-dlp#impersonation  for information on installing the required dependencies
+[download] Destination: /home/node/.openclaw/workspace-rowlet/youtube-analysis/EHMOMFmwcx8/EHMOMFmwcx8.en.vtt
+[download]    1.00KiB at  Unknown B/s (00:00:00)[download]    3.00KiB at    2.61MiB/s (00:00:00)[download]    7.00KiB at    2.89MiB/s (00:00:00)[download]   15.00KiB at    4.35MiB/s (00:00:00)[download]   31.00KiB at  863.11KiB/s (00:00:00)[download]   31.29KiB at  845.58KiB/s (00:00:00)[download] 100% of   31.29KiB in 00:00:00 at 149.12KiB/s
+[info] Writing video subtitles to: /home/node/.openclaw/workspace-rowlet/youtube-analysis/EHMOMFmwcx8/EHMOMFmwcx8.en-zh-TW.vtt
+WARNING: The extractor specified to use impersonation for this download, but no impersonate target is available. If you encounter errors, then see  https://github.com/yt-dlp/yt-dlp#impersonation  for information on installing the required dependencies
+ERROR: Unable to download video subtitles for 'en-zh-TW': HTTP Error 429: Too Many Requests

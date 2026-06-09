@@ -1,0 +1,6 @@
+[youtube] Extracting URL: https://youtu.be/P6UWIA_bvt8?si=zayS0tc9Cyatiifq
+[youtube] P6UWIA_bvt8: Downloading webpage
+WARNING: [youtube] No supported JavaScript runtime could be found. Only deno is enabled by default; to use another runtime add  --js-runtimes RUNTIME[:PATH]  to your command/config. YouTube extraction without a JS runtime has been deprecated, and some formats may be missing. See  https://github.com/yt-dlp/yt-dlp/wiki/EJS  for details on installing one
+[youtube] P6UWIA_bvt8: Downloading android vr player API JSON
+[info] P6UWIA_bvt8: Downloading 1 format(s): 401+251
+[info] There are no subtitles for the requested languages

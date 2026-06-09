@@ -41,6 +41,10 @@
     {"ts": 1751829160, "source": "wiki/sources/clean-code-notes-github.md", "question": "Clean Code 說「壞程式碼不能用註解補救」——具體來說，什麼樣的情況是該用命名或重構解決，而不是用註解帶過？", "mode": "cron"},
     {"ts": 1751917020, "source": "wiki/concepts/Persona vs Personalization in LLM Systems.md", "question": "SocialBench 評測 framework 把 role-playing agent 的社交能力分成九個維度——其中哪兩個維度在所有模型上都是墊底，這件事對 multi-agent coding 系統的設計有什麼啟示？", "mode": "cron"},
     {"ts": 1753197480, "source": "wiki/sources/collaborative-memory-multi-user.md", "question": "Collaborative Memory 論文的存取控制用 Bipartite Graph（User ↔ Agent ↔ Resource）——這三類節點各自負責什麼？每個記憶片段的 Immutable Provenance 具體記錄哪三個欄位？", "mode": "cron"},
-    {"ts": 1753309080, "source": "wiki/sources/我們讓六個頂級AI相互入侵，誰能成為黑客之王？.md", "question": "在這場 AI 黑客 CTF 裡，Claude 的「勝負手」是什麼？其他模型各自犯了什麼錯誤導致落後？", "mode": "cron"}
+    {"ts": 1753309080, "source": "wiki/sources/我們讓六個頂級AI相互入侵，誰能成為黑客之王？.md", "question": "在這場 AI 黑客 CTF 裡，Claude 的「勝負手」是什麼？其他模型各自犯了什麼錯誤導致落後？", "mode": "cron"},
+    {"ts": 1780615480, "source": "wiki/concepts/clean-code-principles.md", "question": "Clean Code 說軟體開發多數時間在讀既有程式碼，而不是寫新程式碼——這句話對 AI coding agent 的實務意義是什麼？", "mode": "cron"},
+    {"ts": 1780958280, "source": "wiki/sources/contextweaver-selective-dependency-memory.md", "question": "ContextWeaver 的 validation layer 用什麼信號來標記節點狀態，讓依賴圖能自動排除已經失敗的步驟？", "mode": "cron"},
+    {"ts": 1759836001, "source": "wiki/topics/花園口決堤.md", "question": "花園口決堤被形容為「以水代兵」——這個策略具體是想要用黃河水流阻擋日軍哪幾種推進路徑？又為什麼說它最終犧牲的主要是自己的人民？", "mode": "cron"},
+    {"ts": 1780999080, "source": "wiki/topics/湘軍.md", "question": "湘軍的招募與組織是基於什麼關係網絡，而不是純粹的國家體制？這如何影響了晚清的權力格局？", "mode": "cron"}
   ]
 }
