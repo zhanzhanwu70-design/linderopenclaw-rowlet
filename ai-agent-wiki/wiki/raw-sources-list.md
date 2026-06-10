@@ -57,6 +57,24 @@ sources: []
 
 ---
 
+## Agent Skills 與 Skill 優化來源
+
+| 來源 | 描述 | 納入日期 |
+|------|------|----------|
+| [Agent Skills for LLMs: Architecture, Acquisition, Security (arXiv 2602.12430)](https://arxiv.org/abs/2602.12430) | 首篇全面性 Agent Skills 綜論，含 SKILL.md 規格、MCP 整合、26.1% 安全性漏洞揭露 | 2026-06-09 |
+| [Skill-R1: Agent Skill Evolution via RL (arXiv 2605.09359)](https://arxiv.org/html/2605.09359v1) | UC San Diego + Adobe，雙層 RL 框架進化 Skill Artifact，適用多步驟複雜任務 | 2026-06-09 |
+| [GEPA: Reflective Prompt Evolution (ICLR 2026 Oral, arXiv 2507.19457)](https://arxiv.org/abs/2507.19457) | UC Berkeley + Stanford + UT Austin，反思式 Prompt 演化在特定任務可超越 RL | 2026-06-09 |
+
+## Harness Engineering 與 Workflow Orchestration 來源
+
+| 來源 | 描述 | 納入日期 |
+|------|------|----------|
+| [What is Harness Engineering? Complete Guide 2026 (NxCode)](https://www.nxcode.io/resources/news/what-is-harness-engineering-complete-guide-2026) | Harness Engineering 完整指南，含 6 layer 架構說明 | 2026-06-09 |
+| [LLM Agent Architectures in 2026: Core Components and Patterns (FutureAGI)](https://futureagi.com/blog/llm-agent-architectures-core-components/) | 2026 年 Agent 六大核心元件、Runtime 比較（LangGraph 87% 成功率） | 2026-06-09 |
+| [Awesome Harness Engineering (ai-boost)](https://github.com/ai-boost/awesome-harness-engineering) | Harness Engineering 資源大全：工具、模式、evals、MCP、observability、orchestration | 2026-06-09 |
+
+---
+
 _tags: [sources, references]_
 
 ## Context & Memory 管理來源

@@ -14,7 +14,7 @@
     {"ts": 1779547439, "source": "wiki/concepts/魅力型權威.md", "question": "魅力型權威最大的弱點是什麼？支撐它的秩序一旦瓦解會發生什麼？", "mode": "cron"},
     {"ts": 1749055560, "source": "wiki/concepts/Multi-token Prediction (MTP).md", "question": "MTP 的平行 output heads（Gloeckle）和順序 modules（DeepSeek-V3）兩種實作方式，主要的設計差異是什麼？", "mode": "cron"},
     {"ts": 1751686980, "source": "wiki/concepts/async-architecture.md", "question": "異步架構裡，「管理池」和「任務池」各自負責什麼，跟同步串聯有什麼關鍵差異？", "mode": "cron"},
-    {"ts": 1751757160, "source": "wiki/sources/memgpt-towards-llms-as-operating-systems.md", "question": "MemGPT 把 recall storage 和 archival storage 分開，各自負責什麼類型的資料？", "mode": "cron"},
+    {"ts": 1751837160, "source": "wiki/sources/memgpt-towards-llms-as-operating-systems.md", "question": "MemGPT 把 recall storage 和 archival storage 分開，各自負責什麼類型的資料？", "mode": "cron"},
     {"ts": 1751837160, "source": "wiki/sources/杜月笙的代價.md", "question": "羅輯思維說杜月笙的故事不是「黑幫成功學」，而是一個社會流動的代價故事——節目怎麼論證這個框架？", "mode": "cron"},
     {"ts": 1751828820, "source": "wiki/concepts/從身份到契約.md", "question": "「從身份到契約」這個轉變，具體來說是什麼關係被什麼關係取代？", "mode": "cron"},
     {"ts": 1751829000, "source": "wiki/concepts/context-control-plane.md", "question": "Context Control Plane 把哪些本來分散的元件視為同一個可治理的架構層？", "mode": "cron"},
@@ -45,6 +45,16 @@
     {"ts": 1780615480, "source": "wiki/concepts/clean-code-principles.md", "question": "Clean Code 說軟體開發多數時間在讀既有程式碼，而不是寫新程式碼——這句話對 AI coding agent 的實務意義是什麼？", "mode": "cron"},
     {"ts": 1780958280, "source": "wiki/sources/contextweaver-selective-dependency-memory.md", "question": "ContextWeaver 的 validation layer 用什麼信號來標記節點狀態，讓依賴圖能自動排除已經失敗的步驟？", "mode": "cron"},
     {"ts": 1759836001, "source": "wiki/topics/花園口決堤.md", "question": "花園口決堤被形容為「以水代兵」——這個策略具體是想要用黃河水流阻擋日軍哪幾種推進路徑？又為什麼說它最終犧牲的主要是自己的人民？", "mode": "cron"},
-    {"ts": 1780999080, "source": "wiki/topics/湘軍.md", "question": "湘軍的招募與組織是基於什麼關係網絡，而不是純粹的國家體制？這如何影響了晚清的權力格局？", "mode": "cron"}
+    {"ts": 1780999080, "source": "wiki/topics/湘軍.md", "question": "湘軍的招募與組織是基於什麼關係網絡，而不是純粹的國家體制？這如何影響了晚清的權力格局？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/adaptive-retrieval.md", "question": "Adaptive retrieval 把「是否檢索」從固定行為變成可控制的 policy——這樣設計最大的好處是什麼？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/paperclip.md", "question": "Paperclip 說「如果 OpenClaw 是一個員工，Paperclip 就是一個公司」——這句話具體在區分什麼？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/agent-runtime-control-plane.md", "question": "Agent Runtime Control Plane 裡，event_model 和 workflow_graph 分別負責什麼治理維度？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/agentic-architecture-design.md", "question": "Agentic Architecture Design 為什麼要把「需求→架構→文件→評估」拆成多個可驗證步驟，而不是用單一 prompt 生成完整架構？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/llm-api-relay-stations.md", "question": "大模型 API 中轉站對 agent 系統的威脅，為什麼比對一般 API 呼叫更大？具體是哪些資料不應該經過中轉站？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/budgeted-agent-orchestration.md", "question": "Budgeted Agent Orchestration 為什麼要把 subagent 的 max_tokens、max_tool_calls、max_wall_time 視為可審計的資源，而不是讓 lead agent 任意派生？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/agentic-query-execution.md", "question": "Agentic Query Execution 為什麼說 LLM-backed operators「不一定等價」——順序不同會怎麼改變答案品質？", "mode": "cron"},
+    {"ts": 1781029080, "source": "wiki/concepts/kong-gateway.md", "question": "Kong Gateway 作為 AI Gateway，和傳統 API Gateway 最大的功能差異是什麼？它具體怎麼處理 LLM 流量治理？", "mode": "cron"},
+    {"ts": 1781073480, "source": "wiki/sources/elasticmem-latent-memory-as-learnable-resource-llm-agents.md", "question": "ElasticMem 說記憶的「效用」不等於「語意相似度」——這兩者差在哪裡，為什麼這個區分很重要？", "mode": "cron"},
+    {"ts": 1759836002, "source": "wiki/topics/總理各國事務衙門.md", "question": "總理各國事務衙門成立之前，清朝對外事務分散在哪些機構？為什麼需要有這個新的專責窗口？", "mode": "cron"}
   ]
 }

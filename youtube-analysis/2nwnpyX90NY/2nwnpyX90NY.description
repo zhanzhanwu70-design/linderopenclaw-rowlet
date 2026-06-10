@@ -1,0 +1,36 @@
+这期视频来聊一个很有意思的开源项目：Matt-Skills。
+
+它不是单纯教 AI “怎么写代码”，而是给 Claude Code、Codex 这类 AI 编程 Agent 加上一套更接近真实工程开发的工作流。
+
+比如：
+
+需求不清楚时，先让 AI 反问和澄清；
+
+ 代码不稳定时，用 TDD 和诊断流程建立反馈；
+
+ 任务太大时，把需求拆成 Issue；
+
+ 项目复杂后，再从架构层面重新审视代码。
+
+所以它强调的不是简单的 Vibe Coding，而是让 AI 编程更像一个真实工程师在做事：有流程、有反馈、有拆解、有复盘。
+
+如果你已经开始用 Claude Code、Codex、Cursor 做项目，但感觉 AI 经常“会写代码，但不太会做工程”，那这个项目很值得了解一下。
+
+更短版
+
+这期介绍一个开源项目：Matt-Skills。
+
+它可以理解为一套给 AI 编程 Agent 使用的工程技能库，适用于 Claude Code、Codex 等工具。
+
+它关注的不是“让 AI 随便生成代码”，而是通过 TDD、诊断、需求澄清、Issue 拆分、架构优化等方式，让 AI 编程更接近真实工程开发。
+
+不是 Vibe Coding，而是真・工程师技能库。
+
+更多 AI 编程相关知识、工作流、实战项目请加入我的星球：https://t.zsxq.com/eUh7z
+00:00 介绍
+05:17 安装和使用
+06:34 setup -matt-skills介绍
+08:21 grill-with-docs 介绍
+09:41 to-prd 介绍
+10:20 to-issues 介绍
+12:18 improve-codebase-architecture
