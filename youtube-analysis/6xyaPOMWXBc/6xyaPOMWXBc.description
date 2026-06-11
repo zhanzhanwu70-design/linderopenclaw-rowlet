@@ -1,0 +1,18 @@
+#计算机 #cybersecurity #https  #nginx  #http #webserver #科技 #technology #计算机科学 #hacker #黑客 #网络安全 #信息安全 #ddos #cve #exploit #manosaba #橘雪莉
+
+目前测试很多网站都是能打的
+当然大家注意不要滥用
+---------------------------------------------------------------------------------------
+HTTP/2 Bomb（CVE-2026-49975）| CVSS 9.8 | 千倍内存放大 DoS
+“家用宽带 100Mbps 就能搞发动的超值DoS”
+
+漏洞由 Calif 用 OpenAI Codex 发现，两个十年老技术组合。
+影响的框架：nginx、Apache、IIS、Envoy、Cloudflare Pingora
+
+修复方案：
+- nginx：升级 1.29.8+
+- Apache：升级 mod_http2 v2.0.41+
+- IIS/Envoy/Pingora：暂无补丁，建议禁用 HTTP/2 或部署前置代理
+
+PoC 复现笔记：https://github.com/Unclecheng-li/poc-lab
+网安日报：https://unclecheng-li.github.io/cybersecurity-daily/

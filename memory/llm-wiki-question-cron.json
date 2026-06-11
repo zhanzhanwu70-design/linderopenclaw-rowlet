@@ -44,7 +44,7 @@
     {"ts": 1753309080, "source": "wiki/sources/我們讓六個頂級AI相互入侵，誰能成為黑客之王？.md", "question": "在這場 AI 黑客 CTF 裡，Claude 的「勝負手」是什麼？其他模型各自犯了什麼錯誤導致落後？", "mode": "cron"},
     {"ts": 1780615480, "source": "wiki/concepts/clean-code-principles.md", "question": "Clean Code 說軟體開發多數時間在讀既有程式碼，而不是寫新程式碼——這句話對 AI coding agent 的實務意義是什麼？", "mode": "cron"},
     {"ts": 1780958280, "source": "wiki/sources/contextweaver-selective-dependency-memory.md", "question": "ContextWeaver 的 validation layer 用什麼信號來標記節點狀態，讓依賴圖能自動排除已經失敗的步驟？", "mode": "cron"},
-    {"ts": 1759836001, "source": "wiki/topics/花園口決堤.md", "question": "花園口決堤被形容為「以水代兵」——這個策略具體是想要用黃河水流阻擋日軍哪幾種推進路徑？又為什麼說它最終犧牲的主要是自己的人民？", "mode": "cron"},
+    {"ts": 1759836002, "source": "wiki/topics/花園口決堤.md", "question": "花園口決堤被形容為「以水代兵」——這個策略具體是想要用黃河水流阻擋日軍哪幾種推進路徑？又為什麼說它最終犧牲的主要是自己的人民？", "mode": "cron"},
     {"ts": 1780999080, "source": "wiki/topics/湘軍.md", "question": "湘軍的招募與組織是基於什麼關係網絡，而不是純粹的國家體制？這如何影響了晚清的權力格局？", "mode": "cron"},
     {"ts": 1751829000, "source": "wiki/concepts/adaptive-retrieval.md", "question": "Adaptive retrieval 把「是否檢索」從固定行為變成可控制的 policy——這樣設計最大的好處是什麼？", "mode": "cron"},
     {"ts": 1751829000, "source": "wiki/concepts/paperclip.md", "question": "Paperclip 說「如果 OpenClaw 是一個員工，Paperclip 就是一個公司」——這句話具體在區分什麼？", "mode": "cron"},
@@ -55,6 +55,8 @@
     {"ts": 1751829000, "source": "wiki/concepts/agentic-query-execution.md", "question": "Agentic Query Execution 為什麼說 LLM-backed operators「不一定等價」——順序不同會怎麼改變答案品質？", "mode": "cron"},
     {"ts": 1781029080, "source": "wiki/concepts/kong-gateway.md", "question": "Kong Gateway 作為 AI Gateway，和傳統 API Gateway 最大的功能差異是什麼？它具體怎麼處理 LLM 流量治理？", "mode": "cron"},
     {"ts": 1781073480, "source": "wiki/sources/elasticmem-latent-memory-as-learnable-resource-llm-agents.md", "question": "ElasticMem 說記憶的「效用」不等於「語意相似度」——這兩者差在哪裡，為什麼這個區分很重要？", "mode": "cron"},
-    {"ts": 1759836002, "source": "wiki/topics/總理各國事務衙門.md", "question": "總理各國事務衙門成立之前，清朝對外事務分散在哪些機構？為什麼需要有這個新的專責窗口？", "mode": "cron"}
+    {"ts": 1759836001, "source": "wiki/topics/總理各國事務衙門.md", "question": "總理各國事務衙門成立之前，清朝對外事務分散在哪些機構？為什麼需要有這個新的專責窗口？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/失控的天朝.md", "question": "隋煬帝的「失控的天朝」敘事，和傳統「昏君亡國」最大的不同是什麼？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/sources/誰殺死了秦帝國.md", "question": "沙丘政變時，趙高、胡亥與李斯偽造了什麼、殺了誰，讓秦帝國的繼承從一開始就帶有合法性陰影？", "mode": "cron"}
   ]
 }
