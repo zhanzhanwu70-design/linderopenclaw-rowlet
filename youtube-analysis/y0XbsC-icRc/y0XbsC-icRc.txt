@@ -1,0 +1,330 @@
+大家好 我是Jim 這裡是AI notebook
+今天聊一個2026工程師最重要的概念升級
+叫loop engineering 回圈工程
+但我得先把這個概念講清楚
+它不是寫prompt的進階技巧
+它是一整套新的思考方式
+前天6月8號
+Google Chrome大師 Adios Mane
+發了一篇文章把這件事匡出來
+文章裡的關鍵引言是
+Cloud Code 支付 Boris Chirney 親口說的
+我不在prompt cloud了 我寫loop
+讓loop自己prompt cloud
+我的工作是寫loop
+這句話如果你只當換個工具
+用你就漏了90%
+Chirney 再說的是四個根本性的轉換
+從事件思考變成流程思考
+從直接執行變成設計運作
+從跟單一AI對話變成管恩格AI
+從即時在線變成系統永遠在跑
+今天用五個重點
+把loop engineering 這個概念
+從跟挖開
+不只是怎麼蓋
+更重要的是它在說什麼
+先給你全片地圖五個重點
+第一
+Chirney 的開場宣言
+為什麼
+它這句話的重點
+不是不打prompt
+是換了一種角色
+第二
+loop engineering 的概念核心
+四個根本轉換
+從事件到流程
+從執行到設計
+從一對一到一對多
+從在線到永遠
+第三
+寫prompt 跟寫loop 的對比
+不是工具差
+是新字模型差
+第四個真實loop 長什麼樣
+從早上chrone 到自動PR攤開給你看
+第五個積木怎麼撐起這個概念
+automation 是心跳
+work trees 隔離skills
+技藝
+connectors 串接
+subagents 分工
+缺一不可
+準備好 進故事
+先看 Boris Chirney 的開場宣言
+Chirney 是anthropic 內部
+clawed code 的leader
+就是這支工具的爸爸
+他親口說
+我不在prompt Claude啦
+我有loop 再跑
+讓loop 自己prompt Claude
+我的工作是寫loop
+這句話表面是換工具
+生成是換角色
+地球上最常用clawed code 的人
+他不再打prompt 這個動作了
+他換了一種工作
+他從跟 AI 對話的人
+升級成設計 AI 怎麼自己工作的人
+聽出差別了嗎
+前者每天還在跟 AI 講話
+後者只在 AI 跑歪的時候才介入
+這不是時間管理問題
+是角色定位問題
+Chirney 在告訴你
+如果你還每天打prompt
+你還在當僕人
+如果你開始想
+怎麼設計一個系統
+讓 AI 自己跑
+你已經在升級成雇主了
+loop engineering 的起點
+就是這個角色轉換
+進入loop engineering 的概念核心
+它不是新工具
+是四個根本轉換
+每一個都改寫工程師的工作方式
+第一個轉換
+從事件到流程
+prompt 是一次性事件
+你打一句 AI 打一次結束
+loop 是長期流程
+他跑一次
+只是流程了一個 tick
+明天會再跑
+後天還會再跑
+你的工作是設計
+這個會永遠跑的流程
+第二個 轉換
+從直接執行到設計運作
+prompt 時代工程師
+親手做每一步
+loop 時代工程師
+不做是設計一套規則
+讓系統執行差別是
+我跑變我設計怎麼跑
+第三個 轉換
+從單一互動到多 agent 系統
+prompt 你跟一個 AI 對話 loop
+你管有五個 10 個 agent 平行運作
+每個 agent 有自己職責
+互相監督
+你的工作從對話變成組織管理
+第四個 轉換從計時對話
+到持續工作
+prompt 要求你在線 loop
+不要求
+你下班睡覺
+他繼續跑
+這四個合起來工程師的工作
+從直接生產
+升級成設計生產系統
+這就是 loop engineering
+真正在說的是
+五個積木
+只是讓這件事能落地的工具
+知道啦 四個轉換
+再看一張對比表
+把prompt 跟 loop 的差別講穿
+寫prompt 是對話模式
+你跟 AI 講話 AI 搭
+不滿意
+你再講你在線他工作
+你離線他停
+你像下廚的廚師 AI 是助手菜
+端不上來
+你自己也得再廚房
+優點是
+及時缺點是
+你必須一直在寫 loop
+是系統模式
+你不講話 你蓋一個工廠
+早上六點 crown 觸發 agent
+自動去 GitHub 找社
+自動派 agent 修
+自動開 PR 晚上你下班他還在跑
+你像工廠設計者不在場裡
+設計好流程跟品管工廠自己出貨
+前者你賣時間
+後者你賣設計
+前者你的時間是天花板
+後者你的設計是放大器
+這四個面向的差別對話
+VS 系統 廚師 VS
+廠長 計時 VS 持續賣時間
+VS 賣設計
+合起來就是 loop engineering
+為什麼是 2026 工程師
+最大的概念升級
+概念講完了
+看一個真實 loop 怎麼跑
+讓抽象落地
+Osmani 給的例子
+是這樣
+早上七點
+ crown 觸發第一隻 agent 跑
+Traged Skill
+他做三件事
+少昨天的 CI 失敗
+少 Open 的 GitHub 的 Issue
+少過去 24 小時的新 commit
+每個問題寫進 MAP 當版
+這是早試
+第二步 Loop 看 MAP 當版有五個項目
+就為每一個開一個獨立的 GitHub Worktree
+Worktree 就是分房間五個 agent 並行
+改 Code 不會互採
+這是分工
+第三步
+每個 Worktree 派兩個 sub agent
+Implementer 寫修復
+Verifier 負責對照
+Skill 跟測試做 Reveal
+寫得更看的分開 避免 agent
+自己改 自己Review 過關
+這是品管
+第四步
+Verifier 點頭 Connect 自動開 PR
+自動 Link
+Linear Ticket 自動 Slack 通知 Channel CI
+過了 這是交付
+整個流程跑完
+你才起床看
+鷹堡 15 個 PR 等於Review
+你只設計了一次
+他跑了一晚
+那要實現這套概念需要拿五個積木
+Cloud Code 跟 Codex
+2026 年都把這五個補齊了
+所以這套玩法現在才真正能跑
+第一 Automations 自動化
+心跳
+這是讓 Loop 永遠開機的基礎
+沒有 Chrome 或 Loop 或 Lightning Hook
+整個 Loop 動不起來
+第二 WorkTrees 並行隔離
+這個多個 Agent 改寇都會互採
+工廠的分工線斷掉
+第三 Skills 機構記憶
+SKL 到 MND 記住專案 規範 Agent
+每次跑前自動讀不用每次重講
+這是員工手冊
+第四
+Pluckings 跟 Connectors 外部串接
+MCP 讓 Agent 能讀
+Linear 能 Push Slack 能查 Staging API
+這是工廠的對外通訊
+第五
+Subagents 品管分工
+Implementers 寫 Verifier 檢查
+互相監督
+避免 Agent 自己改自己 Review
+這是品管制度
+這五個不是工具清單
+是工廠基礎建設
+缺任何一個 Loop 都跑不起來
+但 Osmani 的文章後半狠狠
+列了三個風險
+每個都不是技術問題 是身分問題
+第一
+驗證盲區
+loop 沒人盯
+就是 Loop 亂搞
+如果你蓋完就放著
+它會穩定地產
+出爛 Code
+而且你以為它在工作
+確認你自己說的
+無人職守的 Loop
+也是無人職守在出錯的 Loop
+第二
+理解在爆炸 Code 跑得比你看得快
+三天後
+你看 Code 完全不認識
+傳統 Review
+一次看一百行
+你還能跟 Loop 一碗吐五千行
+你怎麼跟這個紅溝
+會在某天爆炸
+就是 Bug 出來
+你完全找不到原因的那篇
+整個 Code Base 變黑盒子
+誰都不敢動
+第三
+認知頭銜 Loop 跑久了
+你會開始相信
+它寫的應該沒問題
+自動的 Proop PR
+那一瞬間
+你從工程師變成按購的人
+直衙安全感歸零
+這三個都不是 Loop 沒蓋好的技術問題
+是工程師沒守住自己的身分問題
+整篇文章最關鍵的一句
+放在這裡帶走
+Build a Loop
+But build it like someone
+who intends to stay the engineer
+白話蓋 Loop
+但要蓋成還想當工程師的人
+會蓋的樣子
+不是只想當
+按購的人會蓋的樣子
+差別在哪
+想當工程師的人
+蓋 Loop 是為了加速自己理解
+loop 跑出來
+他每天看一遍
+學新 Python Depth 不累積
+AI 升級
+他跟著升級
+永遠在賽道上
+按購的人蓋 Loop
+是為了翹過自己理解
+loop 跑出來
+他不看能上線就好
+學什麼三個月後
+同樣五個積木
+同樣五個命令
+但一個變超級工程師一個失業
+loop engineering
+既是工具的問題
+也是身分的問題
+最後決定你站在哪邊了
+是你的選擇
+簡單回顧今天的故事
+loop engineering
+不是寫 prompt 的進階技巧
+是工程師工作方式的
+四個根本轉換
+從事件到流程
+從執行到設計
+從一對一到一對多
+從在線到永遠
+五個積木
+automation 心跳
+work trees 隔離 skills
+記憶 Connectors 串接 subagents
+分工是讓這個概念落地的工具
+最大的雷是蓋Loop卻投降思考
+變成只會按購的人 AI 升級
+你就被取代
+Cherny 跟 Osmani 都在說同一件事
+升級的不只是工具
+是工程師的角色
+從我做事
+變成我設計事情怎麼做
+最後問你一個問題
+你今天的工作清單裡
+有多少是我自己做
+有多少是我設計怎麼做
+這個比例會告訴你在升級
+還是還在原地
+留言
+告訴我
+喜歡的話
+訂閱 AI Notebook
+開啟通知
+我們下次見
