@@ -1,0 +1,62 @@
+[
+  {
+    "query": "\"Habits of Mind and Foundational Concepts\" \"Appendix A\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Habits of Mind and Foundational Concepts\" \"Minerva\" \"#\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Minerva\" \"#estimation\" \"#induction\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Minerva\" \"#utility\" \"#modeltypes\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Minerva\" \"#ethicalframing\" \"#negotiate\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Building the Intentional University\" \"Appendix A\" \"#estimation\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Building the Intentional University\" \"#constraints\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Minerva\" \"foundational concepts\" \"#composition\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Minerva\" \"Habits of Mind\" \"payoff matrices\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Minerva\" \"HCs\" \"Formal Analyses\" \"Empirical Analyses\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Minerva\" \"HCs\" \"Multimodal Communications\" \"Complex Systems\"",
+    "status": 200,
+    "items": []
+  },
+  {
+    "query": "\"Minerva\" \"HCs\" \"120\"",
+    "status": 200,
+    "items": []
+  }
+]

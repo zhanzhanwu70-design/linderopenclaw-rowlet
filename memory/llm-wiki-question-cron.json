@@ -58,6 +58,9 @@
     {"ts": 1759836001, "source": "wiki/topics/總理各國事務衙門.md", "question": "總理各國事務衙門成立之前，清朝對外事務分散在哪些機構？為什麼需要有這個新的專責窗口？", "mode": "cron"},
     {"ts": 1751829000, "source": "wiki/concepts/失控的天朝.md", "question": "隋煬帝的「失控的天朝」敘事，和傳統「昏君亡國」最大的不同是什麼？", "mode": "cron"},
     {"ts": 1751829000, "source": "wiki/sources/誰殺死了秦帝國.md", "question": "沙丘政變時，趙高、胡亥與李斯偽造了什麼、殺了誰，讓秦帝國的繼承從一開始就帶有合法性陰影？", "mode": "cron"},
-    {"ts": 1781073481, "source": "wiki/sources/gisting-prompt-compression-gist-tokens.md", "question": "Gist tokens 的 attention mask 設計，具體是怎麼逼模型把長 prompt 的資訊壓縮進少數 gist token 的？", "mode": "cron"}
+    {"ts": 1781073481, "source": "wiki/sources/gisting-prompt-compression-gist-tokens.md", "question": "Gist tokens 的 attention mask 設計，具體是怎麼逼模型把長 prompt 的資訊壓縮進少數 gist token 的？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/法家.md", "question": "法家常被理解成「嚴刑峻法」，但 wiki 說這個理解窄化了「法」的意涵——法家的「法」還可以指什麼？", "mode": "cron"},
+    {"ts": 1781175540, "source": "wiki/sources/羅輯思維 094：「賣國賊」的戰場.md", "question": "羅輯思維 094 說五四運動的「賣國賊」標籤把複雜外交困境壓扁成情緒敘事——具體來說，北洋政府當時其實做了什麼不是完全無謀的事？", "mode": "cron"},
+    {"ts": 1751829000, "source": "wiki/concepts/logical-fallacies.md", "question": "偽二分法（False Dichotomy）和真正的「有意義的二分」最大的區別是什麼？", "mode": "cron"}
   ]
 }

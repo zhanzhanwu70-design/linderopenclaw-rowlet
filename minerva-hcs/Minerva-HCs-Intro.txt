@@ -1,0 +1,423 @@
+An Introduction to 
+Habits of Mind and 
+Foundational Concepts
+Academics
+2
+T
+he Minerva curriculum is designed to help our students become leaders, 
+innovators, broad and adaptive thinkers, and global citizens. Our learning 
+objectives are informed by the literatures on leadership and creativity, as 
+well as on interviews and surveys of large employers in a variety of disciplines. These 
+data have led us to define four types of core competencies the students should develop 
+in order to become successful leaders, innovators, and broad, adaptive thinkers in 
+a wide variety of disciplines. T wo of these competences focus on types of personal 
+abilities: thinking critically (evaluating claims, analyzing inferences, weighing 
+decisions, and analyzing problems) and thinking creatively (facilitating discovery, 
+solving problems, and creating products, processes and services). The other two 
+of these competencies focus on types of interpersonal abilities: communicating 
+effectively (using language effectively, using nonverbal communication effectively) 
+and interacting effectively (negotiating, mediating, and persuading; working 
+effectively with others; resolving ethical dilemmas, and having social consciousness).
+In the early twentieth century, “Great Books Programs” were popular — but 
+there are too many books and too many questions about how to select them, 
+and such programs waned. Instead, we have adopted a “Great Cognitive Tools 
+Program”: We explicitly teach students the Habits of Mind (cognitive skills 
+that come to be triggered automatically, with practice) and Foundational 
+Concepts (fundamental knowledge that is broadly applicable) that foster each 
+aspect of thinking critically, thinking creativity, communicating effectively 
+and interacting effectively; we do not simply hope that such key skills and 
+knowledge will be incidentally acquired as students learn other material.
+The Habits of Mind and Foundational Concepts (HCs) are introduced 
+during the first year, when all students take four, year-long Cornerstone 
+seminars: Formal Analyses (which focuses on core aspects of thinking 
+critically), Empirical Analyses (which focuses on core aspects of thinking 
+creatively), Multimodal Communication (which focuses on core aspects of 
+communicating effectively) and Complex Systems (which focuses on core 
+aspects of interacting effectively). This material is then used (and assessed) 
+during the subsequent three years while students major in specific subjects.
+Introduction to HCs
+Overview
+3
+To be included in the curriculum, a Habit of Mind (H) or Foundational  
+Concept (C) must: 
+1. be derived from an aspect of one of the four core competencies noted above; 
+2. lead students to be able to do something useful in ordinary life after 
+graduation (specialized knowledge comes later in the curriculum);
+3. be broadly applicable, as indicated by the fact that it is used in courses  
+offered in at least two of Minerva’s majors;
+4. be justified either by empirical findings, proofs, or well-established  
+best practices--particularly those that support functioning ethically in a 
+global context; and
+5. lead to specific behaviors that can be evaluated with rubrics; the HC cannot  
+be so general or vague that it cannot be systematically and reliably evaluated.
+What follows is one example of each major category of HC. There are more 
+than 100 of these HCs, which are roughly equally distributed over the four core 
+competencies. Each HC is the learning objective of a class session. In some cases, 
+two or even three sessions are devoted to a single HC (based on how difficult it 
+is), and in some cases we introduce two highly related HCs at the same time (e.g., 
+those dealing with payoff matrices and game theory). The set of HCs is adjusted 
+each year, based on our feedback from students, faculty, and employers.
+Each HC is accompanied by a rubric, which indicates how the students will 
+be graded on their use of that HC. The rubrics span a grade of “1” (indicating 
+that the student did not understand the material) to “5” (indicating 
+that the student understood it deeply and applied it in novel ways), with 
+intermediate scores indicating intermediate levels of mastery. All class 
+interactions and class assignments are graded using these rubrics. 
+All HCs are introduced during the first year, but graded during the 
+subsequent three years. In fact, the grades at the end of the first year 
+are provisional; they are adjusted up or down each semester, depending 
+on how well the student used the material in subsequent classes.
+Introduction to HCs
+Overview
+4
+After each paragraph that describes the H or C is an example 
+of how that skill or knowledge can be applied in life after college. 
+We also indicate in which course it is introduced:
+ 
+CS = Introduced in Complex Systems
+EA = Introduced in Empirical Analyses
+FA = Introduced in Formal Analyses
+MC = Introduced in Multimodal Communications
+Introduction to HCs
+Overview
+5
+A. Evaluating Claims
+One aspect of critical thinking focuses on evaluating claims, which requires 
+identifying them and their components. In order to do this, one must rely on the 
+ability to check whether conclusions are plausible and must use principles of 
+information literacy. In addition, one often must recognize whether claims are 
+grounded in sound science and supported by probability and statistics.
+#estimation FA Use estimation techniques to determine whether 
+quantitative claims are plausible. (H)
+When considering quantitative claims, it is useful to 
+conduct a plausibility check. This can be done quickly using 
+approximations and round numbers, and by establishing 
+limits (minimum and maximum values that the number could 
+reasonably be expected to take).
+Application example: A politician claims that undocumented 
+workers account for over half of the murders in your city. You 
+check, and 34% of murder victims and 49% of murderers are 
+under 25 years old. In your city, most undocumented workers 
+are over 35 years old, and thus the claim seems implausible.
+I. Thinking Critically
+Introduction to HCs
+Examples
+6
+B. Analyzing Inferences
+Inference is the rational creation of new knowledge from old. It is broadly applied. One must 
+be aware that even if a claim is correct, inferences made from it may not be. Formal logic 
+provides a method for determining which inferences are valid and which are not. Inductive 
+reasoning is about generalizations made from specific cases. Because many inferences 
+are based on human observation, one must be aware of specific biases in human attention, 
+perception and memory. And when drawing inferences about expressive works, such 
+as works of art, one must appreciate the historical and cultural context of the work, its 
+internal organization, and how individual experience shapes our interpretation of it.
+#induction FA Formulate multiple plausible generalizations from 
+available evidence, and consider how to use deduction 
+to distinguish among the generalizations. (C)
+Induction involves using evidence to support a conclusion, 
+going from a set of instances or examples to a generalization 
+about them. Importantly, strong inductive arguments do not 
+guarantee the truth of the conclusion. Inductive reasoning is 
+always biased in various ways. Applying inductive reasoning 
+requires (1) being aware of the biases, and (2) considering the 
+inducted generalizations to be only tentative conclusions, which 
+must then be evaluated in their own right.
+Application example: You notice that the stock prices for 
+four software companies have increased. Based on these 
+observations, you can induce numerous possible generalizations, 
+such as: a) the value of all stocks has increased; b) the value of 
+software stocks per se has increased; c) the local currency has 
+lost value; d) all of these companies invested in a common asset 
+that gained value; and so on. You now consider deductions to 
+discriminate among the alternatives. For example, if it’s “a” and 
+not “b” you should find comparable rises in other types of stocks.
+Introduction to HCs
+Examples
+7
+C. Weighing Decisions
+Evaluating claims and analyzing inferences are important in part because they help us decide 
+how to act. To make decisions rationally, one must analyze the alternative choices and identify 
+their respective trade-offs. Decision-support tools can help us with such analyses, identifying 
+and mitigating undesirable biases.
+#utility CS Consider different types of future costs and 
+benefits for all stakeholders. (H) 
+When making decisions, one must always consider trade-offs 
+between future costs and benefits and must consider them from 
+the different perspectives of all stakeholders. When making 
+decisions that affect people (as virtually all decisions in the 
+real world will do), such reasoning must occur at multiple levels 
+of analysis, ranging from effects on the individual to effects 
+on groups at different levels of scale. Sometimes, a decision 
+that maximizes overall benefits will be very unpopular with 
+a subgroup; one must learn to anticipate and mitigate the 
+negative effects of such cases.
+Application example: You are about to hold an annual meeting 
+and are hosting it at the hotel you’ve used for the past six years. 
+You have already printed the invitations and coordinated with 
+the guests, speakers and nearby restaurants. A week before the 
+date, you receive a letter from the hotel manager informing 
+you that he has to charge you three times what he charged 
+you the previous year. You consider the costs and benefits 
+for each stakeholder of staying the course and holding the 
+meeting at this hotel: For yourself, the costs are severe; you 
+won’t be able to cover your expenses. The benefits are that 
+you are familiar with the venue and wouldn’t have to redo all 
+of the invitations and arrangements. For the attendees, the 
+costs would be a larger registration fee while the benefits 
+Introduction to HCs
+Examples
+8
+are clarity in the arrangements and a familiar venue. For the 
+hotel manager, the costs include losing you as a client and the 
+benefits are increased revenue — which would be limited to 
+this one upcoming meeting (you definitely won’t meet there 
+the following years). Presenting all of this to the hotel manager 
+results in a useful negotiation, where he only increases the 
+amount by 50%. (Based on a chapter from How to Win Friends 
+and Influence People by Dale Carnegie.)
+Introduction to HCs
+Examples
+9
+A. Facilitating Discovery
+There are no recipes or set of rules for how to make new discoveries. However, certain 
+practices can set the stage, facilitating discovery. Among such practices are the 
+ability to create well-formed hypotheses, predictions and interpretations of data. In 
+addition, research methods can be used effectively to increase the likelihood of 
+making a new discovery. Finally, one can facilitate discovery by considering systems 
+at multiple levels of analysis and identifying the type of system being studied.
+#modeltypes  EA Recognize how models can be used to explain a 
+set of data and generate new predictions. (C)
+Many kinds of models (ranging from conceptual to physical 
+to mathematical to simulation) are used in science. A theory 
+generally guides the construction of a model, indicating which 
+aspects of a model are relevant. Models are used to explain data 
+or to test a theory, often through visualization. One can vary 
+the nature of inputs to a model and the specific constraints 
+on its behavior and then observe how the model behaves (e.g., 
+simulations can be run in specific circumstances and the 
+results observed) —thereby deriving new predictions for how 
+the phenomena in question should change when subjected to 
+those inputs and constraints.
+Application example: You’ve been getting a stomachache 
+after eating at home. You notice that the sponge you use to 
+wipe your dishes is always wet. You think about the germ 
+II. Thinking Creatively
+Introduction to HCs
+Examples
+10
+theory of disease and hypothesize that soap and hot water 
+only kill some bacteria — leaving the survivors to have lots 
+of offspring. If so, perhaps you are infecting yourself by 
+wiping the dishes with that sponge. You think about how to 
+model this, and realize that to model the situation you need 
+to know how quickly bacteria breed, how susceptible they 
+are to soap and hot water, how sensitive humans are to their 
+effects, and various other factors; without knowing these 
+details, you really aren’t in a position to test your hypothesis.
+B. Solving Problems
+A problem occurs when there is an obstacle en route to a goal. When first encountering a 
+problem (when no known solution is available), one must use creative thinking to solve it. Often 
+such creative thinking relies on using specific heuristics (rules of thumb) and techniques. 
+However, solving problems effectively requires one to be aware of biases and to mitigate their 
+effects when they interfere with reaching a good solution.
+#constraints  EA Identify and apply constraint satisfaction 
+as a way to solve problems. (C)
+A problem exists when one or more obstacles to a goal must be 
+addressed. Obstacles often cannot be overcome easily, in large 
+part because there are constraints on what sorts of actions 
+are possible or realistic. Constraints are requirements on the 
+solution; they do not determine it, but do place boundaries on 
+what is possible. Thus, part of solving a problem is to identify 
+the constraints on what can be done. If the constraints are well-
+defined, problems often can be solved by devising ways to satisfy 
+all of the constraints at the same time (this approach to problem 
+solving is known as “constraint satisfaction”).
+Application example: You are moving into a new house and need 
+to decide where to put the furniture in your bedroom. You have 
+Introduction to HCs
+Examples
+11
+an old sofa, which is missing a rear leg and sits on a telephone 
+book — and so you don’t want to put it in a location where it can 
+be seen from behind (this is a constraint). You also have an old 
+bed, with a headboard that must lean against the wall (another 
+constraint). And you have two end tables, which must be set 
+to either side of the headboard. And a large chair and reading 
+lamp, which must be near each other. Once you pick a wall for 
+the headboard, the positions of the other pieces of furniture 
+may be determined; there is only one other place where the wall 
+can accommodate the headboard and once it and the end tables 
+are set up, there is only one other place large enough for the 
+chair and lamp. The mere act of satisfying all of the constraints 
+simultaneously almost dictates the solution to the problem!
+C. Creating Products, Processes and Services
+Various methods and techniques can help one to create new products, processes 
+and services. Such methods and techniques include iterative design thinking, 
+application of principles of perception and cognition, and reverse engineering.
+#designthinking  MC Apply iterative design thinking to conceive 
+and refine products or solutions. (H)
+Great work rarely springs fully formed in a first draft. Thus, 
+iteration, using design principles at every cycle, is typically 
+required to produce a good product or the best solution to a 
+problem. An iterative design process gives one’s efforts greater 
+reach and impact.
+Application example: You’ve learned that design thinking 
+involves first defining the problem, then thinking of possible 
+solutions, prototyping the solutions, and testing the results —
+and then iterating until a satisfactory solution is achieved. With 
+this process in mind, you design a poster to announce a concert. 
+Introduction to HCs
+Examples
+12
+You think about what will appeal to the audience and design 
+a prototype. You show it to a few friends, who tell you that the 
+poster looks too cluttered, so you simplify it. You then notice 
+that the colors clash, so you change one of the background 
+colors. Doing this makes the lettering fade into the background, 
+so you then adjust the size of the font. The final result is much 
+better than what you had initially.
+Introduction to HCs
+Examples
+13
+A. Using Language Effectively
+Most communication occurs through language, both spoken and written; thus, it 
+is crucial that one know how to use language effectively to communicate.
+#composition MC Communicate with a clear and precise style. (H)
+Effective communication requires a clear and precise style that 
+reflects the voice of the communicator and that is appropriate 
+for the intended audience. Communicators should use the 
+fewest words necessary (they should respect the principle of 
+“parsimony”) and should select words carefully to be as clear as 
+possible. Avoid passive voice, stilted diction, elaborate structure, 
+and imprecision; write and speak simply, directly, and sincerely. 
+Understand when to use paraphrase, quotation, or summary 
+to incorporate necessary information smoothly into your 
+communication.
+Application example: You are visiting your aunt at her new house 
+in the countryside. She leaves a convoluted voicemail about 
+how to find her property, in which she tells you to drive on one 
+road for “a while,” then turn “toward the property that just got 
+sold,” and take a right at the Millers’ farm. You have no way to 
+know which property was recently sold or where the Millers live. 
+She then retracts some of her directions and suggests a detour 
+around one road (you’re not sure which) to avoid construction. 
+III. Communicating Effectively
+Introduction to HCs
+Examples
+14
+You realize en route that your cell phone’s battery is dead. You 
+try to follow her instructions as best you can, but quickly get 
+lost. You wish her directions had been clear and precise.
+B. Using Nonverbal Communication Effectively
+Nonverbal communication often plays a crucial role in how well a verbal communication is 
+received. These elements of communication not only convey connotations, but color the entire 
+message.
+#multimodaldesign  MC Apply principles of perception and cognition in design, 
+including those for oral and multimedia presentations. (H)
+A large body of research has documented many characteristics of 
+human perception and cognition, resulting in a set of principles 
+that captures how humans organize and interpret what they 
+see and hear. Products, ranging from simple graphs to complex 
+devices, from teapots to tactile surfaces, should be designed to 
+respect these principles; products that violate these principles 
+are difficult for humans to use. These principles can be used 
+both to evaluate products and to guide creation of new ones.
+Application example: You watch people leave the building where 
+Minerva has its headquarters. More than half of them try to 
+pull open the doors, but the doors are designed to be pushed 
+open as you exit. You look carefully at the door handles, and 
+see that they are identical to the ones on the outside of the 
+doors — which clearly invite being pulled. You realize that 
+the shape of the handles encourages people to pull on them, 
+which is inappropriate for a door that should be pushed.
+Introduction to HCs
+Examples
+15
+A. Negotiating, Mediating, and Persuading
+Effective interactions with people require anticipating the effects of a particular message, 
+registering the actual responses, and adjusting communications accordingly. Such 
+dynamic interactions lie at the heart of negotiating, mediating, and persuading.
+#negotiate CS Use a structured approach to negotiation 
+to reach desired objectives. (H)
+Effective negotiation involves give and take between 
+stakeholders to reach mutually beneficial agreements. 
+Negotiating successfully requires a structured approach, which 
+includes clearly identifying interests, agreeing on a process, and 
+being prepared to sacrifice some objectives to achieve others. 
+Negotiators must prioritize objectives but remain flexible and 
+open to compromise. Approaching negotiation as a structured 
+process raises the likelihood of a successful resolution.
+Application example: Your company has assigned you to 
+negotiate the construction of a new factory in Asia. You can’t 
+get anywhere if the city you are negotiating with doesn’t give 
+you tax benefits. So, that’s your first priority. When that is 
+settled, you go over the details. The city officials don’t agree to 
+subcontract the cement work to the offshore contractor you 
+prefer and they disagree on your choice of heavy machinery 
+supplier. You are willing to concede the offshore contractor 
+because the company they prefer has comparable pricing and 
+IV. Interacting Effectively
+Introduction to HCs
+Examples
+16
+quality, but you know that only this specific machinery supplier 
+has exactly what you need. By first making a concession about 
+the cement work, they are more willing to take your offer 
+and resolve the “small” detail of the equipment supplier.
+B. Working Effectively With Others
+Each of us plays many roles when interacting with others, sometimes 
+acting as a leader and sometimes acting as a follower or team member. 
+Specific behaviors and practices can facilitate such interactions.
+#differences CS Recognize and leverage people’s different skills, 
+abilities, traits, attitudes and beliefs. (H)
+People differ in their skills and abilities as well as their traits, 
+attitudes and beliefs—all of which affect how they interact with 
+other people and their contributions to cooperative projects. 
+Effective interactions rely on assessing such information 
+about other people and framing interactions with them in a 
+way that is compatible with their characteristics. In addition, 
+although groups do benefit from having members with diverse 
+viewpoints and backgrounds, it also is important to recognize 
+the need for shared perspectives and values within groups.
+Application example: You are trying to motivate two members 
+of your team, Robert and Larry. Robert cares a lot about 
+what other people think of him, and so you point out that 
+everybody else on the team–and in the organization as a 
+whole–will be grateful for his efforts. Larry, in contrast, 
+doesn’t care much about what other people think of 
+him, but cares a lot about “making a difference” in the 
+world--and so when you talk to him you focus on that.
+Introduction to HCs
+Examples
+17
+C. Resolving Ethical Problems and Having Social Consciousness
+The way one resolves ethical problems has a direct effect on how one interacts with  
+others. One factor that should contribute to such thinking hinges on having social 
+consciousness, which is a concern for others and the common good.
+#ethicalframing  CS Identify ethical problems, framing them in a 
+way that will help to resolve them. (C)
+Ethical problems occur when an action or outcome conflicts, or 
+has the potential to conflict, with ethical principles. In order 
+to avoid or resolve such problems, it is necessary to consider 
+different ways of framing the situation on the basis of the 
+relevant ethical principles. Ethical theories provide a useful 
+approach to framing ethical problems by providing coherent 
+sets of principles to apply systematically, and to compare to 
+alternative approaches.
+Application example: Your organization needs to hire more 
+people, and you aren’t getting enough applicants. You decide 
+to give a bonus to all employees who bring in someone for 
+an interview. An employee complains that this is a set-
+up, inducing people to behave unethically: People will be 
+biased to bring in their friends, even if they don’t think the 
+job is right for them. You acknowledge that this is an issue, 
+and revise the policy: Employees will get a bonus only if 
+the people they bring in are hired and stay more than 3 
+months. You also explain that you trust your employees 
+to uphold their own ethics, as well as the company’s.
+Introduction to HCs
+Examples
+Minerva Schools at KGI
+1145 Market Street, Ninth Floor
+San Francisco, CA 94103
