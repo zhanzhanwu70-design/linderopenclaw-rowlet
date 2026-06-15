@@ -31,13 +31,18 @@ ContextWeaver 將 tool-use interaction trace 建成 dependency graph，避免 sl
 
 Memory-R2 處理 long-horizon memory-augmented agents 的 credit assignment 問題，重點在訓練期間如何公平評估 memory write/update/delete 對後續結果的影響。
 
+### [[organize-then-retrieve-2026-hsu]] — hierarchical memory navigation (HORMA)
+
+HORMA 將經驗組織成檔案系統式階層結構，summarized entities 連結到 raw trajectories。區分「資訊遺漏導致失敗」vs「誤導/過載導致失敗」兩種 failure modes，用 RL-trained navigation module 選擇最小但足夠的 context。在長任務中僅需 22.17% baseline token 用量。
+
 ## Synthesis
 
-目前三篇形成一個互補堆疊：
+目前四篇形成一個互補堆疊：
 
 1. **MemGPT**：runtime memory tiers + virtual context paging。
 2. **ContextWeaver**：dependency-aware selection，讓取回的 context 保留因果/邏輯結構。
 3. **Memory-R2**：training-time credit assignment，讓 agent 學會更好的 memory operations。
+4. **HORMA**：hierarchical organize-then-retrieve，用 RL navigation 選擇最小 sufficient context。
 
 對 OpenClaw / Rowlet 類 agent，可映射為：
 
@@ -46,3 +51,4 @@ Memory-R2 處理 long-horizon memory-augmented agents 的 credit assignment 問�
 - `wiki/sources/` 與 `raw/references/`：archival storage。
 - Graphify / wiki query：retrieval layer。
 - Cron / heartbeat / tool events：interrupt-driven control flow。
+- RL-based context selection：未來可探索的方向。

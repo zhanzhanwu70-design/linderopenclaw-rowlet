@@ -61,6 +61,9 @@
     {"ts": 1781073481, "source": "wiki/sources/gisting-prompt-compression-gist-tokens.md", "question": "Gist tokens 的 attention mask 設計，具體是怎麼逼模型把長 prompt 的資訊壓縮進少數 gist token 的？", "mode": "cron"},
     {"ts": 1751829000, "source": "wiki/concepts/法家.md", "question": "法家常被理解成「嚴刑峻法」，但 wiki 說這個理解窄化了「法」的意涵——法家的「法」還可以指什麼？", "mode": "cron"},
     {"ts": 1781175540, "source": "wiki/sources/羅輯思維 094：「賣國賊」的戰場.md", "question": "羅輯思維 094 說五四運動的「賣國賊」標籤把複雜外交困境壓扁成情緒敘事——具體來說，北洋政府當時其實做了什麼不是完全無謀的事？", "mode": "cron"},
-    {"ts": 1751829000, "source": "wiki/concepts/logical-fallacies.md", "question": "偽二分法（False Dichotomy）和真正的「有意義的二分」最大的區別是什麼？", "mode": "cron"}
+    {"ts": 1751829000, "source": "wiki/concepts/logical-fallacies.md", "question": "偽二分法（False Dichotomy）和真正的「有意義的二分」最大的區別是什麼？", "mode": "cron"},
+    {"ts": 1751900140, "source": "wiki/sources/yann-lecun-world-model-jepa-agi.md", "question": "JEPA 說要在「表徵空間」做預測，而不是在像素空間做預測——這兩種預測方式的核心差異是什麼？為什麼像素預測容易陷入噪音？", "mode": "cron"},
+    {"ts": 1759836000, "source": "wiki/sources/一場不得不發生的政變.md", "question": "玄武門之變裡，秦王府的房玄齡、杜如晦、長孫無忌等人為什麼比李世民本人更急於推動政變？", "mode": "cron"},
+    {"ts": 1781384340, "source": "wiki/sources/GPS RTK 基地台技術說明.md", "question": "RTK 定位的核心挑戰是解決「整數模糊度」（Integer Ambiguity）——什麼是整數模糊度，為什麼它讓 RTK 比一般 GPS 困難這麼多？", "mode": "cron"}
   ]
 }
