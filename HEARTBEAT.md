@@ -130,6 +130,34 @@ Priority: medium"
 
 ---
 
+## 當前任務（持續執行中）
+
+### Code Dependency Graph Linking（已大部分完成）
+- **開始時間**：2026-06-16 13:37 UTC
+- **目標**：所有 `raw/code/` 下的 source code 都建立 graphify 連結
+
+**已完成 Graphify Semantic Extraction（7個專案）：**
+| 專案 | 大小 | 節點/邊 |
+|------|------|---------|
+| SkidScanner-fdev1 | 1.17MB | ~1000+ nodes |
+| SkidScanner-bdev1 | 1.15MB | 974 nodes, 1603 edges |
+| SkidScanner-dev1-codex | 898KB | 786 nodes, 1228 edges |
+| PythonSandbox-dev1 | 44KB | 56 nodes |
+| mattpocock-skills | 32KB | 49 nodes |
+| workspace | 16KB | 29 nodes |
+| andrej-karpathy-skills | 11KB | 17 nodes |
+
+**失敗的目錄：**
+- hermes-agent-source / openclaw-source / claw-code-source / elle_ws — 目錄太大或包含太多 markdown/doc 檔
+- Graphify 直接 semantic extraction 只能處理純 code 目錄
+
+**Heartbeat 間隔**：5m
+
+### Skill Path Correction（已完成）
+已修復 4 個 skill 的錯誤路徑（`wiki/raw/` → `raw/`）
+
+---
+
 ## Agent Channel IDs（from openclaw.json）
 ```
 roaringmoon: 1482561255955763293

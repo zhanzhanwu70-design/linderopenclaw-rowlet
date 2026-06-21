@@ -1,0 +1,536 @@
+如果一個AI Agent既要記住你的偏好
+又要想起你們上次到底改了什麼
+還不能因為記憶更新把整個Problem to Catch打碎
+這件事其實沒那麼簡單
+這次我想帶你看懂Hermis Agent的記憶架構
+因為它真正有意思的地方
+不是它能記住什麼
+而是它怎麼把長期事實、繪畫歷史、外部記憶後端
+還有上下文壓縮
+拆成了幾套完全不同的機制
+而且這些機制之間的邊界設計得非常克制
+很多AI產品一提到Memory
+給人的感覺都像是在說一件事
+好像只要有一個記憶模塊問題就解決了
+但Hermis系統設計和原碼一起看下來
+你會發現真正能落地的記憶系統
+往往不是一個模塊
+而是一套分層的很清楚的組合結構
+如果先給一個非常壓縮的結論
+Hermis的記憶至少有四層
+最內層是當前工作記憶
+也就是Round Conversation這次循環裡維護的Messages
+模型這一輪看到的用戶輸入、工具結果、推理內容
+先都在這裡流動
+第二層是內建長期記憶
+也就是Memory Markdown文檔和User Markdown文檔
+前者偏環境、項目、工具和約定
+後者偏用戶畫像、偏好、溝通方式
+第三層是完整繪畫歷史
+也就是State.db消息表、FDS5搜索
+再加上Gateway還保留的JSON Lines Transcript
+第四層才是可插把的外部Memory Provider
+理如更專業的語意記憶後端
+這個插法不是為了顯得架構優雅
+而是因為它必須同時滿足幾件本來互相衝突的事
+你得持久化
+不然用戶每次都要重複說明
+你得可控
+不然Memory很快就會變成日治堆
+你還得盡量保住Prompt Cat的穩定性
+不然System Prompt一直變
+後面的成本、實驗、調適、複雜度全都會變差
+所以Hermis最核心的判斷不是盡量多記
+而是哪些東西該怎麼記
+才能記保留下來又不把系統拖垮
+在我看來這就是他把長期事實和歷史軌跡
+故意拆開的根本原因
+穩定事實進Curated Memory完整過程進Transcript
+需要的時候再通過Session Search回憶
+如果你把這兩種東西混在一起
+要麼長期記憶會被大量過程信息污染
+要麼你只剩下一點點偏好描述
+卻想不起來上次到底怎麼修的那個問題
+更新一點看Hermis在Session一啟動的時候
+就會把Memory配置、制服預算
+是否啟用Memory.md和User.md這些參數讀出來
+如果啟用了內建Memory就創建Memory Store
+然後從磁盤加載兩份文件
+而且這裡不是簡單讀一下就算了
+他會立刻把當時內課的內容
+凍結成一個System Prompt Snapshot
+後面模型每一輪看到的長期記
+其實都是這份凍結快兆
+這就帶出了整個設計裡最反直覺
+但也最能體現工程味道的一點
+Hermis的長期記憶不是強實實的
+如果當前Session中途調用了Memory工具
+新內容會立刻寫盤
+但不會立刻刷新當前Session的System Prompt
+真正把這條新記錄入Prompt
+通常要到下一次Session啟動
+為什麼這麼做
+因為在Hermis裡System Prompt不是每輪線拼的
+它是Session級緩存的一部分
+緣碼裡寫的非常明確
+這份Prompt會在第一次請求前構建一次
+然後緩存下來之後整個Session都服用
+只有發生Context Compression這個緩存才會失效並重建
+甚至在Gateway這種每來一條消息
+都可能興建一個AI Agent實力的場景裡
+它也會優先去Session DB裡
+讀上一輪已經保存好的System Prompt
+而不是根據磁盤上最新的Memory文件重新拼一遍
+目的非常直接就是盡量保證前綴一致
+尤其是對Eli Prefects Cache的模型列入來說
+這個收益非常實際
+換句話說 Hermes在這裡不是不知道剛寫入立刻可建更符合直覺
+而是它非常明確的選擇了另一件事
+另可犧牲一點實施體驗
+也要把Session內的System Prompt穩住
+這不是功能沒做完
+這是一個清楚的成本決策
+如果你以前默認以為記憶寫進去就應該馬上生效
+那你這會兒在彈幕裡扣個1
+而且Hermes不是只在原則上說長期記憶要經典
+它在機制上也把這件事做得很硬
+首先它沒有做一個複雜的結構化數據庫
+而是直接用兩份純文本文件
+其次它給字符預算設了印上線
+memory.md默認2200字符
+user.md默認1375字符
+再往下看
+單條memory的操作也刻意保持得很克制
+只有Add,Replace,Remove三種
+沒有花哨的知識圖譜也沒有自動embedding所以
+圓碼裡這個工具的實現其實很說明問題
+memory不是一個普通工具
+它在RUN agent裡被專門攔截
+和to do session search這種agent level能力放在同一層處理
+這說明長期記憶在Hermes裡不是外圍插件
+而是運行時主鍊的一部分
+再比如replace和remove不是靠entry ID
+而是靠一個短子串去匹配目標條目
+如果匹配到多條而且內容又不完全一樣
+它就直接爆奇異
+讓模型再說得更具體一點
+這個設計看起來不高級
+但它的好處非常明確
+人能看懂,調適時也容易解釋
+而且memory文件依然可以手工編輯
+不會被一套過度結構化的內部ID體系綁死
+還有寫入路徑上的實現細節
+我覺得也很值得講
+因為它體現出這套系統不是紙面設計
+Hermes每次寫memory之前
+會先在所內重新讀一遍磁盤
+把別的session或別的進程剛寫進去的變化吸收進來
+然後再修改
+真正落盤的時候它不是直接OpenW覆蓋
+而是走10file+osreplace的原子寫回
+這背後的原因也很現實
+因為直接覆蓋有一個典型靜態窗口
+讀現成可能短暫看到空文件
+原碼現在這套實現
+就是在避免這種你明明只是寫一條記憶
+卻把別的繪畫讀崩了的問題
+安全這部分也不是點到為止
+因為長期memory最終會被注入SystemPrompt
+所以它在Hermes裡本質上是一個持久化Prompt入口
+既然是Prompt入口
+它就不能按普通聊天文本那樣對待
+所以寫入前會做Stress Scanning
+去掃Prompt Injection
+角色截持
+誘導讀取密藥
+SSH後門式暗示
+甚至隱形unicode
+這個選擇非常合理
+因為一段惡意內容如果只是出現在一次對話裡
+影響還有線
+可一旦被寫進memory文件
+後面每個session都可能被污染
+裝完長期記憶再看Hermes的另一條主線
+也就是完整歷史
+Hermes的思路
+不是把所有過去都濃縮成幾條記憶
+而是先把完整繪畫軌跡老老實實存下來
+State.db裡不只是Row和Content
+它還會存Tour,callID,TourCalls,TourName,FinishReason
+以及Reasoning,ReasoningDetails,Codex,ReasoningItems這些字段
+這就意味著
+Hermes保存的不是一份普通聊天記錄
+而是一份盡量完整的Agent運行軌跡
+這裡有個很關鍵的判斷
+為什麼連Reasoning都要存
+因為在一些Provider或模型接口裡
+多輪推理上下文本來就是連續的
+你如果把Reasoning在持久化程丟掉
+下一輪恢復的時候
+模型看到的上下文就會斷層
+所以State.db在Hermes裡更像一個運行石道安庫
+而不是單純的聊天歷史備份
+底層的檢索基座也做得挺扎實
+Sigulite這層開了WAL模式支持多讀單寫
+寫事物用了Begin Immediate
+再加應用程的隨機Gitter Retreat
+盡量打散並發寫所競爭
+同時還會定題做被動Checkpoint
+避免WAL文件一直膨脹
+這類實現細節平時不太會被用戶看到
+但它決定了Gateway、多Profile、多進程
+同時跑的時候
+這套記憶系統到底會不會因為競爭寫入而卡頓
+繪畫搜索這層則是建立在FTS5之上的
+Messages/FDS這張虛表通過Trigger跟Messages表同步
+搜索時不只是給一個命中片段
+還會帶上前後臨近消息
+所以Hermes的Session Search
+並不是一個簡單的關鍵字查表工具
+而是一個先出搜再重構上下文的回憶管線
+這裡還有一個很容易被忽略
+但特別能說明工程成熟度的細節
+Gateway現在是Sigulite和Jason L雙存
+為什麼明明已經上了數據庫
+還保留Jason Lines
+因為這套系統是眼鏡過來的
+不是從第一天就只有DB
+原馬里現在的策略是
+加在Transcript時
+會優先選擇消息更多的那個來源
+如果Jason Lines比Sigulite長
+就先用Jason Lines
+避免遷移期間只讀到最近幾條消息
+結果讓模型誤以為歷史只有一小段
+這類代碼其實很有代表性
+它不是最優雅的統一設計
+但它非常現實
+目的是不丟數據不截斷歷史
+回到Session Search本身
+這個工具我覺得是Hermes里非常關鍵的一塊
+因為它真正解決的是過去完整發生了什麼
+我現在怎麼把它拿回來
+而不是我有沒有一個長期記憶文件
+它的流程大概是這樣
+先用FTS5搜關鍵詞
+拿到很多匹配消息
+再把這些消息歸併到各自所屬的Session
+然後把這些Session的完整Transcript讀出來
+最後交給輔助模型做Focused Summary
+也就是面向當前Query的定向摘要
+而且它有幾個處理的很聰明的地方
+第一如果Query微空
+它會直接走Recent Sessions模式
+只返回最近繪畫的標題、預覽和時間戳
+幾乎沒有LLM成本
+第二真正做關鍵詞搜索時
+最多只總結5個Session
+避免一次性觸發太多LLM掉用
+第三它會把Delegation產生的Chill Session
+一路向上Resolve到Parent
+再把當前Session的Linage整條排除掉
+這樣做是為了防止模型
+把自己當前列入上的上下文
+又當成過去歷史
+重新召回一遍
+在我看來這一層的價值不只是能搜
+而是它非常明確的把長期事實和歷史軌跡
+分成了兩種完全不同的信息資產
+像用戶喜歡簡潔解釋這種東西
+寫進User Markdown文檔很合理
+但像上次為了解決某個Res bug
+改了哪幾個函數試過哪些失敗方案
+這種明顯是Episode
+也就是事件流
+它不該硬塞進長期Memory
+而應該通過Transcript保留下來
+在在需要的時候被搜索和摘要
+再往外一層就是外部Memory Provider
+Hermes在這部分沒有直接把外部記後端寫死在主訊環裡
+而是抽象出Memory Provider和Memory Manager
+Provider可以聲明自己是否可用
+可以在Session初始化時連接資源
+可以提供靜態System Prompt Block
+可以做Pre-Fetch Recall
+可以在Turn結束後同步數據
+也可以暴露自己的工具接口
+這說明Hermes團隊並沒有把記憶理解成
+只有一種實現方式
+而是給未來接第三方後端留了很完整的生命週期接口
+不過從具體實現上看
+Hermes也沒有為了統一抽象去強行摩拼所有差異
+內建的Memory MD和User MD
+仍然走獨立的Memory Store主線
+外部Provider則通過Memory Manager接入
+這種半統一結構在我看來反而很合理
+因為內建技與外部語音後端本來就不是同一類東西
+硬揉成一個對象模型不一定更乾淨
+反而可能讓成本和邊界都變模糊
+而且Hermes對外部Provider還加了一個非常現實的限制
+同一時間只允許一個外部Provider生效
+原因很直接
+如果兩個Provider同時暴露工具
+同時做Recode
+同時想把自己的說明塞進Prompt
+你幾乎一定會遇到工具表面膨脹
+召回結果衝突、模型物調用這些問題
+所以它寧可收斂一點
+也不去追求什麼都能並連
+這一層最值得強調的一個實現細節
+是外部Recode的注入方式
+Hermes會在當前用戶Turn開始之前
+先用原始User Message做一次Prefash
+這裡特意用的是原始用戶書
+而不是已經被技能說明其他附加內容加工過的版本
+因為後者會把Recode Query搞得又長又髒
+拿到Recode結構以後
+它不會去改真實繪畫裡的Messages
+而是在構造API Messages時
+臨時把那段內容包進Memory Context標記
+再拼到當前這輪的User Message後面
+這一點非常重要
+因為它明確區分了API調用時臨時給模型的背景和真實繪畫歷史
+更關鍵的是這種Recode不會被寫為Transcript
+這一點我真的建議所有做Agent的人都重點看一下
+如果召回結果被再次寫進歷史
+那麼以後Session Search再去搜的時候
+就會把系統自己召回出來的內容誤當成真實歷史
+這會導致一種非常糟糕的自我污染
+時間久了系統甚至分不清哪些是原始事實
+哪些是以前某次臨時補進去的解釋
+Hermes這裡用Fence的Block把Recode包起來
+而且限定在API Code邊界生效
+我覺得這是整個記憶架構裡最應該保留的設計之一
+而Turn結束之後
+外部Provider也不是立刻每一部都同步
+當前實現是拿到最終Final Response以後
+再統一做Sync Code
+然後順手Cue Prefetch All為下一輪準備
+這意味著Hermes更偏向本輪結束後寫入下一輪開始前召回的松偶和模式
+而不是每個脫Code後都同步一次
+這對延遲和成本都更友好
+說到這裡你其實會發現
+所謂當前工作記憶這一層雖然不持久
+但它反而是所有記憶機制真正會合的地方
+內建Memory通過System Prompt常駐進來
+外部Provider Recode通過API Code Time Injection臨時進來
+歷史Transcript又可以通過Session Search變成當前上下文的一部分
+三種來源最終都匯入API Messages
+服務的是當前這一輪推理
+所以Hermes的記憶系統不是幾個獨立小功能
+而是一套圍繞當前推理回合組織起來的上下文裝配線
+接下來我覺得最精彩的部分
+是Hermes怎麼處理上下文馬上要丟的時刻
+比如要做Context Compression或者Session要Reset
+或者Gateway的繪畫即將過期
+普通系統通常就是直接壓縮
+直接清空直接重建
+但Hermes會先做一件事叫Flush Memories
+這一部的實現其實很講究
+它會先在消息列表末尾臨時追加一條系統風格的User Message
+內容大概就是這段上下文馬上要被壓縮了
+請優先保存值得長期記住的東西
+特別是用戶偏好糾正和重複模式
+然後Hermes會發起一次額外的模型調用
+但這次只開放Memory這個工具
+不讓模型再去跑其他流程
+如果這次調用產生了Memory Tool Call就執行寫入
+最後再把剛才那條Flush Message以及相關臨時痕跡
+從消息列表裡撥掉確保Transcript不會被這次歸黨動作污染
+連這一部它都盡量做了成本優化
+原碼裡Flush Memories會優先走Auxiliary Client
+因為這類臨時歸黨調用沒必要總是占用主模型煉路
+而且這麼做還能繞開一部分API兼容器麻煩
+比從這裡能看出來
+Hermes團隊不是只想到了要在壓縮前記一下
+而是真的把這件事當成運行時邊界上的一段獨立工程流程來處理
+如果啟用了外部Provider真正壓縮前還會再跑一次One Pre-compress
+也就是說Hermes認為壓縮邊界不是一個簡單丟內容的操作
+而是一個應該主動做知識轉移的時刻
+內建Memory在這裡做歸黨
+外部Provider也可以在這裡抽取他認為必須保住的東西
+而且Compression本身也不是重寫當前Session
+Hermes的做法是結束就Session 生成新的Session ID
+創建一條代Parent Session ID的Continuation Session
+再把壓縮後的消息寫進去
+這樣就Transcript還在 新的對話又能繼續
+整個Linage也保住了 所以它不是壓縮後覆蓋舊歷史
+而是在歷史之上開一個新分支
+這一點非常關鍵 因為後續Session Search正是依賴Linage感知
+來避免把當前列入當成歷史重複召回
+Gateway場景下記憶系統會更複雜
+因為誰共享這份上下文本身就是產品設計問題
+Hermes在Build Session Key裡把這件事建謀得很細
+私聊通常按Chat隔離
+群僚裡如果開啟了Group Sessions Per User 會按用戶隔離
+但如果是Strat 默認又會共享一個Session
+除非顯示打開Strat Sessions Per User
+這其實對應的是一種非常明確的產品判斷
+現成討論 默認是一條共享上下文
+而不是每個人各自一條私有現成記憶
+這和長期記憶的作用語又不是完全一回事
+Transcript這一層通常按Session Key隔離
+但外部Provider初始化時
+還能拿到User ID Agent Identity Hermes Home這些信息
+這就給了系統一個很大的自由度
+你可以讓某個Strat的對話歷史是共享的
+同時又讓某種用戶偏好記憶保持User Scoped
+這種繪畫共享和長期記憶歸屬可以分開治理的設計
+我覺得非常實用
+在看紫代理你會更清楚 Hermes到底有多克制
+在Dialogation裡
+Chill Agent默認沒有Memory工具
+而且構造紫代理時會顯示傳Scape Memory東西觸
+不僅如此 紫代理連Clarify 地規Dialogation 跨平台 消息發送
+這些能力也默認被倒掉
+這說明 Hermes 團隊對誰有資格寫長期記憶這件事是很保守的
+這種保守我認為是對的
+因為紫代理的上下文更窄
+它很容易把局部偶然情況誤當成長期事實
+而且紫代理往往並發執行
+直接讓他們去寫共享Memory 幾乎一定會製造造成
+Hermes 的做法是 紫代理自己不寫
+但附代理的Provider 可以在Dialogation完成後收到Task和Result
+也就是OnDialogation這個Hook
+換句話說 探索和執行可以下放給紫代理
+但這件事值不值得進入長期記憶的判斷
+還是留給副級上下文去做
+自動化治理這部分也很有意思
+Hermes 並不完全相信
+主代理每次都會自覺的調用Memory工具
+所以系統提示裡一直在灌輸Memory Guidance
+提醒模型優先保存用戶偏好
+環境怪癖 穩定約定
+不要把Task Progress和Completed Work Log寫進去
+這是一層前置約束
+但它還不只這一層
+Hermes Since Memory 會持續技術
+如果連續很多輪都沒有發生Memory寫入
+達到預值以後就觸發Background Review
+默認預值是10輪
+這個Background Review 會Folk一個輕量Review Agent
+沿用當前模型把剛剛這段繪畫快照再過一遍
+然後附加一段專門的Review Prompt
+讓它自己檢查剛才有沒有什麼
+本該記住卻沒記下來的事實
+而且這個Review是在用戶已經收到最終回復之後
+才一步跑的
+目的是不跟主任務搶注意力
+我很喜歡這個設計
+因為它像一個會後秘書
+主代理在前台把任務做完
+後台在有人幫你檢查
+剛才有沒有什麼值得長期沉澱的東西
+這會讓記憶系統從單次工具決策
+變成前台執行加後台復盤的雙重機制
+容錯率會高很多
+如果讓我概括Hermes當前這套機制架構最大的優點
+我會說它的優點不是某一個Memory Background特別先進
+而是邊界真的滑得很清楚
+什麼是穩定事實
+什麼是完整歷史
+什麼是臨時召回
+什麼是當前工作上下文
+什麼是壓縮前必須搶著的信息
+什麼是子代理不該碰的共享長期記憶
+這些邊界基本都被顯示建模了
+很多Agent系統最後不是輸在能力不夠
+而是輸在上下文層次混了
+歷史污染了
+Session邊界不清楚
+Hermes目前最大的價值
+就是他沒有在這些地方偷懶
+但他的局限也一樣很清楚
+第一
+內建Memory下次Session才生效
+這會帶來明顯的體感之後
+第二
+Created Memory仍然只是文本條目
+透明歸透明
+但結構化治理不夠強
+不容易做衝突檢測
+自斷級合併和優先級管理
+第三
+Session Search更像摘要式回憶
+適合回答上次發生了什麼
+但還不夠適合Agent繼續拿他做結構化之心
+第四
+內建Memory和外部Provider之間
+現在仍然是弱偶和
+只能橋接
+不是強一致
+如果一定要說下一步最值得補什麼
+我覺得重點不一定是
+再接一個新的Memory Backend
+更有價值的方向
+反而是給Created Memory
+加一點輕量結構化原信息
+比如Scope
+來源
+更新時間
+致信度
+再就是做一個Session內可見
+但不打碎System Prompt前綴的Overlay記憶層
+這樣一來
+既能保持現在的緩存策略
+又能緩解我明明剛記住
+為什麼當前Session還看不到的體驗問題
+另外一條我覺得很值得做的
+是把Session Search
+從摘要模式繼續往前退一步
+比如除了Semory
+再加Artifact
+Command
+Decisions
+這種結構化提取模式
+因為Agent真正需要的
+很多時候不是上次聊了什麼
+而是上次到底執行了哪些命令
+改了哪些文件
+做了什麼決定
+從現在這套Transcript的基座看
+這條眼睛路徑其實是成立的
+如果是你來繼續做這套系統
+你會優先補結構化Curated Memory
+還是補本Session可見的Overlay記憶
+為什麼
+所以回到最開始那個問題
+Hermes到底是不是有一個很強的記憶模塊
+我覺得更準確的說法是
+它不是一個腦子
+而是一個記憶工廠
+Memory Markdown文檔和User Markdown文檔
+是長期檔案規
+State.db是完整流水帳
+Session Search是檔案檢索員
+外部Provider是可插拔的專業記憶後端
+Flush Memories是上下文丟事前的歸黨員
+Background Review則向事後副攀員
+Arrone Conversation真正做的事情
+是在不同邊界點把這些角色調度起來
+讓他們各幹各的活
+從Agent Engineering的角度講
+這種設計不一定是最統一最優雅的
+它甚至保留了不少眼鏡中的痕跡
+比如Jayson Lines和Secretto並存
+內建Memory Store和外部Provider並行存在
+但也正因為它沒有為了抽象統一去強行簡化現實
+所以它反而更接近一個真實複雜系統
+在生產環境裡能長期工作的樣子
+我會把它看成一種很有意識的系統及折中
+而不是功能拼裝
+如果你要用一句話總結Hermes的記憶架構
+我覺得可以這麼說
+它不是在追求什麼都記住
+而是在追求把不同類型的記憶放進不同層次
+用合適的生命週期和成本模型去管理它們
+也正因為這樣
+Hermes的價值不只是做了一個Memory Tool
+而是把長期事實、完整歷史、外部Recall
+還有壓縮和重置這些邊界事件
+真正組織成了一套能落地、能擴展
+也能自我約束的記憶基礎設施
+如果這期視頻對你理解Agent的記憶工程有幫助
+記得點贊支持一下
+我們下期再見
+字幕by索兰娅

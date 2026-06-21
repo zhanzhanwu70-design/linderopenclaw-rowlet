@@ -60,3 +60,32 @@ const fs = require('fs');
 const apiKey = fs.readFileSync(process.env.OPENAI_API_KEY_DIR, 'utf8').trim();
 
 OPENAI_API_KEY_DIR = /home/node/.openclaw/secrets/openai-api-key.txt
+
+## MiniMax API (Graphify)
+
+- **Endpoint**: `https://api.minimax.io/v1` (OpenAI-compatible)
+- **Model**: MiniMax-M2.7
+- **Key**: stored in `~/.openclaw/secrets/minimax-api-key.txt`
+- **Usage**: Graphify semantic extraction on `raw/code/` directories
+- **Command**:
+  ```bash
+  OPENAI_API_KEY=$(cat ~/.openclaw/secrets/minimax-api-key.txt) \
+    OPENAI_BASE_URL="https://api.minimax.io/v1" \
+    /home/node/.local/bin/graphify extract <dir> --backend openai --model "MiniMax-M2.7"
+  ```
+
+## LLM Wiki (大書庫)
+
+- **Nickname**: 大書庫
+- **Graph layer (primary)**: `/home/node/.openclaw/workspace/llm-wiki/graphify-out/`
+  - `GRAPH_REPORT.md` — clustered communities + node index
+  - `graph.json` — full graph for queries
+- **Wiki (secondary)**: `/home/node/.openclaw/workspace/llm-wiki/wiki/`
+- **Raw (last resort)**: `/home/node/.openclaw/workspace/llm-wiki/raw/`
+- **Query command** (preferred over reading wiki/):
+  ```bash
+  /graphify query "<question>"
+  # or
+  cd /home/node/.openclaw/workspace/llm-wiki && graphify query "<question>" --budget 800
+  ```
+- **Do not** preload `wiki/**/*.md` or scan `raw/` at session start. Trust the precomputed graph.
