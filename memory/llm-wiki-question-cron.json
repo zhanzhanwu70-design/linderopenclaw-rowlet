@@ -551,6 +551,42 @@
       "source": "wiki/sources/youtube-hermes-agent-memory-architecture.md",
       "question": "Hermes Agent 在把 Memory.md / User.md 寫入磁盤前，會做哪些安全掃描？為什麼長期記憶的寫入需要這麼嚴格的威脅模型？",
       "mode": "cron"
+    },
+    {
+      "ts": 1752076980,
+      "source": "wiki/sources/eywa-provenance-grounded-long-term-memory.md",
+      "question": "Eywa 的長期記憶架構把「evidence」和「beliefs」分開儲存——這個區分解決了什麼問題？為什麼 raw evidence 要是不可變的，而 beliefs 可以被刪除或修訂？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1752099840,
+      "source": "wiki/sources/streamingllm-attention-sinks-infinite-context.md",
+      "question": "StreamingLLM 的 attention sink 有一個關鍵特性：把前4個 token 置換成 \\n\\n\\n\\n（無語意內容）仍能恢復 perplexity。這說明 attention sink 是**位置的**而非**語意的**。這個發現對 agent 的 prompt 設計有什麼具體啟示？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1752116640,
+      "source": "wiki/concepts/confidence-intervals.md",
+      "question": "95% 信賴區間（Confidence Interval）最常被誤解成「真實參數有 95% 機率落在這個區間裡」——這個理解錯在哪裡？正確的詮釋是什麼？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1782019620,
+      "source": "wiki/sources/mirix-multi-agent-memory.md",
+      "question": "Mirix 把多代理記憶分成六種類型（Core / Episodic / Semantic / Procedural / Resource / Knowledge Vault），為什麼不是用一個統一的共享記憶就好？這個分層設計解決了什麼問題？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1782101788,
+      "source": "wiki/concepts/LLM 自我反駁工作流.md",
+      "question": "LLM 自我反駁工作流說「LLM 的 intrinsic self-correction 不是穩定能力」——沒有外部 feedback 時，模型可能把正確答案改壞。為什麼把 Critic 設計成主動尋找 unsupported claims，而不是讓模型自己反思，會是更可靠的設計？",
+      "mode": "cron"
+    },
+    {
+      "ts": 1782166440,
+      "source": "wiki/concepts/emergent-properties.md",
+      "question": "弱湧現（weak emergence）和強湧現（strong emergence）差在哪裡？為什麼這個區分不只是學術上的好玩，而是理解「為什麼更多零件、更大的系統不一定更好」這件事的關鍵？",
+      "mode": "cron"
     }
   ]
 }
