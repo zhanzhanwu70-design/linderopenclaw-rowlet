@@ -175,10 +175,32 @@
 - 80MB wav 是 wav 格式的代價，保留供重轉/重分析，不要刪
 - 影片類型不限（AI 工程 / 哲學 / 演講 / 教學）— 統一流程，差異只在 concept page 的術語抽取
 
+## Agent Builder Researcher Skill（2026-06-23）
+- 新增 skill：`~/.openclaw/skills/agent-builder-researcher/SKILL.md`
+- 研究「製作agent的agent」— agent-builder, agent-factory, meta-agent, agent-forge 等
+- 整合進既有的「每日 Agent × 軟體開發潮流研究」cron（ID: a72cb46b）
+- 輸出：`wiki/sources/agent-builder-daily-YYYY-MM-DD.md`
+- 搜尋關鍵字：agent-builder, agent-factory, agent-forge, meta-agent, auto-agent, agent-generator
+
 ## Pending / Follow-ups
 - Download TopoClaw + MetaCogAgent papers to wiki
 - Update HEARTBEAT.md for other agents (charizard, gengar, etc.) with Shared Memory integration
 - Investigate TopoClaw / OpenClaw naming similarity
+- Episodic memory gap: only `2026-05.jsonl` exists; Jun-Jul 2026 events not archived
+
+## Sensor Fusion Daily Research (task_20260609_001, ongoing)
+- CEO assigned daily research task covering IMU/Camera/LiDAR fusion topics
+- Location: `~/.openclaw/shared-memory/sensor-fusion/daily/YYYY-MM-DD.md`
+- Topics covered so far:
+  - 6/9: Initial study
+  - 6/16: Unknown (by other session)
+  - 6/17-6/18: (by other sessions)
+  - 6/21: LiDAR + Camera Fusion — Early/Late/Middle Fusion, PointPainting/PointAugmenting/DeepFusion, ROS2 calibration
+  - 6/22 AM: IMU + Camera Fusion (VIO/VI-SLAM) — MSCKF vs VINS-Mono, Bongarella IMU Preintegration, Kalibr, Allan Variance
+  - 6/22 PM: ROS2 Fusion Packages — message_filters/ApproximateTimePolicy, sensor_filters, robot_localization EKF, rtabmap_ros
+  - 6/22 PM: EKF/UKF Math — state space model, Kalman gain intuition, Sigma Points (UKF), Q/R tuning, Allan Variance
+  - 6/23: Time Sync — PTP/gPTP (±100ns), PPS (±50ns), Hardware Trigger, Software sync limits (50-200ms latency), ROS2 clock settings
+- Next: Real-world robot case studies (DARPA SubT/Apollo/Waymo) or Factor Graph in SLAM vs EKF/UKF
 
 ## OpenClaw Memory Architecture — 3-Tier Pattern (Zac Frulloni, 2026-06-20)
 **來源**：`[[wiki/sources/openclaw-memory-plugins-tier-list-youtube]]` — 直接命中 Rowlet 自身架構

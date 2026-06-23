@@ -587,6 +587,12 @@
       "source": "wiki/concepts/emergent-properties.md",
       "question": "弱湧現（weak emergence）和強湧現（strong emergence）差在哪裡？為什麼這個區分不只是學術上的好玩，而是理解「為什麼更多零件、更大的系統不一定更好」這件事的關鍵？",
       "mode": "cron"
+    },
+    {
+      "ts": 1782121580,
+      "source": "wiki/concepts/theory-testing.md",
+      "question": "Theory Testing 把理論檢驗分四個層次：描述性、解釋性、預測性、規範性——這四個層次各自對應什麼驗證方式？",
+      "mode": "cron"
     }
   ]
 }

@@ -130,6 +130,36 @@ Priority: medium"
 
 ---
 
+## 轉錄監控（每次 Heartbeat 必檢）
+
+#### Step Transcribe: 檢查轉錄中的影片
+```bash
+# 找所有 _transcript.log 但還沒有 .txt 的 video 目錄
+for log in $(find ~/.openclaw/workspace/llm-wiki/raw/video -name "*_transcript.log" 2>/dev/null); do
+  dir=$(dirname "$log")
+  id=$(basename "$dir")
+  txt="$dir"/*.txt
+  if [ ! -f "$txt" ]; then
+    echo "IN_PROGRESS: $id"
+    tail -2 "$log" 2>/dev/null
+  fi
+done
+```
+
+**處理邏輯：**
+- 如果看到 `EXIT:` 或 whisper 完成訊息 → 轉錄完成，觸發入庫流程
+- 如果看到 progress 但未完成 → 繼續等待（不干預）
+- 如果超過 30min 沒更新 → 視為 stale，考慮重啟
+
+**入庫觸發條件：** 發現 `mW5-AxYNkx4.txt` 或任何新完成的轉錄檔案
+
+#### Step 2: 入庫（轉錄完成時）
+轉錄完成後立即執行完整入庫流程：
+1. metadata.md → wiki/sources/[slug].md → wiki/log.md → daily memory
+2. 通知用戶（如果是在處理中的重要影片）
+
+---
+
 ## 當前任務（持續執行中）
 
 ### Code Dependency Graph Linking（已大部分完成）
