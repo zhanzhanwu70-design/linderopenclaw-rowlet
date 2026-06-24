@@ -1,0 +1,27 @@
+[rowlet/sessions/rowlet/1ac8a7b1-cd43-4db3-88c6-8a8454d571fb.jsonl#L21] Assistant: Let me download the ContextWeaver paper (highly relevant to today's topic) and read its full content:
+[rowlet/sessions/rowlet/1ac8a7b1-cd43-4db3-88c6-8a8454d571fb.jsonl#L28] Assistant: Now let me save the metadata and create the wiki entry:
+[rowlet/sessions/rowlet/1ac8a7b1-cd43-4db3-88c6-8a8454d571fb.jsonl#L52] Assistant: This is a fresh paper (June 9, 2026) with excellent relevance. Let me download and process it:
+[rowlet/sessions/rowlet/1ac8a7b1-cd43-4db3-88c6-8a8454d571fb.jsonl#L57] Assistant: Now let me create the metadata and wiki source entry:
+[rowlet/sessions/rowlet/1ac8a7b1-cd43-4db3-88c6-8a8454d571fb.jsonl#L66] Assistant: --- ## 🌿 每日論文討論回報 ### 📄 今日論文：**REAL: A Reasoning-Enhanced Graph Framework for Long-Term Memory Management of LLMs** **arXiv:** [2606.10694](https://arxiv.org/abs/2606.10694) | 2026-06-09 宣布（超新鮮） **作者：** Keer Lu, Liwei Chen 等（北大 + 快手） --- ### 📁 存入位置 - **PDF:*
+[rowlet/sessions/rowlet/1ac8a7b1-cd43-4db3-88c6-8a8454d571fb.jsonl#L66] Assistant: **C3: Passive Retrieval** — 現有檢索無論 query 什麼都執行同樣模式，證據不足時只會說「不知道」 #### 2. **非破壞性時序更新** 每個 atomic fact 是 sextuple： ``` m = (h, r, t, [τs, τe], c, ι) ``` - h/t: head/tail entities - r: relation - [τs, τe]: valid-time interval（新值不刪舊值，只是舊值到期、新值生效） - c: confidence sc
+[rowlet/sessions/rowlet/1ac8a7b1-cd43-4db3-88c6-8a8454d571fb.jsonl#L66] Assistant: agent、軟體工程 | | 更新策略 | Non-destructive（保留版本） | Failed/Superseded 標記 | | 驗證信號 | Confidence scores, temporal validity | pytest/unittest | --- ### 💡 對 OpenClaw Agent 的啟發 1. **時序 + 置信度**很重要——記憶不是永恆的，「使用者三個月前說喜歡義式料理」這個事實現在可能已過期 2. **非破壞性更新**比覆寫更適合追蹤偏好變遷（與 Mem0 / Hip
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4236] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4246] Assistant: 06-23 UTC. Yesterday completed several entries. Today already has 6/23-time-sync done. Doing next topic: **Factor Graph in SLAM vs EKF/UKF**.
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4384] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4402] Assistant: 06:00 UTC approaching. Today's topic: **Sensor Fusion in Humanoid Robots** (Atlas, Optimus).
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4452] Assistant: ~07:20 UTC. Today's fourth topic: **Edge AI for Robotics — embedded GPU/NPU for real-time sensor fusion**.
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4478] Assistant: 4 entries today, already good coverage. One more entry about today's first slot to avoid gap:
+[rowlet/sessions/rowlet/9e4bc294-0ad4-4aef-84af-d5af300c0b9a.jsonl#L42] Assistant: Good findings. Let me grab a bit more of the v8 changelog and then update the wiki.
+[rowlet/sessions/rowlet/9e4bc294-0ad4-4aef-84af-d5af300c0b9a.jsonl#L44] Assistant: Now I have enough. Let me write the v8 changelog snapshot and update the wiki entry.
+[rowlet/sessions/rowlet/9e4bc294-0ad4-4aef-84af-d5af300c0b9a.jsonl#L50] Assistant: Now update the Graphify wiki entry:
+[rowlet/sessions/rowlet/9e4bc294-0ad4-4aef-84af-d5af300c0b9a.jsonl#L52] Assistant: Now update the `last_reviewed` field and append to the log:
+[rowlet/sessions/rowlet/9e4bc294-0ad4-4aef-84af-d5af300c0b9a.jsonl#L58] Assistant: Let me do a quick sanity check on the updated entry:
+[rowlet/sessions/rowlet/9e4bc294-0ad4-4aef-84af-d5af300c0b9a.jsonl#L60] Assistant: Done. Here's the Discord summary: --- **🌿🦉 LLM Wiki 每日巡讀 — 2026-06-23** **Entry reviewed:** `wiki/projects/Graphify.md` **Key discovery:** Graphify has jumped to **v8** — a major version branch that's now at v0.8.45 (released 2026-06-22), while our local clon
+[rowlet/sessions/rowlet/9e4bc294-0ad4-4aef-84af-d5af300c0b9a.jsonl#L60] Assistant: clone/move - **Video transcription in `--update`** — changed video files transcribed before semantic pipeline - **Cross-file type-annotation phantom node bug fixed** **New raw files:** - `raw/web/graphify-v8-2026-06-23/CHANGELOG-v8-unreleased-to-0.8.45.md` — fu
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4514] Assistant: ~09:00 UTC. Today's last entry: **Sensor Fusion Safety — 失效檢測、CRC校驗與多感測器交叉驗證**.
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4628] Assistant: ~13:00 UTC. Today's topic: **Multi-Robot Collaborative SLAM — shared map synchronization and bandwidth optimization**.
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4667] Assistant: Now let me create all the wiki files based on the planning from mrmime + charizard research:
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4678] Assistant: Now the concept pages from charizard's research:
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4684] Assistant: Now the pattern pages and raw evidence files:
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4687] Assistant: Now the raw evidence files:
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4735] Assistant: No tasks. Quick 6th sensor fusion topic before next beat — **Bio-inspired Sensor Fusion**:

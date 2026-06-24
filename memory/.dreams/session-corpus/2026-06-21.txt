@@ -1,0 +1,12 @@
+[rowlet/sessions/rowlet/e2bde000-f3cf-474c-be27-e2eedb27e5ce.jsonl#L16] Assistant: 這是個很好的抽題目標。我來確認一下最近還沒問過這個概念：
+[rowlet/sessions/rowlet/e2bde000-f3cf-474c-be27-e2eedb27e5ce.jsonl#L18] Assistant: 好，這個概念從未被問過。寫入記錄並輸出：
+[rowlet/sessions/rowlet/e54a1fb5-eb83-4485-92ca-3662f07258e2.jsonl#L19] Assistant: ## HC #28｜Nonfiction｜非虛構文本分析 **領域：** 批判性思考 › Analyzing Inferences **前一號：** #27 Context（脈絡） --- ### 定義 **Nonfiction** 是系統性評估與分析非虛構文本（報導、論文、回憶錄、報紙專欄等）的認知能力。核心在於區分**事實陳述**與**意見詮釋**，並檢驗支撐論證的證據是否充分、來源是否可靠。 這與 #4 Source Quality（來源品質）高度相關，但更聚焦於**文本整體結構與論證鏈**的分析，而非僅僅評斷
+[rowlet/sessions/rowlet/e54a1fb5-eb83-4485-92ca-3662f07258e2.jsonl#L19] Assistant: claims** — 回到原始論文或數據源確認 --- ### 實作檢查清單 面對任何非虛構文本時，快速問自己： - [ ] 作者是誰？有沒有表明身份與立場？ - [ ] 核心論點是什麼？是否區分了事實與詮釋？ - [ ] 證據充分嗎？是數據、個人經驗、還是專家意見？ - [ ] 有沒有引用原始來源？可不可以溯源？ - [ ] 反對觀點有被呈現嗎？作者有回應嗎？ - [ ] 這篇文章和我已經知道的知識有沒有衝突？ --- ### 與其他 HC 的連結 - **#4 Source Quality** — 源頭，評估「誰
+[rowlet/sessions/rowlet/e88c3e7b-d40a-4410-8785-eef373b7de39.jsonl#L33] Assistant: 好的，StreamingLLM 是還沒被問過的主題，而且有個很具體的核心發現可以當題目。讓我選定這個。
+[rowlet/sessions/rowlet/e88c3e7b-d40a-4410-8785-eef373b7de39.jsonl#L35] Assistant: StreamingLLM 的核心發現很清晰，而且它和 memory/RAG 的區別是一個重要的理解層次。讓我選定這個題目。
+[rowlet/sessions/rowlet/e88c3e7b-d40a-4410-8785-eef373b7de39.jsonl#L39] Assistant: 好，最後一題是 Hermes Agent（2026-06-21 02:27）。StreamingLLM 是還沒被問過的好主題，問它和 RAG/memory 的層次差異。
+[rowlet/sessions/rowlet/f6c1dc32-bd36-4058-ab20-3e1119e02866.jsonl#L26] Assistant: Now I have a fresh topic. Let me update the memory file and output the question.
+[rowlet/sessions/rowlet/f6c1dc32-bd36-4058-ab20-3e1119e02866.jsonl#L28] Assistant: Now I'll update the memory file and output the question.
+[rowlet/sessions/rowlet/f6c1dc32-bd36-4058-ab20-3e1119e02866.jsonl#L36] Assistant: Karpathy 的「Jagged Intelligence」說 AI 能力分佈不是平滑曲線，而是有高峰有斷崖——他用哪兩個條件（Verifiable + Labs Care）解釋為什麼數學和 Code 能力鶴立雞群，但日常推理卻到處是坑？
+[rowlet/sessions/rowlet/f801fb4f-2a68-47d0-9f87-c4da3eac092c.jsonl#L30] Assistant: Looking at the existing questions, I notice `confirmation-bias.md` was recently added but only covers the 4 diagnostic questions. Let me check some genuinely unused concepts for a fresh pick.
+[rowlet/sessions/rowlet/f801fb4f-2a68-47d0-9f87-c4da3eac092c.jsonl#L33] Assistant: Good — both are unused. Let me pick a strong question from bayesian-statistics (a rich, high-value concept) and update the tracking file.

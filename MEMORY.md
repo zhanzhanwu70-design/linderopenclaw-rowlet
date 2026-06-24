@@ -187,6 +187,19 @@
 - Update HEARTBEAT.md for other agents (charizard, gengar, etc.) with Shared Memory integration
 - Investigate TopoClaw / OpenClaw naming similarity
 - Episodic memory gap: only `2026-05.jsonl` exists; Jun-Jul 2026 events not archived
+- ELLE_WS repos/ code 待到位，Phase 3 graphify extraction 為 blocker
+
+## ELLE_WS Wiki Project（2026-06-23）
+- **Task**: task_20260623_elle_04_wiki_draft（✅ 已結案，CEO 審核通過）
+- **Location**: `/home/node/.openclaw/workspace/elle_ws/`（Ouroboros Trivium v2.4 格式）
+- **產出**：
+  - `raw/` — 2 evidence files（mrmime 規劃 + charizard 研究）
+  - `wiki/entities/` — 5 repos 各一頁（bringup/functions/hardware/simulations/tools）
+  - `wiki/concepts/` — 5 概念頁（architecture-overview / amr-plugin-consolidation / launch-architecture-refactor / adr-mechanism / package-granularity）
+  - `wiki/patterns/` — 2 問題頁（nav2-plugin-drift / package-xml-todo）
+  - `wiki/index.md` + `wiki/SCHEMA.md`
+- **Blocker**: 待 actual code 填入 repos/ 後執行 Phase 3（graphify extraction）
+- **charizard 研究發現整合**：P1 Nav2 plugin 重複設計 / P2 hardware/ 粒度錯誤 / P3 package.xml TODO / P9 缺少 ADR 機制
 
 ## Sensor Fusion Daily Research (task_20260609_001, ongoing)
 - CEO assigned daily research task covering IMU/Camera/LiDAR fusion topics
@@ -200,7 +213,14 @@
   - 6/22 PM: ROS2 Fusion Packages — message_filters/ApproximateTimePolicy, sensor_filters, robot_localization EKF, rtabmap_ros
   - 6/22 PM: EKF/UKF Math — state space model, Kalman gain intuition, Sigma Points (UKF), Q/R tuning, Allan Variance
   - 6/23: Time Sync — PTP/gPTP (±100ns), PPS (±50ns), Hardware Trigger, Software sync limits (50-200ms latency), ROS2 clock settings
-- Next: Real-world robot case studies (DARPA SubT/Apollo/Waymo) or Factor Graph in SLAM vs EKF/UKF
+  - 6/23b: Factor Graph SLAM — iSAM/GTSAM vs EKF/UKF、增量優化、Factor Graph 在 SLAM 中的優勢
+  - 6/23c: 人形機器人傳感器融合 — Boston Dynamics Atlas（液壓/ZMP）、Tesla Optimus（Vision-First）、姿態控制與接觸檢測
+  - 6/23d: Edge AI for Robotics — Jetson AGX Orin、Edge TPU、Isaac ROS、邊緣端調度優先級
+  - 6/23e: Sensor Fusion Safety — CRC-32 校驗、序列號連續性、IMU Range Check、Innovation 卡方檢驗、降級策略 L0→L4、ISO 26262 ASIL 等級
+  - 6/23f: Multi-Robot Collaborative SLAM — 中央式 vs 分散式架構、DBoW2/ICP/submap 地圖融合、OctoMap 頻寬優化、DARPA SubT 案例
+  - 6/23e（another agent）: Bio-inspired Sensor Fusion — 奧運報告（另一 agent 整理上報）
+  - 6/24: GNSS/RTK + Sensor Fusion — RTK/PPP-RTK/PPP 比較、Loose/Tight/Ultra-Tight 耦合、城市 NLOS 解決方案、ROS2 EKF 設定
+- Next: 繼續每日 topic 或等 CEO 指定新方向
 
 ## OpenClaw Memory Architecture — 3-Tier Pattern (Zac Frulloni, 2026-06-20)
 **來源**：`[[wiki/sources/openclaw-memory-plugins-tier-list-youtube]]` — 直接命中 Rowlet 自身架構
