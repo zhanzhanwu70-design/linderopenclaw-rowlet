@@ -25,3 +25,16 @@
 [rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4684] Assistant: Now the pattern pages and raw evidence files:
 [rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4687] Assistant: Now the raw evidence files:
 [rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L4735] Assistant: No tasks. Quick 6th sensor fusion topic before next beat — **Bio-inspired Sensor Fusion**:
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L1983] User: https://github.com/OpenBMB/VoxCPM
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L1996] Assistant: ✅ 入庫完成。 **VoxCPM** — OpenBMB 的Tokenizer-Free 多語言 TTS： - **VoxCPM2**：2B 參數、200 萬小時語音資料、**30 語言**、Voice Design（自然語言描述創造聲音）、可控克隆、48kHz 輸出 - **核心技術**：Diffusion Autoregressive + MiniCPM-4 + AudioVAE V2 - **亮點**：Tokenizer-free = 跳過離散 tokenization 直接生成，減少一個轉換層 = 少一個
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L1997] Assistant: Done. Here's the Discord summary: --- **🌿🦉 LLM Wiki 每日巡讀 — 2026-06-23** **Entry reviewed:** `wiki/projects/Graphify.md` **Key discovery:** Graphify has jumped to **v8** — a major version branch that's now at v0.8.45 (released 2026-06-22), while our local cl
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L1997] Assistant: clone/move - **Video transcription in `--update`** — changed video files transcribed before semantic pipeline - **Cross-file type-annotation phantom node bug fixed** **New raw files:** - `raw/web/graphify-v8-2026-06-23/CHANGELOG-v8-unreleased-to-0.8.45.md` — 
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L2272] User: 去下載ros2 和ros1的文件 建立raw 撰寫wiki 針對每種功能模組都寫至少寫一個wiki條目
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L2273] Assistant: 明白，這是個大型任務。先確認規模再動手：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L2276] Assistant: ROS 官網有 Anubis 反爬。改用替代方案：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L2279] Assistant: 官網有 Anubis 反爬。改用 GitHub 作為主要來源。下載關鍵模組：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L2319] Assistant: 現在開始寫 wiki。先建立地圖頁：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L2321] Assistant: 現在逐一寫模組 wiki：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L2349] Assistant: ✅ 完成。 **入庫情況：** | 來源 | 數量 | 狀態 | |------|------|------| | ROS2 Humble repos | 9 個 | ✅ GitHub clone | | ROS1 Noetic repos | 3 個 | ✅ GitHub clone | | Wiki 條目 | 13 個 | ✅ 全部完成 | **Wiki 條目（每個功能模組都寫了）：** ``` ROS2 Humble（9個頁面） ├── wiki/maps/ros-humble-modules.md ← 地
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L2349] Assistant: docs.ros.org）有 Anubis 反爬防護，無法直接抓。用 GitHub 替代，所有主要模組都已入庫。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L2350] User: 用graphify把目前的節點連結

@@ -1,0 +1,28 @@
+[rowlet/sessions/rowlet/77fd44f6-342f-4602-936b-4c4995fc358f.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/8926138e-4c1c-4048-af28-fe0eace9b268.jsonl#L33] Assistant: Now let me fetch some current thinking on AI testability to extend the entry.
+[rowlet/sessions/rowlet/8926138e-4c1c-4048-af28-fe0eace9b268.jsonl#L36] Assistant: Good context. The `testability.md` page is well-structured but lacks: 1. **Cross-links to related HCs** (theory-testing, experimental-design, observations, replication) 2. **AI/LLM-era framing** — modern relevance for evaluating AI outputs Let me update the ent
+[rowlet/sessions/rowlet/8926138e-4c1c-4048-af28-fe0eace9b268.jsonl#L40] Assistant: Now run graphify linking to connect the new AI section to related concepts:
+[rowlet/sessions/rowlet/8926138e-4c1c-4048-af28-fe0eace9b268.jsonl#L44] Assistant: Graphify has no `link` command — the SKILL.md reference to `graphifyy link` is stale. I'll skip the graph edge step and update the log.
+[rowlet/sessions/rowlet/8926138e-4c1c-4048-af28-fe0eace9b268.jsonl#L50] Assistant: Now the Discord summary: --- 🌿🦉 **Wiki 巡讀 2026-06-25** - **選讀條目：** `testability.md` (HC #7 — 可測試性) - **擴寫內容：** 新增「AI 時代的可測試性」章節 - LLM 輸出可測試性層級表（封閉事實 → 創意生成） - Prompt / Agent 行為可測試性五原則 - Popper 可偽造性 × 機率輸出的張力分析 - **新增跨連結：** 串聯 theory-testing、experimental-desig
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L6] Assistant: 收到 cron 任務。先讀今日記憶、查本地 wiki、然後做外部研究。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L9] Assistant: </think>
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L12] Assistant: 讀完記憶。我昨天有做 A-MEM 論文筆記，今天也跑了晨間情報 pipeline。現在進入正式研究流程。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L15] Assistant: </think>
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L18] Assistant: </think>
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L21] Assistant: Wiki graph 已看過，本地有完整的 context-processing / memory 地圖。現在去外部搜尋新資料。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L25] Assistant: 抓到 GitHub Trending，看到 **OpenMontage**（500+ agent skills 的影片製作 agent 系統）、**revfactory/harness**（meta-skill 設計 domain agent teams）、**stablyai/orca**（ADE for parallel agents）、**google-labs-code/design.md**（給 coding agent 的設計 spec 格式）。換其他來源繼續。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L29] Assistant: Anthropic news 拿到的是奇怪的假內容（"Fable 5 / Mythos 5 export control" — 不真實，可能是 sandbox mock）。改用 curl 直接打 API，並試其他來源。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L33] Assistant: HN 拿到豐富結果，重點是「coding agent orchestration / shared memory / MCP tooling」這條軸線。arXiv API 還在 timeout，換方式。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L37] Assistant: LangChain blog 抓到非常相關的 6 月份「agent engineering 最佳實踐」系列。繼續查更多來源。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L41] Assistant: 抓到 HN front page 第一名「OpenAI unveils its first custom chip, built by Broadcom」+ arXiv 大量 agent 論文。繼續查 framework release。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L45] Assistant: Cursor changelog 抓到「Customize Cursor」+「Marketplace leaderboard」+「/automate skill」。繼續抓 Claude Code 與其他 release。
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5723] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L49] Assistant: Claude Code v2.1.191（修了 background agents resurrecting bug）— 對 OpenClaw 的 sessions_send/heartbeat 有借鏡。我再補一輪 HN 前頁和 Thoughtworks Radar。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L53] Assistant: 抓到 **OpenAI Broadcom Jalapeno inference chip**（OpenAI 自製 inference 晶片，垂直整合）+ Thoughtworks Radar 主題「evaluating technology in an agentic world」。資料充足，開始寫報告。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L55] Assistant: </think>
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L57] Assistant: 報告主檔已存。現在補 raw snapshot 與 wiki source 條目。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L63] Assistant: Raw snapshot 5 個完成。寫 wiki source / concept 條目，更新 log.md / index.md。
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L69] Assistant: </think>
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L71] Assistant: </think>
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L74] Assistant: </think>
+[rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L77] Assistant: </think>

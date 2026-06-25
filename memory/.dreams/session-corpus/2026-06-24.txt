@@ -29,3 +29,22 @@
 [rowlet/sessions/rowlet/72f56f20-d1b8-4d4e-be99-f47f9f532883.jsonl#L54] Assistant: explicit-request-only / proactive`（thread+turn level）。跨 agent thread 的 rollout token budget 變 primitive。`/plugins` 分成 OpenAI Curated / Workspace / Shared 三區。 → <https://github.com/openai/codex/releases> **對 OpenClaw / Linder 的啟發：** - 把 OpenClaw runtime 對應到 `ses
 [rowlet/sessions/rowlet/72f56f20-d1b8-4d4e-be99-f47f9f532883.jsonl#L54] Assistant: Codex 0.143 alpha（#28685、#28792 multi-agent delegation） - DeusData/codebase-memory-mcp、calesthio/OpenMontage、NVIDIA/SkillSpector、LMCache/LMCache **下一步建議：** 1. 把三篇 Anthropic 文章 ingest 到 llm-wiki（sources/ + concepts/openclaw-runtime-abstractions.md 新頁 + graphify 
 [rowlet/sessions/rowlet/72f56f20-d1b8-4d4e-be99-f47f9f532883.jsonl#L54] Assistant: snapshots 已存到 `/home/node/.openclaw/workspace/llm-wiki/raw/sources/anthropic-engineering/2026-06-24/`。 完整報告：`/home/node/.openclaw/workspace-rowlet/architecture-daily-report.md` 每日記憶：`/home/node/.openclaw/workspace-rowlet/memory/2026-06-24.md`
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5011] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5013] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5224] Assistant: 晨間情報任務之前失敗（LLM error 999），現在已過 quiet hours，主動嘗試執行。
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5234] Assistant: 晨間情報湊集完畢，發送給 CEO。
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5236] Assistant: 晨間情報已成功送達。Pipeline 完成。
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5256] Assistant: Good morning! 08:10 UTC, June 24. Morning pipeline ✅ done. Sensor fusion daily ✅ filed (2026-06-24-gnss-rtk-fusion). Quiet hours just ended. HEARTBEAT_OK
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5330] Assistant: Still receiving polls without tasks. Continuing sensor fusion research while awaiting CEO direction.
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5338] Assistant: (已回覆，確認 Semantic SLAM，等明日）
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5340] Assistant: 晚安，CEO。🌿🦉
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5347] Assistant: 晨間研究啟動。開始 Semantic SLAM 文獻調研。
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5355] Assistant: 文獻調研足夠，撰寫今日 Semantic SLAM 研究記錄。
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5359] Assistant: 研究完成，回報已確認。HEARTBEAT_OK
+[rowlet/sessions/rowlet/8e2e7c7b-e426-4bc6-9869-591f4fd6dbd7.jsonl#L37] Assistant: Good, I have enough to write the source entry. Now let me check the code-agent map and then create all the required files.
+[rowlet/sessions/rowlet/8e2e7c7b-e426-4bc6-9869-591f4fd6dbd7.jsonl#L58] Assistant: I'll pick **A-MEM: Agentic Memory for LLM Agents** (NeurIPS 2025) — it has a PDF and reading notes but no wiki source entry yet. Let me build the full pipeline.
+[rowlet/sessions/rowlet/8e2e7c7b-e426-4bc6-9869-591f4fd6dbd7.jsonl#L63] Assistant: Now I have all the data. Let me create the wiki source entry.
+[rowlet/sessions/rowlet/8e2e7c7b-e426-4bc6-9869-591f4fd6dbd7.jsonl#L65] Assistant: Now let me update the code-agent map to include A-MEM.
+[rowlet/sessions/rowlet/8e2e7c7b-e426-4bc6-9869-591f4fd6dbd7.jsonl#L75] Assistant: --- ## 📄 每日論文討論 — A-MEM **論文**: [A-MEM: Agentic Memory for LLM Agents](https://arxiv.org/abs/2502.12110) **作者**: Xu, Liang, Mei, Gao, Tan, Zhang (NeurIPS 2025) **主題**: Long-term Memory for Agents **儲存**: `wiki/sources/a-mem-agentic-memory.md` | 更新 `wiki/maps/c
+[rowlet/sessions/rowlet/8e2e7c7b-e426-4bc6-9869-591f4fd6dbd7.jsonl#L75] Assistant: → LLM 判斷是否真的該 link。這把連結品質的判斷交給 LLM，而不是靠固定 threshold。這對 OpenClaw 的 task queue / memory 日誌有意義——我們可以用相似的方法做「相關歷史任務」的連結。 **3. Memory Evolution 的風險與機會** 新 note 插入時，相鄰 note 的 metadata（keywords, tags）會被更新。這讓記憶保持動態，但也帶來 silent drift 風險——系統需要 provenance log 來追蹤哪個 note 被
+[rowlet/sessions/rowlet/8e2e7c7b-e426-4bc6-9869-591f4fd6dbd7.jsonl#L75] Assistant: prompting——部署門檻差很多。

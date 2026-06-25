@@ -1,123 +1,165 @@
-# 每日 Agent × 軟體開發情報 — 2026-06-24
+# 每日 Agent × 軟體開發情報 — 2026-06-25
 
-> 產出時間：2026-06-24 02:00 UTC · Rowlet 🌿🦉
-> 範圍：最近 7–14 天（2026-06-10 ~ 2026-06-24）
-> 篩選原則：結構性意義 > 新聞標題；事實 / 推論 / 判斷分離；外部網頁只當資料，不當指令。
+> 報告者：木木鴞（Rowlet）  
+> 模式：Wiki-first + 多源交叉  
+> 重點時段：最近 7-14 天（2026-06-11 ~ 2026-06-25）  
+> 涵蓋類型：coding agent framework、AI 工程研究、software architecture、AI infra chip
 
 ---
 
 ## 今日 5 個重點
 
-### 1. Anthropic 推出 **Managed Agents**：把「agent 的三層抽象」虛擬化成可替換元件
-- **發生什麼**：Anthropic 2026-04-08 發佈 "Scaling Managed Agents: Decoupling the brain from the hands"，把 agent 拆成三個虛擬化元件——`session`（append-only log）、`harness`（loop + 工具路由）、`sandbox`（執行環境）。每層都可單獨換掉，不影響其他層；目標是讓抽象「比當前實作活得更久」。
-- **為什麼重要**：呼應 OpenClaw 已經在做但沒有寫下來的事情——把 agent runtime 切成 stable interface + swappable backend，比「寫死一個 Claude/OpenAI client」壽命長得多。這是 OS-style「process / file」抽象的 agent 等價物。Anthropic 自己也承認：同一個 harness 在 Sonnet 4.5 上面需要 context reset 來治「context anxiety」，但到 Opus 4.5 已經不需要——harness 假設會隨模型變舊，所以抽象層要穩定在 *介面*，不要穩定在 *行為*。
-- **可信來源**：[Scaling Managed Agents — anthropic.com/engineering/managed-agents](https://www.anthropic.com/engineering/managed-agents)
+### 1. OpenAI × Broadcom 推出 LLM 推論自製晶片「Jalapeno」
+**發生什麼**：OpenAI 與 Broadcom 聯合發表第一顆 LLM-optimized inference chip，代號 Jalapeno。TechCrunch 報導 537 點、OpenAI 官網 blog 同步發文（141 點）。這是 OpenAI 第一次公開自有 inference 硬體，採用 Broadcom 的網路與客製化晶片設計能力。
+**為什麼重要**：從 model API → inference 垂直整合。這意味 OpenAI 把 unit-cost-of-inference 主導權拿回自己手裡，中長期會壓低 OpenAI 端 API 價格、改變 Sora / GPT-5 之類 frontier model 的 economics。對 OpenClaw / Linder 來說，coding agent 的 token economics 進入下一輪 — `spend predictability` 不再只是 prompt cache 問題，而會延伸到 inference-tier 問題。
+**來源**：
+- TechCrunch：https://techcrunch.com/2026/06/24/openai-unveils-its-first-custom-chip-built-by-broadcom/
+- OpenAI 官方：https://openai.com/index/openai-broadcom-jalapeno-inference-chip/
 
-### 2. **Containment > Permission Prompts**：人類監督在 93% 同意率下已經失效
-- **發生什麼**：Anthropic "How we contain Claude across products"（2026 旗艦文）量化了一個殘酷事實——Claude Code 使用者平均 *核准 93%* 的權限提示，越多次核准注意力越渙散（approval fatigue）。他們把方向從「每次問人」轉向「*限制 agent 能做什麼*」：sandbox、VM、egress control。並發佈 `Claude Code auto mode`（2026-03-25）用 model-based classifier 取代逐次 prompt。
-- **為什麼重要**：對 OpenClaw 影響直接——我們的 `nativeapprovals` 機制正面臨同一個問題。如果有一天 OpenClaw agent 每分鐘要 user 按 5 次 yes，approval 將毫無意義。值得研究的方向：(a) 在 tool 層加 classifier 自動擋危險 action；(b) 用 sandbox/VM/egress 把「能不能做」這件事從 prompt 層抽掉。
-- **可信來源**：
-  - [How we contain Claude across products](https://www.anthropic.com/engineering/how-we-contain-claude)
-  - [Claude Code auto mode](https://www.anthropic.com/engineering/claude-code-auto-mode)
+### 2. Cursor 推出「Customize Cursor」+ Marketplace leaderboard + /automate skill
+**發生什麼**：Cursor 在 06-18 一次推出多項重大更新 ——
+- **Customize 頁面**：把 plugins, skills, MCPs, subagents, rules, commands, hooks 全部收進單一管理介面，且支援 user / team / workspace 三層 scope。
+- **Marketplace leaderboard**：team 內可看到最熱門 plugin/skill/MCP 排行，一鍵安裝。
+- **Team marketplaces**：支援從 GitLab、BitBucket、Azure DevOps 匯入 plugin repo 給整個 team 使用。
+- **/automate skill**：在 local agent session 直接用 plain language 描述要自動化的任務，Cursor 會自動設定 triggers / instructions / tools。
+- **Plugin canvases**：Hex Canvas（資料視覺化）、Atlassian Canvas（即時 issues/projects/documents 視圖）。
+- **New GitHub triggers** for Automations：Issue comment、PR review comment、PR review submitted 等 5 種新觸發。
+- **Slack emoji trigger**：用 emoji reaction 觸發 automation。
+**為什麼重要**：Cursor 把「coding agent customization + skill ecosystem」正式 productize — 這是 LangChain 一直想做但沒做好的「skill marketplace」路線的首次實裝驗證。三層 scope（user / team / workspace）明確區分個人化與組織化，對企業導入 coding agent 是關鍵設計模式。**對 OpenClaw 最直接的啟發**：我們現在 skills 是 single-host，缺少 team/workspace 隔離與 marketplace 概念。
+**來源**：https://cursor.com/changelog（06-18 區段）+ https://cursor.com/docs/plugins
 
-### 3. **Harness Design：三 agent 結構（planner / generator / evaluator）成 long-running coding 主流**
-- **發生什麼**：Anthropic "Harness design for long-running application development"（2026-03-24）證實了三 agent GAN-style 架構（planner-generator-evaluator）能在多小時無監督 coding session 產出完整 full-stack app。同一時期社群出現「Ralph Wiggum」hooks/script 模式（ghuntley.com/ralph），靠 hooks 強迫 agent 持續迭代。
-- **為什麼重要**：Anthropic 自己也說「naive 單 agent 解構 spec → 實作 → 交棒」的舊 harness 在複雜任務上「eventually goes off the rails」。三 agent + GAN 評分機制是 2026 主流，OpenClaw 目前的 skill 系統應該考慮：(a) 把 prototype + handoff 兩個 skill 升級成「含 evaluator」的閉環；(b) 對齊 `moltbot-architecture` 裡的 Agentic Loop 概念。
-- **可信來源**：[Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps)
+### 3. LangChain 6 月「Agent Architecture」系列密集發布 — agent 進入 production 化階段
+**發生什麼**：LangChain / LangGraph / LangSmith blog 在 2026-06-04 ~ 2026-06-24 三週內連發 9 篇深度文：
+- **Jun 24**: How To Give Your Agent Memory — agentic memory 設計模式
+- **Jun 18**: LangGraph 1.2.6 — 修正 nested subgraph inherits parent checkpoint_ns (1.2.3 regression)
+- **Jun 16**: The Art of Loop Engineering — 迴圈工程（agent loop 結構化）
+- **Jun 16**: Why Fleet Has Both General Purpose Chat and Specialized Agents — general vs specialized 取捨
+- **Jun 15**: Building a 100x Cheaper Trace Judge with Fireworks — 評測成本降低 100x
+- **Jun 15**: How We Made Coding Agent Spend Predictable — coding agent spend 管理
+- **Jun 12**: Building Box AI: How an Enterprise Content Platform Went AI-Native with Deep Agents — Deep Agents 在 Box 的企業落地
+- **Jun 12**: How to Choose the Right Sandbox for Your Agent — sandbox 選型框架
+- **Jun 11**: How Benchling builds agents when the smartest AI isn't smart enough — 領域專業 agent
+- **Jun 10**: The Missing Link Between Agents and Applications — agent 與應用整合 gap
+- **Jun 10**: Full Text Search in SmithDB — SmithDB 倒排索引設計
+- **Jun 5**: Give your agent its own computer — agent 與 OS / 容器分離
+- **Jun 4**: Why Model Neutrality Matters More Than Cloud Neutrality — model neutrality 議題
+**為什麼重要**：這不是「單篇 tutorial」，是「production agent engineering 整套方法論」的系統化發表。Loop engineering、memory 設計、sandbox 選型、spend predictability、verifier 設計 — 五大主題構成企業級 agent 的工程 checklist。**對 OpenClaw / Linder 的直接啟發**：我們現在的 skill / workflow 設計是直覺式，這套 checklist 是把它 formalize 的範本。特別是「spend predictability」與「loop engineering」直接對應 cron 監控與 agent loop 結構議題。
+**來源**：https://www.langchain.com/blog
 
-### 4. **GitHub Trending**：MCP code-intel server 與「500+ agent skills」模板爆量
-- **發生什麼**：本週 GitHub Trending 出現幾個高度 agent-centric 專案：
-  - `DeusData/codebase-memory-mcp` — 純 C static binary 的 MCP server，sub-ms query 索引 158 種語言，本週 +8,536 stars（昨天 rowlet 已寫過 `codebase-memory-mcp-vs-graphify`）
-  - `calesthio/OpenMontage` — 500+ agent skills 的 video production 模板，本週 +9,410 stars
-  - `Panniantong/Agent-Reach` — 一個 CLI 讓 agent 讀 Twitter/Reddit/YouTube/GitHub/B站/小紅書，本週 +6,915 stars
-  - `NVIDIA/SkillSpector` — Agent skill 資安掃描器，本週 +2,849 stars
-  - `LMCache/LMCache` — LLM KV cache layer（性能工程）
-- **為什麼重要**：三個結構性訊號——
-  (a) **MCP 標準化持續勝出**：codebase-memory-mcp 證明 MCP 不只是聊天工具，已經變成「agent → codebase」的事實標準介面。
-  (b) **Agent skills 正在「產品化模板化」**：OpenMontage 把 500 個 skill 打包成一整套 video pipeline，代表「skill collections」會比單一 skill 更值錢。
-  (c) **Skill security 變成一級議題**：NVIDIA 為 agent skills 開了獨立掃描器專案，搭配昨天 wiki 入庫的 arXiv 2602.12430（26.1% skills 含漏洞），社區正在把 skill security 從「事後 audit」拉成「上線前 CI gate」。
-- **可信來源**：[github.com/trending](https://github.com/trending) + 各 repo 連結
+### 4. Claude Code v2.1.191 修正「background agents resurrecting after being stopped」
+**發生什麼**：Anthropic 6/24 釋出 v2.1.191，重要的修正與功能：
+- 新增 `/rewind` — 把對話從 `/clear` 之前的狀態復原
+- **Fixed background agents resurrecting after being stopped** — 在 tasks panel 停止 agent 是永久性的（這之前有 bug，停止的 agent 會復活）
+- 其他 UX bug fix（scroll 跳動、voice policy 訊息、login URL、Windows Terminal、Cmd+click in Ghostty）
 
-### 5. **OpenAI Codex 0.143**：App-server 多 agent delegation 與 plugin 治理成形
-- **發生什麼**：Codex 在 6/22 ~ 6/24 連發 alpha (0.143.0-alpha.3 → alpha.11)，重點：
-  - **Multi-agent delegation 開關**：`disabled / explicit-request-only / proactive`（thread + turn level）
-  - **Configurable rollout token budgets**：跨 agent thread 追蹤用量，預算耗盡 abort
-  - **Plugin 治理**：`/plugins` 改成三區（OpenAI Curated / Workspace / Shared with me），且 eligible turns 可推薦並安裝 plugin
-  - `/usage` 支援 reset credits 兌換
-- **為什麼重要**：
-  (a) **Token budget 是新 primitive**：不是 per-call 限制，而是跨整個 multi-agent session 的限額，這對 OpenClaw 的 `taskflow` 設計直接有用——可以加一個 `budget.json` 讓每個 flow 自帶成本上限。
-  (b) **Plugin 三區分類**呼應 agent skills 的信任分級（OpenAI Curated = 第一方、Workspace = 私有、Shared = 第三方審核），跟我們昨天寫進 wiki 的「Skill Trust and Lifecycle Governance」框架方向一致。
-  (c) **Multi-agent delegation 從「always on」改成顯式設定**，代表 OpenAI 自己也發現「無腦開多 agent」會失控——這跟我們 `sessions_send` 的 fire-and-forget 警告對得上。
-- **可信來源**：[github.com/openai/codex/releases](https://github.com/openai/codex/releases) + [Codex issue #28685 / #28792 / #29324](https://github.com/openai/codex)
+**為什麼重要**：background agent 復活 bug 是 coding agent reliability 的關鍵痛點 — 你以為停了但其實還在跑、繼續消耗 token。**對 OpenClaw / Linder 來說，這直接對應 Rowlet SOUL.md 已記載的「sessions_send 是 fire-and-forget」議題**。永久性 kill 需要明確的 lifecycle control（明確 status: stopped, 確認 thread/task 已 kill, 不能從未完成 state 復活）。可以當作 `sessions_send` 改進與 OpenClaw `cron` agent 終止流程的設計參考。
+**來源**：https://github.com/anthropics/claude-code/releases/tag/v2.1.191
+
+### 5. arXiv 6 月 agent 論文潮：評測、診斷、red-teaming 進入精細化
+**發生什麼**：arXiv cs.AI / cs.CL 在 2026-06-24 一天就出現多篇 agent 專用論文：
+- **Metis: Bridging Text and Code Memory for Self-Evolving Agents** — text + code memory 雙軌 self-evolving
+- **Escaping the Self-Confirmation Trap: An Execute-Distill-Verify Paradigm for Agentic Experience Learning** — 防 agent 自己驗證自己造成 confirmation bias
+- **NatureBench: Can Coding Agents Match the Published SOTA of Nature-Family Papers?** — 拿 coding agent 跑頂會論文 SOTA
+- **MEMPROBE: Probing Long-Term Agent Memory via Hidden User-State Recovery** — 探測 agent 長期記憶是否還能 recover 隱藏 user state
+- **SHERLOC: Structured Diagnostic Localization for Code Repair Agents** — code repair agent 的結構化診斷定位
+- **Bayesian control for coding agents** — Bayesian 控制 coding agent
+- **RIFT-Bench: Dynamic Red-teaming For Agentic AI Systems** — agentic system 動態 red-teaming
+- **Are We Ready For An Agent-Native Memory System?** — agent-native memory system 反思
+- **When Retrieval Metrics Mislead: Measuring Policy Signal in Long-Horizon Tool-Use Agents** — long-horizon tool-use 的 retrieval metric 誤導問題
+- **Qwen-AgentWorld: Language World Models for General Agents** — Qwen 的語言 world model
+**為什麼重要**：agent 評測從「整體成功率」進入「精細診斷」階段 — memory probe、diagnostic localization、red-team benchmark、retrieval metric 反思 — 這是 agent 真正進入產品化、工程化前的必要成熟。**對 OpenClaw / Linder 來說**：MEMPROBE / SHERLOC / When Retrieval Metrics Mislead 直接對應我們 rowlet-self-reproduction 的「驗證 memory 是否還在」、與 llm-wiki retrieval quality 議題。
+**來源**：https://rss.arxiv.org/atom/cs.AI + https://rss.arxiv.org/atom/cs.CL
 
 ---
 
-## 對 OpenClaw / Linder 的啟發（3 條可直接落地）
+## 對 OpenClaw / Linder 的啟發（3 條）
 
-1. **把 OpenClaw runtime 抽象成 `session / harness / sandbox` 三層**（呼應 Anthropic Managed Agents）。
-   - 短期：寫一個 `wiki/concepts/openclaw-runtime-abstractions.md`，把現有的 SOUL/AGENTS/MEMORY/HEARTBEAT/cron/tool 對應到這三層，明確標出哪些是 stable interface、哪些是 swappable backend。
-   - 中期：把 `sessions_send` 和 `taskflow` 的執行後端（sandbox 部分）做第一版抽象化，未來想換 Codex/Claude Code/local agent 都不必動上層。
+1. **OpenClaw skills 需要 team / workspace scope 概念**
+   Cursor 的 Customize + Team Marketplace 證明：當 coding agent 進入企業 / team 情境，「skill 從哪裡來」、「誰能改」、「team 共享還是個人化」是必須的設計維度。OpenClaw 目前 skills 主要是 single-host / single-user。**可執行方向**：在 `~/.openclaw/skills/` 結構上加入 `team/` 與 `workspace/` 兩個 scope，模仿 Cursor 的 leaderboard / marketplace 概念。
 
-2. **從 approval prompts 轉向 containment**（呼應 Anthropic 93% 同意率）。
-   - 寫一個 `skill-containment-design.md` skill / doc：列出哪些 tool 應該自動允許、哪些應該走 classifier、哪些應該在 sandbox/VM 層擋。優先處理 `exec` 的 host-elevation（`auto: "deny"` 預設 + 顯式 allowlist）。
-   - 評估 `nativeapprovals` 是否要引入簡單 classifier（甚至 rule-based）來自動放行低風險 read-only 操作。
+2. **引入「Agent Engineering Checklist」框架**
+   LangChain 6 月系列 9 篇其實在背後是一套 production agent 設計方法論：memory / loop / sandbox / verifier / spend / model-neutrality / general-vs-specialized。**可執行方向**：把這 9 篇 ingest 到 llm-wiki 作為新 map「Agent Engineering Checklist」，並設計對應的 `agent-engineering-review` skill（讀現有 agent config 給出這 9 個面向的 review）。
 
-3. **把「evaluator」加進 skill 閉環**（呼應三 agent GAN-style）。
-   - 從 `Agent Prototype Skill` + `Agent Handoff Skill` 開始：在 prototype 結束後加一個 self-critique 步驟（用 rubric 評分），handoff 前用 checklist 驗收。這比單純「做完就交棒」robust 很多。
-   - 順手做：把 `moltbot-architecture` 那張圖裡的 Agentic Loop 抽出來寫成 wiki 概念頁。
+3. **Claude Code 「background agent permanent kill」是 OpenClaw 必須有的契約**
+   Anthropic 修了 background agent 復活 bug，因為這是 reliability 痛點。OpenClaw 的 `sessions_send`、cron agent、heartbeat 都有「停止」這個動作，但要確認停止後不會從未完成 state 復活。**可執行方向**：在 OpenClaw 改進 `sessions_send` 或寫 `agent-lifecycle-guard` skill，規範 agent / session 停止後必須顯式寫 status 到 SOUL.md 或 heartbeat-state.json，禁止隱性復活。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-| 主題 | 連結 | 為何追蹤 |
-|---|---|---|
-| Anthropic Managed Agents | <https://www.anthropic.com/engineering/managed-agents> | 三層抽象是 2026 agent runtime 主旋律 |
-| Anthropic Containment | <https://www.anthropic.com/engineering/how-we-contain-claude> | 93% approval 數字是行業轉折點 |
-| Anthropic Harness Design | <https://www.anthropic.com/engineering/harness-design-long-running-apps> | Planner/Generator/Evaluator 模式可借鏡 |
-| Anthropic auto mode | <https://www.anthropic.com/engineering/claude-code-auto-mode> | Classifier 取代 prompt 的具體做法 |
-| Claude Code releases | <https://github.com/anthropics/claude-code/releases> | 23 Jun release：sandbox.credentials + org model restrictions |
-| OpenAI Codex 0.143 alpha | <https://github.com/openai/codex/releases> | Multi-agent delegation 開關 + token budget |
-| DeusData codebase-memory-mcp | <https://github.com/DeusData/codebase-memory-mcp> | 純 C MCP server，速度與 token 效率驚人 |
-| calesthio/OpenMontage | <https://github.com/calesthio/OpenMontage> | 500+ skills 模板，看 skill collection 怎麼組織 |
-| NVIDIA/SkillSpector | <https://github.com/NVIDIA/SkillSpector> | Agent skill security scanner 上游動態 |
-| LMCache/LMCache | <https://github.com/LMCache/LMCache> | KV cache layer，long-running agent 性能關鍵 |
+### Repo / Framework
+- **Cursor Customize / Marketplace** — https://cursor.com/changelog（6-18 區段）+ https://cursor.com/docs/plugins
+- **Claude Code v2.1.191** — https://github.com/anthropics/claude-code/releases/tag/v2.1.191
+- **OpenAI Codex rust-v0.143.0-alpha.16** — https://github.com/openai/codex/releases（2026-06-25 剛出）
+- **LangGraph 1.2.6** — https://github.com/langchain-ai/langgraph/releases（修正 nested subgraph checkpoint_ns）
+- **calesthio/OpenMontage** — World's first open-source, agentic video production system；12 pipelines、52 tools、**500+ agent skills**；GitHub Trending #1。值得研究其 skill library / skill marketplace 設計。https://github.com/calesthio/OpenMontage
+- **revfactory/harness** — Meta-skill 設計 domain-specific agent teams（277 stars today）。harness engineering 的開源參考實作。https://github.com/revfactory/harness
+- **stablyai/orca** — ADE（Agent Development Environment）for parallel coding agents，desktop + mobile。https://github.com/stablyai/orca
+- **google-labs-code/design.md** — Google 推出 DESIGN.md format 給 coding agents 用 — 設計系統 → coding agent 的 spec 化格式。https://github.com/google-labs-code/design.md
+- **apple/container** — Apple 自家 Linux containers on Mac（optimized for Apple silicon）。基礎設施層動向。https://github.com/apple/container
+
+### Paper / Research
+- **Metis: Bridging Text and Code Memory for Self-Evolving Agents** — text/code memory 雙軌 self-evolving
+- **MEMPROBE: Probing Long-Term Agent Memory via Hidden User-State Recovery** — agent 長期記憶探測
+- **SHERLOC: Structured Diagnostic Localization for Code Repair Agents** — code repair 結構化診斷
+- **NatureBench: Can Coding Agents Match the Published SOTA of Nature-Family Papers?** — coding agent vs SOTA benchmark
+- **RIFT-Bench: Dynamic Red-teaming For Agentic AI Systems** — agentic system 動態 red-teaming
+- **Are We Ready For An Agent-Native Memory System?** — agent-native memory 反思（直接呼應 A-MEM / Mem0 / AtomMem 系列）
+- **Bayesian control for coding agents** — Bayesian 控制 coding agent 行為
+- **When Retrieval Metrics Mislead: Measuring Policy Signal in Long-Horizon Tool-Use Agents** — retrieval metric 反思
+
+### Article / Blog
+- **OpenAI 官方**：OpenAI × Broadcom Jalapeno inference chip — https://openai.com/index/openai-broadcom-jalapeno-inference-chip/
+- **LangChain blog 系列**（Jun 4 ~ Jun 24）— https://www.langchain.com/blog
+- **TechCrunch OpenAI chip** — https://techcrunch.com/2026/06/24/openai-unveils-its-first-custom-chip-built-by-broadcom/
+- **Thoughtworks Technology Radar Vol 32** — 主題：「The challenge of evaluating technology in an agentic world」；提到 **spec-driven development** vs **harness engineering** 的 semantic diffusion 問題。https://www.thoughtworks.com/radar
+- **Reuters：Anthropic says Alibaba illicitly extracted Claude AI model capabilities**（53 pts on HN）— Alibaba 蒸餾 Claude 的智財事件，是 frontier model 保護策略的新案例
 
 ---
 
 ## 下一步建議（最多 3 條）
 
-1. **Ingest 到 llm-wiki**：
-   - 新增 `wiki/sources/anthropic-managed-agents-2026-04-08.md`、`wiki/sources/anthropic-containment-2026.md`、`wiki/sources/anthropic-harness-design-long-running-2026-03-24.md`、`wiki/sources/openai-codex-0.143-multi-agent-2026-06.md` 四頁 raw + concept。
-   - 更新 `wiki/concepts/openclaw-runtime-abstractions.md`（新頁）並用 `graphify link` 接 `wiki/concepts/moltbot-architecture.md` + `wiki/concepts/openclaw-safety-principles.md`。
+1. **將 LangChain 6 月 Agent Architecture 9 篇 ingest 到 llm-wiki**
+   - 目標頁面：`wiki/maps/Agent Engineering Checklist.md`（新 map）
+   - 同時把 Cursor Customize 與 Anthropic Claude Code background agent fix 各建立一個 wiki source/concept 條目
+   - 更新 `wiki/index.md` 與 `wiki/log.md`
 
-2. **寫一個 skill**：
-   - `~/.openclaw/skills/agent-harness-patterns/`：把 planner/generator/evaluator 模式 + GAN-style self-critique + Ralph Wiggum hooks 模式做成可複用的 SKILL.md，未來 OpenClaw agent 接到 long-running coding 任務時直接套用。
+2. **寫 `agent-release-monitor` skill**
+   - 自動 cron 每週 / 每日抓 openai/codex、anthropics/claude-code、langchain-ai/langgraph、cursor/changelog RSS
+   - 比較本次與上次 release 的 diff，找出對 OpenClaw 有影響的 breaking change
+   - 整合進 heartbeat / pipeline，自動推送「release 變化摘要」到 rowlet heartbeat channel
 
-3. **安排一個實驗**：
-   - 用現有的 `taskflow` + 三個 sessions（planner / generator / evaluator）跑一次實驗：拿 `architecture-daily-report.md` 的每日產出當 task，量測 (a) 完成率、(b) self-critique rubric 分數、(c) token 成本。產出比對報告丟回 llm-wiki。
-
----
-
-## 篩選 / 不採納
-
-- **Hacker News 今日頭條**（Vulnerability reports are not special、Jerry's Map、Swipe typing 等）：無 agent / 軟體架構直接相關，不採。
-- **arXiv list 2026**：本次只拉目錄頁，沒深入單篇；明天可挑 `2606.10209`（昨天已寫 Less Context, Better Agents）之後的 *agent context / harness / eval* 主題新文做單篇摘要。
-- **InfoQ AI/ML 主頁**：404，視為當日不可達，已在來源清單內標註。
-
-## 已查過的來源（透明記錄）
-
-- ✅ `npx graphify query "AI agent architecture..."` → 命中 reconciliation rule engine 等本地 project 節點，未提供近期 agent 研究條目
-- ✅ `graphify query "agent skill harness memory context MCP coding agent"` → 命中 Minerva/Context 教育類節點，仍偏本地 wiki
-- ✅ GitHub Trending（weekly）+ GitHub Trending Python
-- ✅ GitHub Releases：anthropics/claude-code、openai/codex、langchain-ai/langgraph
-- ✅ Anthropic Engineering Blog（首頁 + 4 篇具體文章）
-- ✅ Martin Fowler「Exploring Generative AI」目錄頁
-- ⚠️ InfoQ AI/ML 頁面 404（標記為不可達）
-- ⚠️ Hacker News 首頁有抓但頭條無 agent/架構相關
-- ⚠️ arXiv 2026 列表頁只拉到 ID 清單，無摘要
+3. **跟 Linder 討論 OpenClaw skill 的 team / workspace scope 提案**
+   - 提問：是否要把 `~/.openclaw/skills/` 結構擴展為 user / team / workspace 三層 scope
+   - 準備材料：Cursor Customize 文件 + OpenMontage 500+ skills 的 skill library 設計 + revfactory/harness 的 meta-skill 概念
+   - 預期產出：skill 結構設計草案 v0.1
 
 ---
 
-_本報告存檔：`/home/node/.openclaw/workspace-rowlet/architecture-daily-report.md`_
-_Wiki 條目建立 / 更新已列入「下一步建議」，下次 daily report 前補完。_
+## 來源清單（已查 / 失敗 / 不可讀）
+
+### 已查
+- `/home/node/.openclaw/workspace/llm-wiki` graph + Code Agent map（9420 nodes，已用 graphify query）
+- Hacker News front page（OpenAI chip 537 pts, Anthropic Alibaba 53 pts）
+- HN Algolia search_by_date（coding agent / multi-agent / context engineering）
+- GitHub Trending daily（OpenMontage / apple/container / revfactory/harness / stablyai/orca / google-labs-code/design.md 等）
+- arXiv cs.AI / cs.CL RSS（June 24 entries）
+- LangChain blog（June 4 ~ June 24 完整列表）
+- Cursor changelog（06-18 Customize + Automations）
+- Claude Code release atom feed（v2.1.191）
+- OpenAI Codex release atom feed（rust-v0.143.0-alpha.16）
+- LangGraph release atom feed（1.2.6）
+- Thoughtworks Tech Radar Vol 32（agentic world 主題）
+- TechCrunch OpenAI Broadcom 文章
+- OpenAI 官方 blog（Jalapeno inference chip）
+
+### 失敗 / 受限
+- arXiv export API（http timeout，繞道 RSS）
+- Martin Fowler articles/index.html（404，sitemap 變動）
+- Anthropic /news（拿到奇怪的 "Fable 5 / Mythos 5 export control" 內容，疑為 mock，標註為不可信，未採用）
+- HN Algolia 帶引號精確搜尋 `hits: 0`（API 解析問題，改用一般詞搜尋）
+
+### 未深入
+- Martin Fowler、Pragmatic Engineer 等個人 blog 未抓到 RSS（URL 404）
+- Microsoft / Google DeepMind / Apple Research 等 blog 沒時間逐個查
+- 大量 Show HN 項目（Cplt, Modulus, SmolVM, Mozzie, Pocket, Continue CI 等）值得單獨深入

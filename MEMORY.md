@@ -182,6 +182,9 @@
 - 輸出：`wiki/sources/agent-builder-daily-YYYY-MM-DD.md`
 - 搜尋關鍵字：agent-builder, agent-factory, agent-forge, meta-agent, auto-agent, agent-generator
 
+## Standing Rules (Linder 2026-06-25)
+- **Cron Job Data Archive Rule**: 所有 cron job 找到的資料都必須歸檔到 llm-wiki（`wiki/sources/` 或相關 concept 頁），不得停留在 session context 就消失
+
 ## Pending / Follow-ups
 - Download TopoClaw + MetaCogAgent papers to wiki
 - Update HEARTBEAT.md for other agents (charizard, gengar, etc.) with Shared Memory integration
