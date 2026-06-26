@@ -26,3 +26,10 @@
 [rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L71] Assistant: </think>
 [rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L74] Assistant: </think>
 [rowlet/sessions/rowlet/b09b60b8-a6e2-4f3b-be5a-7eb3f2ba6793.jsonl#L77] Assistant: </think>
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L5917] Assistant: Now let me write the research entry.
+[rowlet/sessions/rowlet/ad9abb26-b000-4cab-aec4-4e7c1d69dcd1.jsonl#L26] Assistant: Good — I found two excellent papers on Agent Context Processing. I'll tackle **REAL** (arXiv:2606.10694) today — it's very recent (June 9, 2026) with a 22.72% improvement over baselines, which is substantial. Let me download it and process it.
+[rowlet/sessions/rowlet/ad9abb26-b000-4cab-aec4-4e7c1d69dcd1.jsonl#L39] Assistant: Now let me create the metadata and wiki entries:
+[rowlet/sessions/rowlet/ad9abb26-b000-4cab-aec4-4e7c1d69dcd1.jsonl#L49] Assistant: I see REAL is already listed in `code-agent.md`. Let me update that entry with more detail now that I've read the full paper:
+[rowlet/sessions/rowlet/ad9abb26-b000-4cab-aec4-4e7c1d69dcd1.jsonl#L57] Assistant: --- 🌿🦉 **每日論文討論 — 2026-06-25** 今天選擇了 **REAL: A Reasoning-Enhanced Graph Framework for Long-Term Memory Management of LLMs**（arXiv:2606.10694），非常新（2026-06-09）。 --- ## 📄 論文資訊 | | | |---|---| | **標題** | REAL: A Reasoning-Enhanced Graph Framework for Long-Term M
+[rowlet/sessions/rowlet/ad9abb26-b000-4cab-aec4-4e7c1d69dcd1.jsonl#L57] Assistant: 新事實直接覆蓋舊的，用戶偏好從 Italian→Japanese 的演化軌跡就消失了 - **C3: Passive retrieval** — 證據不足就只會說「我不知道」，不會做 counterfactual 推理 這三個痛點幾乎涵蓋了所有現有 RAG / memory 系統的問題。 ### 2. 解決方案：Temporal Directed Property Graph 每個 atomic fact 是六元組 `(h, r, t, τ, c, ι)`： - **h, r, t**：標準知識圖譜三元組（head-
+[rowlet/sessions/rowlet/ad9abb26-b000-4cab-aec4-4e7c1d69dcd1.jsonl#L57] Assistant: counterfactual inference。 ### 5. Counterfactual Inference 當正常擴展變得不可靠，REAL 會利用隱式邏輯關係生成替代假設： - **對稱關係**：「喜歡」⇔「不喜歡」、「購買」⇔「退貨」 - **子集關係**：「籃球鞋」⊂「運動鞋」 - **時序關係**：先後次序 這讓系統能從現有記憶結構中**推斷**出缺失的事實，而不只是消極回應「我不知道」。 --- ## 💾 存入位置 ``` wiki/raw/references/papers/ai/ ├── 260

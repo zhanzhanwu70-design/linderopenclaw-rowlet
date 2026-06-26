@@ -185,6 +185,46 @@
 ## Standing Rules (Linder 2026-06-25)
 - **Cron Job Data Archive Rule**: 所有 cron job 找到的資料都必須歸檔到 llm-wiki（`wiki/sources/` 或相關 concept 頁），不得停留在 session context 就消失
 
+## Sakana Fugu / TRINITY / Conductor 研究（2026-06-25）
+
+### 三篇論文
+| 論文 | arXiv | 會議 |
+|------|-------|------|
+| Sakana Fugu Technical Report | 2606.21228 | arXiv only（無 peer review）|
+| TRINITY | 2512.04695 | ICLR 2026 |
+| Conductor | 2512.04388 | ICLR 2026 |
+
+### 核心架構差異
+| 產品/論文 | 協調方式 | 輸出 |
+|---|---|---|
+| Fugu（快速版）| Selection Head（向量路由）| Logit 矩陣，不經自然語言 |
+| Fugu-Ultra/Conductor | 自然語言 workflow | 文字描述的協作步驟 |
+| TRINITY | CMA-ES 訓練的 coordinator | 0.6B coordinator + ~10K Selection Head |
+
+### 三種角色（TRINITY 提出）
+- Thinker（規劃）、Worker（執行）、Verifier（驗證）
+- 動態分配，不固定三個模型
+
+### Conductor 遞迴拓撲
+- Conductor 可以叫自己當 Worker，產生遞迴規劃
+- 動態測試時擴展：越難的任務迭代越多
+
+### 論文弱点（Linder 指出）
+1. **沒有對齊 Worker LLM 版本**：聲稱打敗 prior multi-agent baselines，但沒有控制「Worker 模型版本」變數
+2. **缺少 ablation study**：沒有實驗证明是「協調策略」在起作用，而非「模型進步」的紅利
+3. **對比的 baseline（2023-2025）**：用 2026 年的頂級 Worker 模型，比 2023-2025 年較弱系統的分數
+4. **Fugu Technical Report 是 arXiv only**：非正式發表，claims 未經 peer review
+
+### 真正的創新點
+- **Selection Head = 向量路由**（Fugu 的核心）— 不經自然語言解碼，低延遲
+- **Conductor 的遞迴拓撲** — 新測試時擴展軸
+- **CMA-ES 訓練**（TRINITY）— 在高維度/預算限制下優於 RL
+
+### 與 OpenClaw 的關聯
+- OpenClaw 是發號施令型協調者（直接 tool call）
+- Conductor/Fugu 是寫劇本型協調者（輸出描述讓別人執行）
+- 真正的 Agent = LLM + 框架 + **行動**（非只有輸出描述）
+
 ## Pending / Follow-ups
 - Download TopoClaw + MetaCogAgent papers to wiki
 - Update HEARTBEAT.md for other agents (charizard, gengar, etc.) with Shared Memory integration
