@@ -1,12 +1,9 @@
 {
   "lastChecks": {
-    "rowlet_heartbeat": 1782375238,
+    "task_queue": 1782513205,
     "email": null,
     "calendar": null,
-    "weather": null,
-    "sensor_fusion_daily": 1782345600,
-    "morning_intel": 1782345600
+    "weather": null
   },
-  "notes": "2026-06-25 08:13 UTC. Task queue empty. CEO confirmed Semantic SLAM (yesterday). Awaiting next direction.",
-  "lastUpdated": 1782375238
+  "utc_now": 1782513205
 }

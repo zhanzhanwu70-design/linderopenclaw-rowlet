@@ -68,7 +68,7 @@
 
 ## Papers Saved
 - `raw/references/papers/ai/2024-wu-cognitive-llms.pdf`
-- TopoClaw arXiv:2605.15556 (pending download)
+- TopoClaw arXiv:2605.15556 (✅ downloaded 2026-06-27)
 - MetaCogAgent (pending download)
 
 ## Daily Routine
@@ -291,3 +291,8 @@
 - **MMR** — Maximal Marginal Relevance，多樣化檢索
 - **Hybrid Search** — BM25 (精確) + Vector (語意) 組合
 - **6 個方案 tier list**：C(原生 markdown) / B(MemZero) / A(LanceDB / KG / SQLite) / S(QMD)
+
+## Promoted From Short-Term Memory (2026-06-27)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:27:27 -->
+- code-base-memory-mcp vs Graphify 比較 (03:xx UTC): 两者可互補：mcp 服務開發者即時理解 / Graphify 服務長期知識沉澱 [score=0.803 recalls=0 avg=0.620 source=memory/2026-06-23.md:27-27]
