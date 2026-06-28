@@ -22,3 +22,19 @@
 [rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L6846] Assistant: Anthropic's seminal article on agent systems — high-value concept page.
 [rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L6990] Assistant: Creating llm-wiki concept page — foundational source from Karpathy.
 [rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L7124] Assistant: Per `agent-builder-researcher` skill (daily task, Rowlet owns it) — running now while CEO is silent.
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4320] User: 這個影片存好了嗎
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4325] Assistant: 轉錄完成。寫 wiki：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4331] Assistant: 已有 Headroom 頁面。更新並連結：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4335] Assistant: 好了。**Headroom 影片已入庫：** - `audio.txt` ✅ 轉錄完成 - `wiki/sources/headroom-context-optimization-whyqq.md` ✅ 摘要頁 - `wiki/sources/headroom-context-compression.md` ✅ 更新（新增影片連結） 主題：AI 程式助手輸出 token 成本高（輸出是輸入的 5 倍），但 99% 是廢話。Headroom 在送進 LLM 前把水分擠乾，節省 92% token 且準確率無明顯下降
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4336] User: 跟我講他的詳細內容
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4339] Assistant: **Headroom 詳細內容：** --- **問題核心：** AI 程式助手送給 LLM 的資料，99% 是廢話——工具返回的日誌、JSON 陣列、檢索結果，對解決當前 bug 來說完全不需要。而且輸出 token 成本是輸入的 5 倍，用戶在為廢話買單。 --- **三階段管線 + 內容專用壓縮器：** **1. SmartCrusher（專門對付 JSON）** - 不破壞 JSON 結構，保留所有鍵名、結構符號、布林池 - 壓縮的是長篇自串值、冗餘陣列元素 - 比喻：給 LLM 看地圖——能看到有幾個房
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4339] Assistant: 同時緩存原文（TTL 內可取回） ``` 如果 LLM 看摘要就能解決問題，省 token；如果不夠，主動呼叫 Retrieve 取回原文。 **壓縮變成延遲加載（Lazy Loading），不是不可逆丟失。** --- **與 CodeGraph 的關係：** - CodeGraph = 少拿點資料（主動檢索） - Headroom = 先濃縮再說（被動展開） - 兩者結合 = 完美上下文方案 **核心理念：先給骨架再給細節，先給索引再給內容。** --- **對 AI 工程的預言：** 1. 壓縮中間層成新的
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4340] User: Headroom 我們可以安裝嗎? 他需要甚麼 api 我們可以透過 minimax的api key實現嗎
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4349] Assistant: 根據 wiki，Headroom 的 GitHub 是 `chopratejas/headroom`。 **三種使用方式對 MiniMax 的相容性：** | 模式 | 原理 | MiniMax 相容性 | |------|------|---------------| | `headroom wrap claude\|codex\|...` | 封裝特定 agent | ❌ 只支援指定平台 | | `headroom proxy --port 8787` | 把 SDK 流量導到本地代理壓縮 | ⚠️ 需要 H
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4355] Assistant: 找到了！**可以直接支援 MiniMax。** Proxy 模式有 `--openai-api-url` 參數，預設是 `https://api.openai.com`，可以改成 MiniMax： ```bash headroom proxy \ --host 0.0.0.0 --port 8787 \ --openai-api-url https://api.minimax.io/v1 ``` 然後把 OpenClaw 的 API endpoint 指向 `http://localhost:8787`，所有流量
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4357] Assistant: 安裝 Headroom：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4361] Assistant: 安裝成功。啟動 proxy 串 MiniMax：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4367] Assistant: Proxy 啟動成功！測試壓縮效果：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4369] Assistant: Proxy 正常運作，連到 MiniMax 成功。 測試壓縮效果——送一個大一點的 JSON：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4375] Assistant: Proxy 正常運作。查看壓縮統計：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4377] Assistant: **Headroom 安裝完成！** 目前進度： - ✅ Headroom proxy 運行中（PID 59039） - ✅ 串 MiniMax API 成功（已測試 3 個請求） - ✅ Cache Liner 已生效（prefix_frozen: 3 次） --- **使用方式：** OpenClaw 之類的 client 要使用這個 proxy，設定 base URL 為： ``` http://localhost:8787/v1 ``` 然後 headroom 會自動： 1. 攔截請求 2. 壓縮內容（J

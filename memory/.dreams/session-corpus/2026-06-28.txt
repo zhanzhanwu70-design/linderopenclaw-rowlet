@@ -1,0 +1,31 @@
+[rowlet/sessions/rowlet/4b82f7f0-dbba-42ae-af98-8daeb67626f8.jsonl#L27] Assistant: Now let me update both the source and concept pages with the current SDK information:
+[rowlet/sessions/rowlet/4b82f7f0-dbba-42ae-af98-8daeb67626f8.jsonl#L35] Assistant: Now let me create the graph edges:
+[rowlet/sessions/rowlet/4b82f7f0-dbba-42ae-af98-8daeb67626f8.jsonl#L48] Assistant: 🌿🦉 **LLM Wiki 每日巡讀 — 2026-06-28** **審查主題：** Agent Harness — 生產級智能體基礎設施層 **更新內容：** - `wiki/concepts/Agent Harness.md`：新增「2026 Framework Landscape」表格，對比 OpenAI Agents SDK（已 provider-agnostic，支援 100+ LLMs）、Claude Agent SDK（formerly Claude Code SDK，TypeScript）、La
+[rowlet/sessions/rowlet/8ad1b754-723b-435a-91dc-c8a47eba024b.jsonl#L6] Assistant: </think>
+[rowlet/sessions/rowlet/8ad1b754-723b-435a-91dc-c8a47eba024b.jsonl#L9] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/8ad1b754-723b-435a-91dc-c8a47eba024b.jsonl#L46] Assistant: Now let me compile the full report and save it.
+[rowlet/sessions/rowlet/8ad1b754-723b-435a-91dc-c8a47eba024b.jsonl#L48] Assistant: Now let me save raw snapshots and wiki entries:
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L6] Assistant: 收到。執行每日 Agent × 軟體開發潮流研究。先做 wiki-first 查詢，再平行抓外部資料。
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L9] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L13] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L17] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L21] Assistant: 注意到 02:04 已有一份完整報告。今天這次 cron 與上一次只差 12 分鐘，現有內容很完整。我做「增強版補完」：補上 Hacker News、最新 arXiv、並檢查是否有這 12 分鐘內的新信號。
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L25] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L31] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L34] Assistant: 新發現：**OpenClaw v2026.6.11** 在 6/24 釋出（4 天前），先前報告未涵蓋。Slack relay、Mattermost /oc_queue、RAFT CLI wake bridge — 這是今天的新增量。先前 6.9 報告已存，再 fetch 6.11 細節並補進今日報告。
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L37] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L40] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L43] Assistant: Raw snapshots saved. Now rewriting today's report with the new strong signals (OpenClaw 6.10/6.11 + Google whitepaper):
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L49] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L52] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L60] Assistant: Wiki index is `LLM Wiki Index.md` (not `index.md`). The wiki already has concept pages covering this. Let me skip the manual linking (graphify `link` command not available, and the concept page is already cross-linked via "[[Harness Engineering]]" syntax). Let 
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L62] Assistant: All artifacts saved. Now sending the Discord report to #木木鴞:
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L66] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L70] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L72] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L76] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L82] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L90] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L94] Assistant: </think>
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L96] Assistant: 訊息已送出到 Discord #木木鴞 (`agent:rowlet:discord:channel:1482363974119854234`)。 --- ## 今日執行摘要（2026-06-28 02:16 UTC） ✅ **完成項目**： 1. **本地 llm-wiki graphify query** — 確認既有概念覆蓋（Agent Harness、Harness Engineering、Vibe Coding 已有 concept page） 2. **外部資料抓取**： - GitHub Trendin
+[rowlet/sessions/rowlet/daf9c9e1-25ca-42e0-b9b2-1d9a8b5d58d0.jsonl#L96] Assistant: `raw/openclaw-releases/2026-06-28/2026.6.10-beta.2.md` (4K) - `raw/web/2026-06-28-google-vibe-coding-whitepaper.md` 5. **Wiki concept 更新**：`concepts/The New SDLC With Vibe Coding.md` 新增 2026-06-28 update section（harness 10/90 + Terminal Bench + mini-SWE-agent 交

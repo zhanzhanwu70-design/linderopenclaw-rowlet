@@ -1,109 +1,104 @@
-# 每日 Agent × 軟體開發情報 — 2026-06-27
+# 每日 Agent × 軟體開發情報 — 2026-06-28
+
+> 增強版（02:16 UTC 補完）。02:04 基礎版已存檔；本次新增 OpenClaw 自家 6.10/6.11 release 與 Google《New SDLC with Vibe Coding》白皮書兩個被忽略的強信號。
 
 ## 今日 5 個重點
 
-### 1. vercel/eve (2673★)：filesystem-first agent framework，架構與 OpenClaw 高度同源
-**發生什麼**：Vercel 推出 `eve` framework，主打「filesystem-first framework for durable AI agents」。Agent 結構：agent/ { instructions.md, tools/, skills/, channels/, schedules/ }。`npx eve@latest init` 一行啟動；hooks 自動接 Claude Code/Codex/Cursor；skills 按需載入（progressive disclosure）。這是 GitHub 最近 14 天內 agent 類 repo stars 最高的一個。
-
-**為什麼重要**：`eve` 的目錄佈局直接對應 OpenClaw 的 `SOUL.md + AGENTS.md + skills/<name>/SKILL.md + channels/`。Vercel 用 `agent/instructions.md` 解決 OpenClaw 用 `MEMORY.md / TOOLS.md / SOUL.md` 三檔解決的事——兩者皆把「durable rules」放到檔案、不放 prompt。這從業界驗證 OpenClaw 早期把 rule layers 寫進 markdown 的決策是對的。同時 Vercel 在 hooks 設計上（Claude Code subagent/Codex/Cursor 三家全吃）反向暴露 OpenClaw 一直沒做的 IDE/coding-agent harness 整合面。
-
-**可信來源**：`https://github.com/vercel/eve` | `https://eve.dev/docs`
+### 1. OpenClaw 連發 6.10 / 6.11 — channel 控制、模型路由、fast-mode 全面強化
+**發生什麼**：v2026.6.10（6/22 beta → 6/24 stable）加入「Automatic fast mode」(`/fast auto`)，短對話快啟、長任務自動 fallback，並在 status 顯示「effective state」而非 on/off；v2026.6.11（6/24）補上 Slack relay、原生 Mattermost `/oc_queue`、per-DM model overrides、`openclaw agent --message-file` 與 RAFT CLI wake bridge；official plugins 全面 externalize。
+**為什麼重要**：OpenClaw 的工程重心明顯從「再加 provider」轉向「channel-aware routing + 快速對話 + 操作員 file/CLI workflow」。這直接影響 Skill 與 cron 的設計——per-DM model overrides 讓 specialist agent 調度更細緻。
+**來源**：`https://github.com/openclaw/openclaw/releases/tag/v2026.6.11`、`https://github.com/openclaw/openclaw/releases/tag/v2026.6.10`
 
 ---
 
-### 2. Cloudflare Temporary Accounts + AI Control Roadmap：infra-layer 在搶 agent 主導權
-**發生什麼**：兩件事在 48 小時內接連發生。
-- **Cloudflare** (2026-06-19, HN 249↑ 151c)：推出 `wrangler deploy --temporary`，任何 agent 立刻拿到 60 分鐘臨時 Worker 帳號，之後可 claim 成永久。官方明說：「every wall built for humans — OAuth, dashboard, MFA — is a hard stop for background agents」。
-- **DeepMind** (2026-06-18, Rohin Shah + Four Flynn)：發布 AI Control Roadmap，defense-in-depth 框架：sandbox + endpoint security + prompt injection resistance + model alignment + system-level security。比喻「driving instructor with dual controls」，強調「permission grants based on verified behavior」。
-
-**為什麼重要**：雲端 infra 開始主動把 AI agent 視為 first-class principal，要麼給它臨時 identity（Cloudflare），要麼把它當「potentially misaligned」對待（DeepMind）。這是企業級 agent 落地的硬卡點，也是 OpenClaw 沒在解的問題：當一個 OpenClaw agent 要 deploy / 發 PR / 申請 API token 時，它需要什麼樣的 identity？目前的 OpenClaw 是 single-user trusted agent，沒有「non-human principal + audit trail + permission escalation」這種 enterprise-grade 模型。Cloudflare 的暫時帳號模型非常值得搬到自架 infra。
-
-**可信來源**：`https://blog.cloudflare.com/temporary-accounts/` | `https://deepmind.google/blog/securing-the-future-of-ai-agents/`
+### 2. Google 發布《New SDLC with Vibe Coding》白皮書 —「Agent = Model + Harness」定調
+**發生什麼**：Addy Osmani、Shubham Saboo、Sokratis Kartakis 共同撰寫，Google 發布。核心論點：agent 10% 是 model、90% 是 harness（rule files、MCP servers、sandboxes、orchestration、hooks、observability）。公開數據佐證：Terminal Bench 2.0 上某團隊只改 harness、不換 model，從 top 30 之外衝進 top 5。
+**為什麼重要**：這是 2026 上半年最重要的「agent 架構宣言」——把業界敘事從「model race」轉回「harness engineering race」。對 OpenClaw 體系是直接背書：所有投在 skill、cron、hooks、log 上的工都是高槓桿投資。
+**來源**：`https://addyosmani.com/blog/new-sdlc-vibe-coding/`（白皮書本體 `https://www.kaggle.com/whitepaper-the-new-SDLC-with-vibe-coding`，被 reCAPTCHA 擋）
 
 ---
 
-### 3. Process Harness + NOVA：Harness engineering 進入「verification cascade」階段
-**發生什麼**：arXiv 2026-06-25 兩篇論文在同一日上線。
-- **Process Harness / CUGA FLOW** (2606.27188)：用 TDF（Task-Decision-Flow）模型把 workflow engine + agentic layer 解耦。3 種 policy-governed agent：TaskAgent（任務執行）/ DecisionAgent（gateway routing）/ FlowAgent（runtime 流程改造）。所有 LLM call 都從 process FRAME 拿 policy。
-- **NOVA** (2606.27243)：Baidu 工業推薦系統的 verification-aware agent harness。L1-L4 task-level control + 「architecture gradient」（SGD-inspired, non-differentiable）+ 4 段 verification cascade（結構語意 → 本地可執行性 → offline 效能 → online impact），失敗模式存成 forbidden directions。
-
-**為什麼重要**：「Verification cascade」是從 agent harness V1（堆工具）走到 V2（per-stage verification）的轉捩點。NOVA 的「runnable code ≠ valid architecture」這句話直接刺穿現有 agent 的盲點：Claude Code 寫出可執行程式不等於它改了正確的模組邊界。CUGA 的 TDF 模型則比 LangGraph 更結構化——把「policy」和「mechanism」分層，所有 LLM 呼叫的權限來自 FRAME，不來自 prompt。這兩個對 OpenClaw 的直接啟發是：`task-manager` 失敗任務應該自動寫成「forbidden directions」，下一次同類任務主動避開；以及 skill 的執行應該有 explicit verification cascade，而非只靠「模型感覺對了」。
-
-**可信來源**：`http://arxiv.org/abs/2606.27188` | `http://arxiv.org/abs/2606.27243`
+### 3. mini-SWE-agent：100 行 Python，SWB-bench >74%，已進入 Meta/NVIDIA/IBM 產線
+**發生什麼**：Princeton + Stanford SWE-agent 團隊發布 mini-SWE-agent，約 100 行 Python，於 SWE-bench verified 達 >74%，現已驅動 Ramp 內部 SWE workflow，並在 DeepSWE 評測擊敗 Claude Code 與 Codex。已被 Meta、NVIDIA、IBM、Essential AI 等採用。
+**為什麼重要**：coding agent 的極簡化趨勢得到 production 驗證。100 行擊敗複雜系統這件事，配合 Google 白皮書的 10/90 框架，給出訊號：**對 OpenClaw skill 設計應全面反思「哪些複雜度真的有必要」**。
+**來源**：`https://github.com/SWE-agent/mini-SWE-agent`
 
 ---
 
-### 4. Recall + Skillmaxxing：cold-start memory 與 self-evolving skill 變成 24h 內的競賽
-**發生什麼**：兩個超近期的 open-source skill 出現，都在打同一個痛點。
-- **Recall** (raiyanyahya/recall, HN 135↑ 86c, 2026-06-21)：Claude Code 的 local-first durable memory，**完全 offline**，用 classical Python summarizer（無 LLM 呼叫）。兩個檔案：`.recall/history.md`（append-only log）+ `.recall/context.md`（~1–2K token resume summary）。
-- **Skillmaxxing** (Bennyoooo/skillmaxxing, HN 2026-06-26)：**Self-evolving skills**——hooks 整合 Claude Code / Codex / Cursor，agent 在任務結束後 reflect，把 reusable parts crystallize 成 skill 或改善現有 skill。受 Hermes Agent self-improvement loop 啟發。
-
-**為什麼重要**：Recall 跟 OpenClaw 的 SOUL.md + daily memory 三層結構形成互補。Recall 解的是「session-level cold start」，OpenClaw 解的是「agent-level identity continuity」——兩者結合能給出完整 stack：Session cold start (Recall `.recall/context.md`) → Daily memory (`memory/YYYY-MM-DD.md`) → Long-term curated (`MEMORY.md`)。Skillmaxxing 的「no trigger, no babysitting」是 OpenClaw skill self-healing pipeline 的直接原型：每次 cron 任務結束時跑 skillmaxxing-style reflect loop，把失敗/重複操作自動寫成 SKILL.md 修訂草案。下次 heartbeat 看到 draft 時通知 Linder 批准。
-
-**可信來源**：`https://github.com/raiyanyahya/recall` | `https://github.com/Bennyoooo/skillmaxxing`
+### 4. Open Interpreter 重寫為 Rust，主打「低價模型 + 跨 harness」
+**發生什麼**：Open Interpreter 從 Python 全面遷移 Rust，提供 `i` 或 `interpreter` 命令。`/harness` 可切換 native / claude-code / kimi-cli / qwen-code / deepseek-tui / swe-agent / minimal 七種 harness；內建 QA skill 可操控瀏覽器與原生 app。
+**為什麼重要**：coding agent 的執行層正在 Rust 化、harness 正在 pluggable 化。對 OpenClaw 啟示：若要本地 long-running agent runtime，Rust 是合理方向；harness pluggable 模式也是 OpenClaw skill 系統的演化方向。
+**來源**：`https://github.com/openinterpreter/openinterpreter`
 
 ---
 
-### 5. Forsy AI Agent Apprenticeship：OpenClaw 首次出現在官方 supported agents 名單
-**發生什麼**：Forsy-AI/agent-apprenticeship (975★, 2026-06-25 launch) 在 README 直接寫「**available for anyone to start using with local agents including Codex, Cursor, Claude Code, OpenClaw, OpenCode, Hermes Agent, and custom agents**」。這個 framework 是「living ecosystem where AI agents run automated workflow loops on any task, improve through execution, turn each run into reusable work experience + data to improve future agents」。Seed dataset: 500+ tasks + 495 reusable lessons + 1000+ execution traces。
-
-**為什麼重要**：這是 OpenClaw 第一次被外部 mainstream agent ecosystem 收為 native supported runtime（之前僅在個人/team 工具類被提及）。驗證了三件事：(a) OpenClaw 的 gateway/node 架構在第三方眼中是「可整合的」而非「怪胎」；(b) workflow loop + execution experience 的「apprenticeship pattern」正在變成新預設（取代純 fine-tuning）；(c) 外部 ecosystem 開始期待 OpenClaw 提供 stdio/HTTP interface for skill execution，不是只有 Discord channel。
-
-**可信來源**：`https://github.com/Forsy-AI/agent-apprenticeship`
+### 5. MCP 生態：10+ SDK 語言 + Cognee 推出 `@cognee/cognee-openclaw` 插件
+**發生什麼**：Model Context Protocol 已有 TypeScript、Python、Java、Kotlin、C#、Go、PHP、Ruby、Rust、Swift 共 10 個官方 SDK。Cognee（開源 AI 記憶平台）發布 OpenClaw 專用插件，可直接接 LLM Wiki 圖譜。
+**為什麼重要**：MCP 已成跨框架 tool 互通的事實標準；Cognee 主動為 OpenClaw 出插件代表外部生態正式認可 OpenClaw 作為 runtime。OpenClaw skill 系統值得規劃 MCP 化路徑。
+**來源**：`https://github.com/modelcontextprotocol`、`https://github.com/topoteretes/cognee`
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-**啟發 1：建立「Verification Cascade」取代「Model Confidence」作為 skill 完成判定**
-NOVA 顯示「runnable ≠ correct」。OpenClaw 現行的 skill 完成判定靠 LLM 自評，這在高風險任務（security audit / migration / architecture change）會漏。建議在 `task-manager` 加一個 `verification_level` enum（`L1_smoke / L2_offline_metrics / L3_architecture_diff / L4_online_impact`），根據 skill metadata 自動對應；NOVA-style 的 forbidden directions 寫到 `memory/forbidden-patterns.md`，下次同類任務前 30 秒注入 skill context。
+**1. Harness > Model — 把 90% 預算放在 skill/hook/cron/channel，不要再追 model swap**
+Google 白皮書 + mini-SWE-agent 100 行勝出，這兩條獨立證據指向同一件事。OpenClaw 6.10/6.11 的 fast-mode、per-DM model、RAFT wake bridge 都是這個方向的工程落實。建議：以「harness change 能在 Terminal Bench 2.0 提升多少 rank」作為內部評估指標。
 
-**啟發 2：把 Agent Identity Layer 從「Linder 的延伸」升級為「first-class principal」**
-Cloudflare Temporary Accounts + DeepMind AI Control 都是同一訊號：infra 開始把 agent 當 principal。OpenClaw 對外呼叫任何 service（deploy / API / git push）時，應該有可審計的 agent identity（不只 channel owner 是 Linder）。低成本做法：在 `~/.openclaw/secrets/agent-principals/` 下放 scoped service tokens，每個 skill 啟動時 opt-in 載入，sessions_send / sessions_history 都記錄 principal id。對應 OpenClaw skill：`openclaw-agent-principal` skill。
+**2. Channel-aware routing 是下一個競爭點 — 善用 6.11 的 per-DM model override + /oc_queue**
+Slack relay、Mattermost `/oc_queue`、per-DM model overrides 開啟了「同 session、不同 channel、不同 model」的可能性。對 Rowlet 而言：可以設計 channel-aware specialist routing（Discord → MiniMax-M3、Telegram → M2.7、CLI → 強模型），將 `~/.openclaw/skills/agent-builder-researcher/` 類的 specialist skill 落實到實際 channel 配置上。
 
-**啟發 3：採用 Apprenticeship Loop 取代手寫 SKILL.md**
-Recall + Skillmaxxing + Forsy Apprenticeship 同時在解「skill 自我進化」。OpenClaw 應該從「Rowlet 凌晨手工修 SKILL.md」演化到「apprenticeship loop：每次 heartbeat 結束後跑反思 → 產生 SKILL.md 修訂 draft → 等 Linder 批准」。這個跟昨天的「execution feedback loop」啟發是同一條線，但今天有 3 個 open-source 實作可參考，可以選定一個（如 Skillmaxxing，因為 hooks-based，無侵入）做 prototype。
+**3. Memory 進化：Cognee graph + 既有 MEMORY.md 三層記憶互補**
+Cognee 已是 OpenClaw 外部認可的持久化記憶方案。建議在 workspace-rowlet 建一個 pilot：每日 heartbeat 將 `memory/YYYY-MM-DD.md` 增量灌入 Cognee，query 時先用 graph recall、再 fallback 文字記憶。不要全替換，三層架構仍是主幹，graph 是 search 加速層。
 
 ---
 
 ## 值得追蹤的 Repo / Paper / Article
 
-1. **vercel/eve** — `https://github.com/vercel/eve` — filesystem-first durable agent framework (2673★, 14 天)，agent/ { instructions.md, tools/, skills/, channels/, schedules/ } 結構直接對應 OpenClaw 分層
-2. **Process Harness / CUGA FLOW (arXiv 2606.27188)** — `http://arxiv.org/abs/2606.27188` — TDF model + policy-governed TaskAgent/DecisionAgent/FlowAgent；workflow engine + agentic layer 解耦
-3. **NOVA (arXiv 2606.27243)** — `http://arxiv.org/abs/2606.27243` — verification-aware agent harness，architecture gradient + L1-L4 task-level control，runnable ≠ valid architecture
-4. **Memory Depth / EVAF (arXiv 2606.26806)** — `http://arxiv.org/abs/2606.26806` — long-running language agents 不只需要 memory access，還需要 memory depth；surprise/valence-gated LoRA consolidation
-5. **Cloudflare Temporary Accounts** — `https://blog.cloudflare.com/temporary-accounts/` — `wrangler deploy --temporary` 60 分鐘臨時 agent 帳號；infra 開始給 agent 發 identity
-6. **DeepMind AI Control Roadmap** — `https://deepmind.google/blog/securing-the-future-of-ai-agents/` — defense-in-depth framework；agent 視為 potentially misaligned principal；雙控比喻
-7. **Martin Fowler: Building Reliable Agentic AI Systems (Bayer PRINCE)** — `https://martinfowler.com/articles/reliable-llm-bayer.html` — context engineering + harness engineering 在企業級 agentic RAG 的落地案例
-8. **Forsy-AI/agent-apprenticeship (975★)** — `https://github.com/Forsy-AI/agent-apprenticeship` — workflow loop ecosystem；OpenClaw 列為 supported runtime；500+ tasks + 495 lessons seed
-9. **Skillmaxxing (Bennyoooo)** — `https://github.com/Bennyoooo/skillmaxxing` — self-evolving skill hooks for Claude Code/Codex/Cursor；reflect → crystallize → improve loop
-10. **Recall (raiyanyahya)** — `https://github.com/raiyanyahya/recall` — Claude Code offline local memory；history.md + context.md 兩檔；無 LLM 呼叫
-11. **HKUDS/AgentSpace** — `https://github.com/HKUDS/AgentSpace` — Human + Agents one workspace；roles/owners/audit trail；Feishu for agent-native teams
-12. **cloudflare/security-audit-skill (966★)** — `https://github.com/cloudflare/security-audit-skill` — six-phase audit pipeline (recon/hunt/validate/report/structured/independent verification)；可作為 OpenClaw security skill 設計藍本
-13. **anthropics/launch-your-agent (515★)** — `https://github.com/anthropics/launch-your-agent` — Claude Code skills 4-phase (interview → stage&launch → grade&iterate → run without you)；eval scaffold 範本
-14. **mrtooher/fable-mode (556★)** — `https://github.com/mrtooher/fable-mode` — multi-stage planning + sub-agent delegation + self-verification；"checklist, not capability transplant"
-15. **HKUDS/AgentSpace + Ponytrail (0xroylee)** — `https://github.com/0xroylee/ponyrace` — snapshot-based local audit trail for AI coding-agent edits；對應 OpenClaw runtime logging
+1. **OpenClaw v2026.6.11 release notes** — Slack relay、Mattermost /oc_queue、RAFT wake bridge
+   `https://github.com/openclaw/openclaw/releases/tag/v2026.6.11`
+
+2. **OpenClaw v2026.6.10 release notes** — Automatic fast mode + model routing
+   `https://github.com/openclaw/openclaw/releases/tag/v2026.6.10`
+
+3. **Google《New SDLC with Vibe Coding》**（Addy Osmani summary）— Agent = Model + Harness 宣言
+   `https://addyosmani.com/blog/new-sdlc-vibe-coding/`
+
+4. **mini-SWE-agent** — 100 行 Python，>74% SWE-bench verified
+   `https://github.com/SWE-agent/mini-SWE-agent`
+
+5. **Open Interpreter (Rust 重寫版)** — 7 種 harness 切換、coding agent 新執行層
+   `https://github.com/openinterpreter/openinterpreter`
+
+6. **Cognee** + `@cognee/cognee-openclaw` 插件 — 開源 AI 記憶平台
+   `https://github.com/topoteretes/cognee`
+
+7. **arXiv:2606.27188 — CUGA FLO Process Harness** — Agentic BPM 理論框架
+   `https://arxiv.org/abs/2606.27188`
+
+8. **arXiv:2606.27288 — Multi-Model LLM Systems** — 67 模型研究，MoA 增益天花板
+   `https://arxiv.org/abs/2606.27288`
 
 ---
 
 ## 下一步建議
 
-1. **今晚上執行 Skillmaxxing-style Self-Healing Pipeline prototype**：在 OpenClaw 加一個 `skill-self-heal` skill，hook 到 task-manager 失敗事件：每次 task FAIL → append 到 `.recall/forbidden-directions.md` → 下次同類任務啟動時先讀取。預期產出：失敗任務 retry 成功率提升 + SKILL.md 自動收斂。可寫成 wiki concept page + 跑 7 天數據後回報 Linder。
+1. **Channel-aware model routing 實驗**：在 OpenClaw 6.11 的 per-DM model override 基礎上，把 Rowlet 的 specialist skill 綁定到 Discord/Telegram 不同 channel；寫一份 `channel-routing.md` 進 `wiki/concepts/`。這是把今日三個信號（harness > model / channel-aware / skill pluggable）一次性落實的最小實驗。
 
-2. **撰寫 wiki concept page 群（今晚 3 個）**：把今天的高價值 paper/repo 攝入 wiki：(a) `Process Harness / CUGA FLOW.md`（對應 task-manager 設計）、(b) `NOVA Verification-Aware Harness.md`（對應 verification cascade）、(c) `Vercel Eve.md`（對應 OpenClaw directory layout）。每個 200-300 行 concept page + graphify link 回既有 `Agent Harness.md` / `Active Context Compression.md` / `Skill Artifacts RL Optimization.md`。同步更新 `wiki/log.md` 與 `wiki/index.md`。
+2. **Cognee graph pilot**：在 workspace-rowlet 開一個 `/memory-graph/` pilot，把昨天 memory 灌進 cognee，看看 query latency 與 recall 改善是否值得常駐。
 
-3. **把 Cloudflare Temporary Accounts 模型套到 OpenClaw sandbox**：建立 `openclaw-temp-principal` skill，讓任何對外 API call（git push / deploy / web post）可以走 temporary token lifecycle（申請 60min → 用完回收 → audit log）。這不是 infra 變更，只是 OpenClaw 對外行為的最小可行 principal 模型。實作成本低（~100 LOC），但能直接驗證「agent as first-class principal」這個 pattern 在 OpenClaw 是否可行。
+3. **Ingest 進 llm-wiki**：把 OpenClaw 6.10/6.11 release notes、Google vibe coding 白皮書、mini-SWE-agent README 三份分別存到 `wiki/sources/`，並用 `npx graphifyy link` 建立「Code 與 Agent 地圖」與「Harness Engineering」concept 之間的邊。
 
 ---
 
-## 查過的來源
+## 查過的來源（透明度）
 
-- LLM Wiki graphify query（agent architecture / skills / multi-agent）
-- LLM Wiki `graphify-out/GRAPH_REPORT.md` clusters: Agent Harness (16 nodes), Active Context Compression, Agent Skills for LLMs, Skill Artifacts RL Optimization, MemGPT/StreamingLLM, OpenClaw Memory Plugin Tier List
-- Hacker News Algolia API（最近 14 天，2026-06-13~2026-06-27）：
-  - AI agent: 249↑ Cloudflare Temporary, 195↑ Martin Fowler Building Reliable, 73↑ peerd browser harness, 27↑ halo RLM debugger, 24↑ Ponytrail, 14↑ DeepMind Securing AI Agents, 10↑ Polygraph cross-repo memory, 8↑ Unreal Engine 5.8 MCP
-  - Claude Code / coding agent: 325↑ Extended Thinking 認證爭議, 149↑ workweave/router, 135↑ Recall, 39↑ Pulse phone approvals, 81↑ Anthropic ban, 6↑ Hacker 用 Claude/Codex 入侵企業
-- arXiv (2026-06-25 提交批次)：NOVA / Process Harness CUGA FLOW / Memory Depth EVAF / MIRROR MCTS Red-Teaming / OPID Skill Distillation / AURORA-AI Resource Orchestration / Joint Experiential Rules / Clinical Harness Medical AI Skill
-- GitHub Trending (2026-06-13~2026-06-27 新建 repo)：vercel/eve (2673★) / Forsy-AI/agent-apprenticeship (975★) / cloudflare/security-audit-skill (966★) / AI-Builder-Club/skills (580★) / QwenLM/Qwen-AgentWorld (568★) / mrtooher/fable-mode (556★) / anthropics/launch-your-agent (515★) / HKUDS/AgentSpace (453★) / benchflow-ai/awesome-evals (465★) / workweave/router / Plaer1/junction VSCode sidebar / ksimback/looper / dzcmemory-web/bazi-ziwei-skill / dongshuyan/compass-skills / winsznx/theeleven football markets
-- DeepMind Blog / Cloudflare Blog / Martin Fowler Article 直接 read
-- 本地 LLM Wiki (270 sources, 261 concepts) 已收錄的概念先驗：Agent Harness / Process Harness / Context Engineering / Skill Self-Healing / Memory Tiers / Active Context Compression / Fable / RVR pattern / MAAD / AgenticAKM
+- 本地 llm-wiki graphify query（agent / skills / harness / multi-agent / coding agent 2026）✅
+- GitHub Trending 2026-06-28 ✅
+- arXiv cs.AI 2026-06（2606.x 區段）✅
+- Hacker News frontpage top 10（含 AMD Strix Halo / OpenRA / 匿名 GitHub 大量丟卸款 / Fintech Handbook）✅
+- OpenClaw releases API（v2026.6.9–6.11）✅
+- Addy Osmani「The New Software Lifecycle」部落格 ✅
+- MiniMax 新聞頁（內容極少）✅
+- Kaggle 白皮書直連（reCAPTCHA 擋，採部落格二手）⚠️
+
+**本日結論**：今日有兩個被前次快速版漏掉的強信號（OpenClaw 自家連發 + Google 白皮書），不是「無新訊號日」。harness > model 的業界敘事已正式成形，OpenClaw 6.10/6.11 是這個敘事的工程化身。

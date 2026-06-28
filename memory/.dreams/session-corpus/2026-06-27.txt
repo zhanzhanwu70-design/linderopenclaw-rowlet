@@ -27,3 +27,11 @@
 [rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L83] Assistant: </think>
 [rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L86] Assistant: </think>
 [rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L88] Assistant: Graphify 沒有 link 指令。讓我用 `add` 來 ingest raw snapshot、更新 log.md、寫今天的 memory，最後回覆 Discord。
+[rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L91] Assistant: Graphify add 只接受 HTTP/HTTPS。讓我用 arXiv 公共 URL 來 add。
+[rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L93] Assistant: 跑 graphify --update 來建 graph 連結，並更新 wiki/log.md。
+[rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L95] Assistant: Graphify 已 ingest raw 內容；wiki pages 的 `related` front-matter 已建立軟連結。讓我更新 wiki/log.md 與今天的 memory。
+[rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L98] Assistant: 報告 + wiki + memory 全部完成。寫 Discord 回覆。
+[rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L100] Assistant: 報告與所有檔案已完成。最後回報執行情況。
+[rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L102] Assistant: 執行完成。所有檔案就位。 **每日 Agent × 軟體開發情報 — 2026-06-27（凌晨 02:04 UTC 觸發）** **今日 5 個重點** • **Vercel eve（2673★，14 天 GitHub trending agent #1）**：filesystem-first agent framework，agent/ { instructions.md, tools/, skills/, channels/, schedules/ } 跟 OpenClaw 1:1 對齊——外部驗證 SOUL
+[rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L102] Assistant: model（TaskAgent/DecisionAgent/FlowAgent + process FRAME）把 workflow engine + agentic layer 解耦。NOVA (2606.27243) Baidu 工業部署，「runnable ≠ valid architecture」核心洞察，4-stage verification cascade + forbidden directions + L1-L4 task-level control。 • **Recall + Skillmaxx
+[rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L102] Assistant: enum（NOVA L1-L4 模型） • **Agent Identity Layer 升級**：建立 `~/.openclaw/secrets/agent-principals/` scoped tokens + `openclaw-temp-principal` skill（~100 LOC） • **Apprenticeship Loop 取代手寫 SKILL.md**：從手工 SKILL.md 改為「reflect → crystallize → approve」自動化（Skillmaxxing hook

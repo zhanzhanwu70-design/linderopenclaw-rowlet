@@ -184,6 +184,7 @@
 
 ## Standing Rules (Linder 2026-06-25)
 - **Cron Job Data Archive Rule**: 所有 cron job 找到的資料都必須歸檔到 llm-wiki（`wiki/sources/` 或相關 concept 頁），不得停留在 session context 就消失
+- **逐字稿檢查 Rule**: 每次 agent run（session 啟動/heartbeat）檢查 `~/.openclaw/workspace/llm-wiki/raw/video/*/metadata.json`，若 `transcription_status: "in_progress"` 但 PID 不存在了，自動完成後續入庫（寫 wiki、存 MEMORY）
 
 ## Sakana Fugu / TRINITY / Conductor 研究（2026-06-25）
 
@@ -224,6 +225,9 @@
 - OpenClaw 是發號施令型協調者（直接 tool call）
 - Conductor/Fugu 是寫劇本型協調者（輸出描述讓別人執行）
 - 真正的 Agent = LLM + 框架 + **行動**（非只有輸出描述）
+
+## Standing Rules（每次 Agent Run 必做）
+- **檢查待處理逐字稿**：每次 session 啟動/heartbeat 檢查 `~/.openclaw/workspace/llm-wiki/raw/video/*/metadata.json`，若 `transcription_status: "in_progress"` 但 PID 不存在了（轉錄完成），自動完成後續入庫流程（寫 wiki、存 MEMORY）
 
 ## Pending / Follow-ups
 - Download TopoClaw + MetaCogAgent papers to wiki
@@ -292,7 +296,25 @@
 - **Hybrid Search** — BM25 (精確) + Vector (語意) 組合
 - **6 個方案 tier list**：C(原生 markdown) / B(MemZero) / A(LanceDB / KG / SQLite) / S(QMD)
 
-## Promoted From Short-Term Memory (2026-06-27)
+## Promoted From Short-Term Memory (2026-06-28)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:27:27 -->
-- code-base-memory-mcp vs Graphify 比較 (03:xx UTC): 两者可互補：mcp 服務開發者即時理解 / Graphify 服務長期知識沉澱 [score=0.803 recalls=0 avg=0.620 source=memory/2026-06-23.md:27-27]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:11:14 -->
+- ROS1/ROS2 文件入庫 (01:47-02:xx UTC): 官網有 Anubis 反爬，改用 GitHub clone; ROS2 Humble: 9 repos (rcl, rclcpp, rclpy, ros2cli, rosbag2, rviz, geometry2, launch, demos); ROS1 Noetic: 3 repos (ros_comm, navigation, moveit); 每個功能模組都寫了 wiki 條目（共 13 個 wiki 頁面） [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:11-14]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:17:19 -->
+- Moltbot Architecture 圖存 Wiki (02:47 UTC): 完整 agent chatbot 架構圖（Channel Adapter → Gateway → Agent Runner → LLM → Agentic Loop → Response Path）; wiki: wiki/concepts/moltbot-architecture.md; 與 OpenClaw 架構高度對應 [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:17-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:23:26 -->
+- code-base-memory-mcp vs Graphify 比較 (03:xx UTC): 完整比較報告已存: wiki/sources/codebase-memory-mcp-vs-graphify.md; 核心差異：mcp 是 runtime agent 查詢 / Graphify 是離線知識庫建構; mcp 用 Tree-sitter AST / Graphify 用 LLM semantic extraction; mcp 120x fewer tokens / Graphify 有 graph query overhead [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:23-26]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:4:7 -->
+- VoxCPM 入庫 (01:01 UTC): OpenBMB/VoxCPM — Tokenizer-free multilingual TTS; VoxCPM2: 2B params, 30 languages, Voice Design, 48kHz; 基於 MiniCPM-4 backbone + Diffusion Autoregressive; wiki: wiki/sources/VoxCPM.md [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:4-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:8:8 -->
+- VoxCPM 入庫 (01:01 UTC): raw: raw/sources/VoxCPM/README.md [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:8-8]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:12:12 -->
+- 1️⃣ 心智模型（Mental Models）: 非正式的、存在於腦中的簡化表示。 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:12-12]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:13:16 -->
+- 1️⃣ 心智模型（Mental Models）: **用途**：日常推理、策略思考、溝通框架; **例子**：SWOT 分析、波特五力、COP 模型; **優點**：免費、快速、不需要資料; **缺點**：容易偏差、難以精確、難以驗證 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:13-16]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:19:19 -->
+- 2️⃣ 數學模型（Mathematical Models）: 用方程式描述變數之間的關係。 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:19-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:20:23 -->
+- 2️⃣ 數學模型（Mathematical Models）: **用途**：物理定律、統計推論、經濟預測; **例子**：線性迴歸、貝氏推論、馬可夫鏈; **優點**：可驗證、可推廣、精確; **缺點**：依賴假設、複雜系統難建模 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:20-23]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:26:26 -->
+- 3️⃣ 計算模型（Computational Models）: 用程式實作的演算法，通常用於數學模型無法解析求解的情況。 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:26-26]
