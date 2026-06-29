@@ -1,5 +1,3 @@
-HEARTBEAT_OK
-
 ## Heartbeat Checklist
 
 ### 1. 逐字稿檢查（每次）

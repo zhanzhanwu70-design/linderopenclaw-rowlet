@@ -35,3 +35,27 @@
 [rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L102] Assistant: 執行完成。所有檔案就位。 **每日 Agent × 軟體開發情報 — 2026-06-27（凌晨 02:04 UTC 觸發）** **今日 5 個重點** • **Vercel eve（2673★，14 天 GitHub trending agent #1）**：filesystem-first agent framework，agent/ { instructions.md, tools/, skills/, channels/, schedules/ } 跟 OpenClaw 1:1 對齊——外部驗證 SOUL
 [rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L102] Assistant: model（TaskAgent/DecisionAgent/FlowAgent + process FRAME）把 workflow engine + agentic layer 解耦。NOVA (2606.27243) Baidu 工業部署，「runnable ≠ valid architecture」核心洞察，4-stage verification cascade + forbidden directions + L1-L4 task-level control。 • **Recall + Skillmaxx
 [rowlet/sessions/rowlet/d7c4f3df-a6f6-4353-bf73-afe59b214378.jsonl#L102] Assistant: enum（NOVA L1-L4 模型） • **Agent Identity Layer 升級**：建立 `~/.openclaw/secrets/agent-principals/` scoped tokens + `openclaw-temp-principal` skill（~100 LOC） • **Apprenticeship Loop 取代手寫 SKILL.md**：從手工 SKILL.md 改為「reflect → crystallize → approve」自動化（Skillmaxxing hook
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4517] User: https://www.youtube.com/watch?v=H0XmxIalAEQ
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4522] Assistant: 14 分鐘影片（27 MB wav），Whisper 背景轉錄中（PID 994）。轉錄完成後會存音文字到 `raw/video/2026-06-27-H0XmxIalAEQ/audio.txt`。 根據標題「馬斯克的五步驟」大概就是剛才討論的內容。要等轉錄完成嗎？
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4523] User: 這個影片的內容是?
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4526] Assistant: 還在轉錄中（14分鐘音訊）。你先忙，我完成後會直接回報內容。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4528] Assistant: hi! 🌿
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4529] User: 影片處理好了嗎
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4544] Assistant: 轉錄完成。**標題是「马斯克的五步骤」但內容主要不是直接講馬斯克**，而是開發者自己摸索出來的 AI agent 測試方法論： --- **實際內容：** 開頭：開發者發現自己 90% 時間在做手動測試（點網頁、輸入測資、用肉眼看 agent 跑對不對），只有 10% 時間在寫 code。 引用 Jason Wei（2025, OpenAI）的概念： - **驗證不對稱性**（Verification Asymmetry）— 生成便宜，驗證昂貴 - **Very's Law** — 任何可 生成且易於驗證的任務，
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4546] Assistant: 這部影片已經轉錄完成（388行）。要存進 wiki 嗎？
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4547] User: 這個影片和馬思克無關 請歸檔到llmwiki
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4550] Assistant: 已存進 `wiki/sources/ai-agent-testing-regression.md` 🌿
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4551] User: 此影片的逐字稿有放在raw嗎
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4552] Assistant: 有的，在 `raw/video/2026-06-27-H0XmxIalAEQ/audio.txt`（388 行）。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4553] Assistant: 執行完成。所有檔案就位。 **每日 Agent × 軟體開發情報 — 2026-06-27（凌晨 02:04 UTC 觸發）** **今日 5 個重點** • **Vercel eve（2673★，14 天 GitHub trending agent #1）**：filesystem-first agent framework，agent/ { instructions.md, tools/, skills/, channels/, schedules/ } 跟 OpenClaw 1:1 對齊——外部驗證 SOU
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4553] Assistant: model（TaskAgent/DecisionAgent/FlowAgent + process FRAME）把 workflow engine + agentic layer 解耦。NOVA (2606.27243) Baidu 工業部署，「runnable ≠ valid architecture」核心洞察，4-stage verification cascade + forbidden directions + L1-L4 task-level control。 • **Recall + Skillmax
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4553] Assistant: enum（NOVA L1-L4 模型） • **Agent Identity Layer 升級**：建立 `~/.openclaw/secrets/agent-principals/` scoped tokens + `openclaw-temp-principal` skill（~100 LOC） • **Apprenticeship Loop 取代手寫 SKILL.md**：從手工 SKILL.md 改為「reflect → crystallize → approve」自動化（Skillmaxxing hoo
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4554] User: https://youtu.be/GvIZ-1B59Cg?si=CRyflkahT2hjFpOe
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4557] Assistant: Why QQ 頻道，16 分鐘，「AI时代前端工程师的困境 | 不懂浏览器底层，你永远只是代码搬运工」。下載中：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4563] Assistant: Whisper 背景轉錄中（PID 53322）。完成後通知你。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4564] User: https://youtu.be/TOWSmjvQW8s?si=k4_EpcWFolaKvOxa
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4567] Assistant: 54 MB，比較大。轉 WAV 並背景轉錄：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4569] Assistant: 81 分鐘，151 MB WAV。背景轉錄：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4575] Assistant: 標題是「1.1 Uniprocessor Process Scheduling | Real-Time Systems 即時系統 | Tei-Wei Kuo 郭大維」——是台大郭大維教授的即時系統課程，不是 Why QQ。更新 metadata：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4577] Assistant: 81 分鐘即時系統課程（郭大維教授），Whisper 背景轉錄中（PID 114526）。完成後通知你。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4593] Assistant: 兩個都好了！ **郭大維即時系統（TOWSmjvQW8s）：** - ✅ 轉錄完成（2354 行） - ✅ 存 raw：`raw/video/2026-06-27-TOWSmjvQW8s/audio.txt` - ✅ 寫 wiki：`wiki/sources/realtime-systems-uniprocessor-scheduling-kuo.md` **Why QQ 前端工程師（GvIZ-1B59Cg）：** - ✅ 轉錄完成（458 行） - ✅ 存 raw：`raw/video/2026-06-27-G

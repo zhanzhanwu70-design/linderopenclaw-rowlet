@@ -188,6 +188,22 @@
 
 ## Sakana Fugu / TRINITY / Conductor 研究（2026-06-25）
 
+### Sakana AI 公司背景（2026-06-28 新增）
+- **創辦人**：David Ha（Google Brain → Stability AI）+ Llion Jones（Transformer 論文八位作者之一）
+- **為何在日本**：資源受限 + 可自由使用中美模型不受出口管制
+- **哲學**：不做更大模型，用集體智慧組合模型能力
+
+### Sakana Fugu 兩種模型
+| 模型 | 定位 | 運作方式 |
+|------|------|---------|
+| Fugu | 簡單任務 | 從池子裡挑一個模型 |
+| Fugu Ultra | 複雜任務 | Opus 4.8 + GPT 5.5 + Gemini 3.1 Pro 三模型協作 |
+
+### Conductor 工作流程包含三件事（2026-06-28 新增）
+1. **Subtask 任務清單** — 把請求拆成小的子任務
+2. **Worker 分配** — 每個子任務交給哪個模型
+3. **Context Access** — 每個子任務模型可以看到前面哪些步驟的答案
+
 ### 三篇論文
 | 論文 | arXiv | 會議 |
 |------|-------|------|
@@ -296,25 +312,25 @@
 - **Hybrid Search** — BM25 (精確) + Vector (語意) 組合
 - **6 個方案 tier list**：C(原生 markdown) / B(MemZero) / A(LanceDB / KG / SQLite) / S(QMD)
 
-## Promoted From Short-Term Memory (2026-06-28)
+## Promoted From Short-Term Memory (2026-06-29)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:11:14 -->
-- ROS1/ROS2 文件入庫 (01:47-02:xx UTC): 官網有 Anubis 反爬，改用 GitHub clone; ROS2 Humble: 9 repos (rcl, rclcpp, rclpy, ros2cli, rosbag2, rviz, geometry2, launch, demos); ROS1 Noetic: 3 repos (ros_comm, navigation, moveit); 每個功能模組都寫了 wiki 條目（共 13 個 wiki 頁面） [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:11-14]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:17:19 -->
-- Moltbot Architecture 圖存 Wiki (02:47 UTC): 完整 agent chatbot 架構圖（Channel Adapter → Gateway → Agent Runner → LLM → Agentic Loop → Response Path）; wiki: wiki/concepts/moltbot-architecture.md; 與 OpenClaw 架構高度對應 [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:17-19]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:23:26 -->
-- code-base-memory-mcp vs Graphify 比較 (03:xx UTC): 完整比較報告已存: wiki/sources/codebase-memory-mcp-vs-graphify.md; 核心差異：mcp 是 runtime agent 查詢 / Graphify 是離線知識庫建構; mcp 用 Tree-sitter AST / Graphify 用 LLM semantic extraction; mcp 120x fewer tokens / Graphify 有 graph query overhead [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:23-26]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:4:7 -->
-- VoxCPM 入庫 (01:01 UTC): OpenBMB/VoxCPM — Tokenizer-free multilingual TTS; VoxCPM2: 2B params, 30 languages, Voice Design, 48kHz; 基於 MiniCPM-4 backbone + Diffusion Autoregressive; wiki: wiki/sources/VoxCPM.md [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:4-7]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-23.md:8:8 -->
-- VoxCPM 入庫 (01:01 UTC): raw: raw/sources/VoxCPM/README.md [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-23.md:8-8]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:12:12 -->
-- 1️⃣ 心智模型（Mental Models）: 非正式的、存在於腦中的簡化表示。 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:12-12]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:13:16 -->
-- 1️⃣ 心智模型（Mental Models）: **用途**：日常推理、策略思考、溝通框架; **例子**：SWOT 分析、波特五力、COP 模型; **優點**：免費、快速、不需要資料; **缺點**：容易偏差、難以精確、難以驗證 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:13-16]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:19:19 -->
-- 2️⃣ 數學模型（Mathematical Models）: 用方程式描述變數之間的關係。 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:19-19]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:20:23 -->
-- 2️⃣ 數學模型（Mathematical Models）: **用途**：物理定律、統計推論、經濟預測; **例子**：線性迴歸、貝氏推論、馬可夫鏈; **優點**：可驗證、可推廣、精確; **缺點**：依賴假設、複雜系統難建模 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:20-23]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:26:26 -->
-- 3️⃣ 計算模型（Computational Models）: 用程式實作的演算法，通常用於數學模型無法解析求解的情況。 [score=0.824 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:26-26]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:5:5 -->
+- 🌿🦉 HC #54：Model Types: **定義**：模型是用來表示現實世界現象的工具——分為**心智模型（Mental）**、**數學模型（Mathematical）**、**計算模型（Computational）**三類。理解各類模型的優勢與限制，是做研究、做決策、做預測的基本功。 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:5-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:11:12 -->
+- 定義: **控制變因**：系統性地操作自變量，同時固定其他變量，防止混淆（confounding）; **隨機化**：將受試者隨機分配至各組，消除系統性偏差，讓偶然性接管干擾變量 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:11-12]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:14:14 -->
+- 定義: > 一個沒有對照組、沒有隨機分配的「實驗」，本質上只是觀察。 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:14-14]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:20:20 -->
+- 為什麼重要: 實驗設計是從「相關性」邁向「因果關係」的唯一可靠橋梁。我們可以觀察到「喝咖啡的人心臟病發率較低」，但只有精心設計的實驗才能回答：「是咖啡降低了心臟病風險，還是喝咖啡的人本來就較健康？」 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:20-20]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:22:22 -->
+- 為什麼重要: 實驗設計讓我們有底氣說：**「這個處理確實有效，而且是因為這個處理，而不是其他原因。」** [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:22-22]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:7:7 -->
+- 定義: **Experimental Design = 控制變因 + 隨機化** [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:7-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:9:9 -->
+- 定義: Minerva 對實驗設計的核心濃縮為兩個詞：**控制（Control）** 與 **隨機化（Randomization）**。這不是實驗的全部，但是最關鍵的兩個支柱。 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:9-9]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22.md:11:13 -->
+- HC Introduction Log: #53 Theory Testing — 2026-06-22; #54 Model Types — 2026-06-22; #55 Data Visualization — 2026-06-22 (cron 15:14 UTC) [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22.md:11-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22.md:16:19 -->
+- Hermes Agent 影片入庫 (14:47 UTC): YouTube: X3VfLxRFODg, 網路小白_Uncle城; 核心內容：Hermes Agent 不是靠模型很強，是靠「會成長的 Agent」學習方式; 開發商：Nous Research（開源模型起家，Hermes Free 系列）; 與 OpenClaw MEMORY/SOUL 三層記憶系統的對比 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22.md:16-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22.md:20:21 -->
+- Hermes Agent 影片入庫 (14:47 UTC): wiki: wiki/sources/hermes-agent-youtube.md; raw: raw/video/2026-06-22-X3VfLxRFODg/ [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22.md:20-21]
