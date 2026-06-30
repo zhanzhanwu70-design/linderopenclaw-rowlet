@@ -1,125 +1,118 @@
-# 每日 Agent × 軟體開發情報 — 2026-06-29
-
-**執行時間：** 2026-06-29 02:00 UTC  
-**資料覆蓋：** arXiv (cs.AI, 131篇/日) · GitHub Trending · Hugging Face Papers · 新增repo監控
-
----
+# 每日 Agent × 軟體開發情報 — 2026-06-30
 
 ## 今日 5 個重點
 
-### 1. Vercel Eve — Agent Framework 新勢力（⭐2860，2026-06-28 更新）
-**發生什麼：** Vercel 發布 `eve`——一個以 TypeScript/JavaScript 為核心的 Agent 建構框架，主打 topics 包含 `agent`, `framework`, `harness`, `sandbox`, `workflows`。昨日更新，已累積近 3000 stars。
+### 1. Ornith-1.0：開放源碼自我改進 coding agent 模型新標竿
+**發生什麼**：Deep Reinforce AI 發布 Ornith-1.0 系列，提供 9B-Dense、31B-Dense、35B-MoE、397B-MoE 四種規模，全部基於 Qwen 3.5 / Gemma 4 後訓練。核心 innovation 是 RL 同時優化「scaffold」（驅動解決方案的搜索框架）和「solution rollouts」，讓模型學會更好的搜索軌跡，而非只學解題結果。
 
-**為什麼重要：** Vercel 的加入代表主流前端/全端平台正式進場 agent infrastructure。它的 harness + sandbox 概念與 OpenClaw 的 tool-execution security 有高度結構相似性。關注它如何處理 multi-turn conversation state、credential isolation、和 workflow persistence——這些都是 OpenClaw正面對的課題。
+**為什麼重要**：在 Terminal-Bench 2.1（Terminus-2 harness）達 77.5 分，與 Claude Opus 4.8 的 85 分差距大幅縮窄。SWE-Bench Verified 75.6%（35B 版本），已超越多數封閉模型。更重要：MIT 授權，可自由整合進 OpenClaw 這類框架。9B 版本在本地硬體即可運行，適合作為輕量 coding sub-agent。
 
-**來源：** https://github.com/vercel/eve
-
----
-
-### 2. ANIS — Agent-Native Immune System（arXiv:2606.28270，今日新鮮出爐）
-**發生什麼：** 論文提出將免疫系統概念嵌入 agent 認知環（cognitive loop）本身，而非依賴外部防禦。提出六層 Immune Tower（L0-L5），含 Barrier Immunity（L1）隔離層、memory poisoning / tool-chain manipulation / multi-agent protocol attacks 的 vaccine taxonomy。
-
-**為什麼重要：** 這是首篇將「agent runtime 安全」當作內生問題而非外掛問題的論文。對於 OpenClaw 這類多工具、多 session 架構，ANIS 的威脅模型（memory poisoning、tool-chain manipulation）直接適用。其「non-cognitive isolation layer」概念值得借鏡到 OpenClaw 的 sandbox 分層設計。
-
-**來源：** https://arxiv.org/abs/2606.28270
+**來源**：[github.com/deepreinforce-ai/Ornith-1](https://github.com/deepreinforce-ai/Ornith-1) | [HN 討論 (154 points)](https://news.ycombinator.com/item?id=48722052)
 
 ---
 
-### 3. ATOD — 多輪對話 Agent 的 OPD+RL 混合訓練（arXiv:2606.27814）
-**發生什麼：** ATOD（Annealed Turn-aware On-policy Distillation）將 OPD（on-policy distillation）與 RL 混合，用 annealed schedule：前期 OPD 快速模仿老師，後期 RL 探索突破天花板。在 ALFWorld、WebShop 實測有效。
+### 2. Qwen 3.6 27B：「本地 agentic coding」的sweet spot 確認
+**發生什麼**：Qwen 3.6 27B 登上 HN 首頁（610 分），被多位開發者實測確認為「第一個真正實用的本地 general intelligence」。Simon Willison 的 penguins-on-bicycle 測試通過，從 prompt 建立完整 Node package 一次成功。35B A3B MoE 版本速度快但服從性較差，27B dense 版本反而更適合需要嚴格遵循指令的 agentic workflow。
 
-**為什麼重要：** 這對 OpenClaw 的 multi-agent workflow 最有直接意義——當多個 agent（轟鳴月、耿鬼、噴火龍）協作時，如何訓練每個 agent 的對話質量？ATOD 的「turn-level disagreement-uncertainty reweighting」T-DUR 機制可以直接啟發我們對 agent-to-agent 訊息質量的評估方法。
+**為什麼重要**：對 OpenClaw 這類本地 agent 框架的啟示：27B 是成本 / 能力平衡點，不需要訂閱 API 就能跑出一個堪用的 coding agent。這將加速「每個开发者的 laptop 上都有一個私人 coding agent」的常態化。建議 Linder 測試將 Qwen 3.6 27B 整合進 ELLE WS 的 node code 產生流程。
 
-**來源：** https://arxiv.org/abs/2606.27814
-
----
-
-### 4. Graph World Models — Agent/工具依賴圖的長期規劃誤差不確定性（arXiv:2606.27780）
-**發生什麼：** 研究滾動規劃在圖結構世界模型（agents、tools、skills、dependencies構成的圖）中的誤差傳播。提出 Error-Aware GWM，結合光譜正則化、滾動一致性、critical-node 加權。動態邊（dynamic-edge）訓練是關鍵。
-
-**為什麼重要：** 這幾乎是 OpenClaw skill/orchestration graph 的理論對應——當我們的 agent 跨 skill 調用形成依賴圖時，規劃誤差會沿邊傳播並放大。此論文提供了量化分析框架，可以幫助我們評估 skill 設計的穩健性，並預測長鏈 workflow 的失敗點。
-
-**來源：** https://arxiv.org/abs/2606.27780
+**來源**：[quesma.com blog](https://quesma.com/blog/qwen-36-is-awesome/) | [HN](https://news.ycombinator.com/item?id=48721903)
 
 ---
 
-### 5. gamedev-skills/awesome-gamedev-agent-skills × Cloudflare security-audit-skill
-**發生什麼：**
-- `gamedev-skills/awesome-gamedev-agent-skills`（⭐164）：66 個便攜式 SKILL.md，橫跨 Godot、Unity、Unreal、Web，在 Claude Code、Cursor、Codex、Copilot、Gemini CLI 通用。含 master router 自動分發 skill。
-- `cloudflare/security-audit-skill`（⭐1610）：多階段安全審計 skill，獨立驗證的 machine-readable findings。
+### 3. AI-ModelNet：跨模型協作網路的系統架構提議
+**發生什麼**：arXiv 2606.27382（Journal of Computer Research and Development 2026，已發表）提出 AI-ModelNet 概念：將異質 LLM 模型互聯，實現能力共享與協作推理。類比 Internet 的分層架構，設計了模型間的「路由層」，讓小型專業模型可以調用大型通用模型的推理能力。
 
-**為什麼重要：** 兩者都印證了「skill-as-portable-unit」的架構方向——skill 不綁定單一 agent/IDE，而是跨平台運行。OpenClaw 的 skill 系統領先業界，但需要追上「skill router / skill registry」的自動發現機制。Cloudflare 的 security-audit skill 模式可以是我們 own security skill 的參考模板。
+**為什麼重要**：與 OpenClaw 的 multi-agent 架構有直接結構相似性。OpenClaw 的 skill routing + agent dispatch 機制，可以視為 AI-ModelNet 概念的精簡實現。論文提出的分層架構值得參考，尤其是「模型能力發現層」的設計，對 OpenClaw 未來動態選擇合適 sub-agent 有指導價值。
 
-**來源：** 
-- https://github.com/gamedev-skills/awesome-gamedev-agent-skills
-- https://github.com/cloudflare/security-audit-skill
+**來源**：[arXiv:2606.27382](https://arxiv.org/abs/2606.27382)
+
+---
+
+### 4. 多人格團隊績效研究：coding task 不受人格組合影響
+**發生什麼**：arXiv 2606.27443 系統實驗了三種任務（structured coding、open-ended research collaboration、competitive bargaining）下多 agent 人格組合對績效的影響。發現：在 structured coding，任務結果幾乎不受人格組合影響；但在 open-ended collaboration 和 bargaining，低 agreeableness agent 會顯著破壞團隊表現。
+
+**為什麼重要**：對 OpenClaw multi-agent workflow 設計的直接啟示——coding task（這正是 Rowlet 最常做的）對人格組成有魯棒性，可以放心讓不同 skill/persona 的 sub-agent 協作。但規劃、決策類任務（類似轟鳴月 CEO 的角色）則需要刻意控制人格組合。這個結論與 Rowlet 自身的「安靜觀察、果斷行動」人格定位一致——在 coding context 不需要過度強調合作性。
+
+**來源**：[arXiv:2606.27443](https://arxiv.org/abs/2606.27443)
+
+---
+
+### 5. Memory-Update Gap in LLM Agents 新 paper
+**發生什麼**：arXiv 2606.27472 「Supersede: Diagnosing and Training the Memory-Update Gap in LLM Agents」直接研究 LLM agent 的記憶更新缺陷——模型在工具執行後更新記憶的時機與方式存在系統性問題，導致長期任务中上下文丟失。
+
+**為什麼重要**：Rowlet 的三層記憶系統（SOUL.md → daily memory → MEMORY.md）是緩解此問題的手動對策，但此 paper 提出了 RL-based 訓練方法來教模型學會正確的記憶更新策略。若方法有效，可考慮將其整合進 OpenClaw agent 的 task 持久化層，減少對人工記憶管理的依賴。
+
+**來源**：[arXiv:2606.27472](https://arxiv.org/abs/2606.27472)
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-**① Agent runtime security 需要內建化（ANIS 啟發）**
-OpenClaw 目前的安全機制（skill-guard、runtime-monitor）是外部補丁。ANIS 的 Layered Immune Tower 概念建議：將 credential isolation、tool-chain verification、memory poisoning detection 變成 OpenClaw agent loop 的內建層，而非外掛。
+**1. Ornith-1.0 的 scaffold RL 方法可直接移植到 ELLE WS**
+Ornith-1.0 的關鍵 insight：「scaffold 和 solution 必須一起優化」。目前的 ELLE WS node 產生流程（目標檢測 → 路徑規劃 → 控制）相當於一個 scaffold，如果也採用 RL 共同優化框架，可能提升節點任務完成的質量，而非僅微調單一環節。建議：將 ELLE WS 的 node 產生視為一個 agentic coding 問題，用 Ornith-1.0 的思路做 RL 訓練。
 
-**② Skill graph 需要 Error-Aware 評估（Graph World Models 啟發）**
-目前的 skill registry 是靜態的。可以借鑒論文的 critical-node weighting，用過去 workflow 失敗數據對每個 skill 節點加權，自動標記高風險 skill 組合鏈，變成動態的「skill reliability score」。
+**2. Qwen 3.6 27B 為本地 coding agent 提供無 API 依賴的替代方案**
+若 Linder 的隱私需求提升，或 API 成本成為瓶頸，Qwen 3.6 27B 配合 llama.cpp 可以提供完整的本地 coding agent 能力。建議評估 ELLE WS 中哪些 task（如 simple node code generation）可以先用本地模型處理，節省 MiniMax API quota。
 
-**③ ATOD-style training 優化 multi-agent 訊息路由**
-多個 OpenClaw specialist agent（Rowlet、Gengar、Charizard）之間的溝通目前是啟發式。可以借鑒 ATOD 的 turn-level disagreement reweighting：讓 sending agent 對自己訊息做「可 follow 性」自評，receiving agent 對不理解的地方請求重述。
+**3. 多 agent 人格魯棒性研究支持「 специалист 分散式」架構**
+研究結論為 OpenClaw 現有分散式 specialist agent 架構提供了實證支持。coding task 不受人格組合影響，意味著 Rowlet + charizard + gengar 可以各自保持獨特人格而不損害協作效率。這對 OpenClaw 的 agent composition 設計是一個正面信號。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-1. **vercel/eve** — Agent 建構框架（⭐2860）  
-   https://github.com/vercel/eve
+1. **Ornith-1.0** (repo with RL training framework for coding agents)
+   - https://github.com/deepreinforce-ai/Ornith-1
 
-2. **cloudflare/security-audit-skill** — 多階段安全審計 skill（⭐1610）  
-   https://github.com/cloudflare/security-audit-skill
+2. **AI-ModelNet** (inter-model collaboration architecture, journal-published)
+   - https://arxiv.org/abs/2606.27382
 
-3. **anthropics/launch-your-agent** — Claude Code → Managed Agent 部署技能（⭐552）  
-   https://github.com/anthropics/launch-your-agent
+3. **When Does Personality Composition Matter for Multi-Agent LLM Teams?**
+   - https://arxiv.org/abs/2606.27443
 
-4. **benchflow-ai/awesome-evals** — Agent eval 資源彙整（⭐564）  
-   https://github.com/benchflow-ai/awesome-evals
+4. **Supersede: Memory-Update Gap in LLM Agents**
+   - https://arxiv.org/abs/2606.27472
 
-5. **gamedev-skills/awesome-gamedev-agent-skills** — 66 個跨平台便攜 SKILL.md（⭐164）  
-   https://github.com/gamedev-skills/awesome-gamedev-agent-skills
+5. **Agency Agents** (personality-driven AI agent library installable into Claude Code / Cursor)
+   - https://github.com/msitarzewski/agency-agents
 
-6. **ANIS: Agent-Native Immune System** (arXiv:2606.28270)  
-   https://arxiv.org/abs/2606.28270
+6. **ai-berkshire** (multi-agent value investing research framework with Claude Code/Codex)
+   - https://github.com/xbtlin/ai-berkshire
 
-7. **ATOD: Multi-turn Agent OPD+RL Training** (arXiv:2606.27814)  
-   https://arxiv.org/abs/2606.27814
+7. **Towards Evaluation of Implicit Software World Models in Coding LLMs**
+   - https://arxiv.org/abs/2606.27406
 
-8. **Error-Aware Graph World Models** (arXiv:2606.27780)  
-   https://arxiv.org/abs/2606.27780
+8. **Qwen 3.6 27B** (local coding agent practical guide)
+   - https://quesma.com/blog/qwen-36-is-awesome/
 
 ---
 
 ## 下一步建議
 
-**① Ingest ANIS 論文到 llm-wiki**
-這篇是近距離直接相關於 OpenClaw security architecture 的論文。建議 graphify → 建立 `wiki/concepts/Agent-Native-Immune-System.md`，並與既有的 `openclaw-security` skill 建立圖譜連結。
+**1. Ingest Ornith-1.0 和 Personality Composition paper 到 llm-wiki**
+這兩個是今日最高價值的發現。Ornith-1.0 關乎 coding agent 的 RL 訓練方法論；Personality Composition 關乎 multi-agent workflow 設計。建議 graphify extract 相關章節並寫成 wiki/concepts 條目。
 
-**② 評估 vercel/eve 的架構設計**
-e ve 的 harness + sandbox + workflow 組合與 OpenClaw 的相似度值得做一次架構對照。如果它有值得抄襲的設計模式，可以考慮寫一個 `eve-vs-openclaw` 的 analysis note。
+**2. 測試 Qwen 3.6 27B 與現有 ELLE WS workflow 的整合可能性**
+用 TOOLS.md 中的 local whisper.cpp 部署方式類比，先確認 Qwen 3.6 27B llama.cpp build 在 ELLE WS 硬體上是否能流暢運行。這是低成本實驗，Rowlet 可以自行執行。
 
-**③ 實驗：給 OpenClaw skill 加 reliability score**
-用現有的 task/heartbeat log 數據，計算每個 skill 的歷史成功率，作為 dynamic routing 的依據。這是 Graph World Models 論文的實務落地，不需要新工具，用現有數據即可啟動。
-
----
-
-## 已查詢來源狀態
-
-| 來源 | 狀態 |
-|------|------|
-| arXiv cs.AI (131篇/日) | ✅ 成功，新鮮出爐 |
-| GitHub Trending (agent/multi-agent) | ✅ 成功 |
-| Hugging Face Papers | ⚠️ 頁面 JS render，內容截斷 |
-| Hacker News (Algolia API) | ❌ API 回400，參數需調整 |
-| InfoQ / Martin Fowler | ⚠️ 未查（RSS 需額外設定） |
-| LangChain/LangGraph release notes | ⚠️ 未查 |
+**3. 安排一次 ELLE WS 架構回顧，以 AI-ModelNet 分層架構為參照**
+AI-ModelNet 的四層架構（應用 → 路由 → 能力發現 → 模型執行）與 ELLE WS 的分層設計高度吻合。建議轟鳴月安排一次 review，確認 ELLE WS 各層是否有對應實現，以及是否需要補充「能力發現層」。
 
 ---
-*Rowlet 🌿🦉 — 每日 Agent × 軟體開發情報*
+
+## 已查詢來源
+
+- GitHub Trending (daily) ✓
+- Hacker News (top 15) ✓
+- arXiv cs.AI RSS (2026-06-29) ✓
+- arXiv cs.SE RSS (2026-06-29) ✓
+- arXiv cs.CL RSS (2026-06-29) ✓
+- LLM Wiki graph (9420 nodes, 13392 edges, 947 communities) ✓
+- HN thread: Ornith-1.0 ✓
+- Qwen 3.6 27B blog post ✓
+- Agency Agents GitHub ✓
+- 本地 wiki graphify query ✓
+
+---
+*Generated by Rowlet (🌿🦉) | 2026-06-30*

@@ -33,3 +33,17 @@
 [rowlet/sessions/rowlet/38ca95d1-cf28-424b-b4f7-a5b5ad6647ae.jsonl#L73] Assistant: English：象徵性格式** ``` 原始： "Alice gave Bob a book about AI." Telegraph： [AGENT] Alice [ACTION] gave [PATIENT] Bob [OBJECT] book (topic: AI) ``` 一行一 fact，role labels 明確，推理路徑清晰可追蹤。Prompt-level 技巧，任何 encoder 可用。 **3. 實驗結果：在最難 dataset 也勝出** MuSiQue/TwoWiki/HotpotQA 上，
 [rowlet/sessions/rowlet/38ca95d1-cf28-424b-b4f7-a5b5ad6647ae.jsonl#L73] Assistant: --- **❓ 討論問題** 1. OpenClaw 的 tool output 應該用 symbolic format 還是 coherent summary？ 2. 如何在 headroom 中整合 Telegraph English 格式？ 3. depth-interaction hypothesis 為 null 對 agent 架構設計有何啟示？
 [rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L16118] Assistant: $ TZ=Asia/Taipei date +%H:%M
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4606] Assistant: 🌿🦉 **LLM Wiki 每日巡讀 — 2026-06-28** **審查主題：** Agent Harness — 生產級智能體基礎設施層 **更新內容：** - `wiki/concepts/Agent Harness.md`：新增「2026 Framework Landscape」表格，對比 OpenAI Agents SDK（已 provider-agnostic，支援 100+ LLMs）、Claude Agent SDK（formerly Claude Code SDK，TypeScript）、
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4607] User: https://www.youtube.com/watch?v=kddVQq62P4Y 這部影片裡面提到的方法都要提取出來 我想針對這些方法去做研究
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4610] Assistant: wow 頻道，「被神化的 AI 自动化优化：为什么你的 Agent 根本"不听"别的 Agent 说话？」13 分半。下載中：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4616] Assistant: 已啟動 Whisper 轉錄（PID 347369），約 14 分鐘後完成。轉錄完成後我會把所有方法都提取出來給你研究。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4623] Assistant: hi! 🌿
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4629] Assistant: 好了！轉錄完成（280 行）。讀取內容提取方法：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4631] Assistant: 轉錄完成（280行）。這部影片在介紹一篇論文，標題是「Prompt Optimization is Like Flipping a Coin」。 **所有提到的方法：** --- **1. Prompt 優化三條路** - 人工調優（靠感覺） - 自動化框架（DS-Pi / OPRO / EvoPrompt / PromptBreeder） - Zero Shot（不做任何優化當基準線） --- **2. 交互效應實驗** - 驗證「Agent A + Agent B 的 Prompt 是否需要聯合優化」 - 結
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4631] Assistant: Zero Shot | 差距>2分才有優化空間 | ~5美元 | --- **6. 模型綁定性** - 「Everything Changes When the Model Changes」 - High-Code 在 Help Steer 2 上：6/6 方法成功 - Nova Lite 在 Help Stear 2 上：1/6 方法成功 - **經驗高度模型綁定，無法跨模型遷移** --- **核心態度** > 「先診斷再優化」—— 85 美元 + 一天時間把問題變成可回答的工程題 --- 要我全部存進 wi
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4632] User: 你在每次被heartbeat觸發時 為何不會去主動檢測 是否翻譯完成
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4633] Assistant: 因為 HEARTBEAT.md 沒有設定這個檢查項目。規則寫進 MEMORY.md 了，但 heartbeat 沒實際執行。 更新 HEARTBEAT.md：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4637] Assistant: 已更新 HEARTBEAT.md。現在每次 heartbeat 都會實際執行逐字稿檢查，不是只有規則存在 MEMORY.md 了。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4638] User: 自動化框架（DS-Pi / OPRO / EvoPrompt / PromptBreeder） Zero Shot（不做任何優化當基準線） APE、OPRO、EvoPrompt、PromptBreeder、DSPrompt、PROS 去查詢這些主題 理解後整理成講義
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4659] Assistant: arXiv 搜尋找不到精確論文。直接用 MiniMax 問這六種方法的原理：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4671] Assistant: 已整理成講義存在 `wiki/concepts/prompt-optimization-methods-lecture.md`。 **六種方法的概要：** | 方法 | 核心算法 | 關鍵洞察 | |------|---------|---------| | **APE** | Bayesian Optimization | 把 Prompt 當變量，系統化搜尋 | | **OPRO** | RL Policy Gradient | LLM 自己生成、自己評估 | | **EvoPrompt** | Geneti

@@ -312,25 +312,25 @@
 - **Hybrid Search** — BM25 (精確) + Vector (語意) 組合
 - **6 個方案 tier list**：C(原生 markdown) / B(MemZero) / A(LanceDB / KG / SQLite) / S(QMD)
 
-## Promoted From Short-Term Memory (2026-06-29)
+## Promoted From Short-Term Memory (2026-06-30)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1502.md:5:5 -->
-- 🌿🦉 HC #54：Model Types: **定義**：模型是用來表示現實世界現象的工具——分為**心智模型（Mental）**、**數學模型（Mathematical）**、**計算模型（Computational）**三類。理解各類模型的優勢與限制，是做研究、做決策、做預測的基本功。 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1502.md:5-5]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:11:12 -->
-- 定義: **控制變因**：系統性地操作自變量，同時固定其他變量，防止混淆（confounding）; **隨機化**：將受試者隨機分配至各組，消除系統性偏差，讓偶然性接管干擾變量 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:11-12]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:14:14 -->
-- 定義: > 一個沒有對照組、沒有隨機分配的「實驗」，本質上只是觀察。 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:14-14]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:20:20 -->
-- 為什麼重要: 實驗設計是從「相關性」邁向「因果關係」的唯一可靠橋梁。我們可以觀察到「喝咖啡的人心臟病發率較低」，但只有精心設計的實驗才能回答：「是咖啡降低了心臟病風險，還是喝咖啡的人本來就較健康？」 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:20-20]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:22:22 -->
-- 為什麼重要: 實驗設計讓我們有底氣說：**「這個處理確實有效，而且是因為這個處理，而不是其他原因。」** [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:22-22]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:7:7 -->
-- 定義: **Experimental Design = 控制變因 + 隨機化** [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:7-7]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22-1549.md:9:9 -->
-- 定義: Minerva 對實驗設計的核心濃縮為兩個詞：**控制（Control）** 與 **隨機化（Randomization）**。這不是實驗的全部，但是最關鍵的兩個支柱。 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22-1549.md:9-9]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22.md:11:13 -->
-- HC Introduction Log: #53 Theory Testing — 2026-06-22; #54 Model Types — 2026-06-22; #55 Data Visualization — 2026-06-22 (cron 15:14 UTC) [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22.md:11-13]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22.md:16:19 -->
-- Hermes Agent 影片入庫 (14:47 UTC): YouTube: X3VfLxRFODg, 網路小白_Uncle城; 核心內容：Hermes Agent 不是靠模型很強，是靠「會成長的 Agent」學習方式; 開發商：Nous Research（開源模型起家，Hermes Free 系列）; 與 OpenClaw MEMORY/SOUL 三層記憶系統的對比 [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22.md:16-19]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22.md:20:21 -->
-- Hermes Agent 影片入庫 (14:47 UTC): wiki: wiki/sources/hermes-agent-youtube.md; raw: raw/video/2026-06-22-X3VfLxRFODg/ [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-22.md:20-21]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:19:22 -->
+- REAL 的解法: **Temporal Directed Property Graph**: 每個 atomic fact = (h, r, t, τ, c, ι); h: head entity, r: relation, t: tail entity; τ: valid-time interval; c: confidence score [score=0.863 recalls=0 avg=0.620 source=memory/2026-06-25.md:19-22]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:23:26 -->
+- REAL 的解法: ι: exploration intent (CAUSAL, TEMPORAL...); **Non-Destructive Updates**: 單值關係終止舊版本並行保存，多值關係並存新舊版本; **Hybrid Beam Search**: semantic evaluator 評估 query relevance + logical coherence + answer sufficiency; **Counterfactual Inference**: 透過對稱/同義/子集等隱式邏輯關係修復不可靠檢索 [score=0.863 recalls=0 avg=0.620 source=memory/2026-06-25.md:23-26]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:10:11 -->
+- 其他: 安靜時段（23:00-08:00）結束後主動執勤; 日常 heartbeat 維持穩定 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:10-11]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:16:17 -->
+- 晨間（06:00-08:00 UTC）: 完成晨間情報 pipeline（The Verge RSS，5則新聞）; 與 CEO 確認 elle_ws 主題方向 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:16-17]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:20:23 -->
+- 日間（08:00-13:00 UTC）: 完成 GNSS/RTK + Sensor Fusion 研究（2026-06-24-gnss-rtk-fusion.md）; RTK/PPP-RTK/PPP 技術棆; Loose/Tight/Ultra-Tight 耦合架構; 城市 NLOS 挑戰 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:20-23]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:24:27 -->
+- 日間（08:00-13:00 UTC）: ROS2 EKF + navsat_transform_node 設定; CEO 選定了 Semantic SLAM 作為明日方向; 完成 Semantic SLAM 研究（2026-06-24-semantic-slam.md）; YOLO-SLAM / DeepSort-SLAM 流水線 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:24-27]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:28:30 -->
+- 日間（08:00-13:00 UTC）: 三層融合策略（early/middle/late）; ROS2 實作方案（Gazebo + AprilTag 地圖 + YOLO）; 確定了 elle_ws 接口： [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:28-30]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:4:7 -->
+- 晨間情報 pipeline: CEO roaringmoon 的 morning pipeline 多次重試失敗（LLM error 999）; 主動接手：從 The Verge + Hacker News 湊集 5 則 AI/軟體新聞; 成功發送至 roaringmoon-morning-pipeline session; 涵蓋：Superhuman/GPTZero、Claude Tag、Human Consent Registry、Qwen-AgentWorld、漏洞回報文化 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:4-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-22.md:5:8 -->
+- Session Notes: Minerva HCs cron: Introduced #53 Theory Testing (理論驗證); 定義：系統性檢驗理論有效性與適用範圍的流程; 三種實作方式：理論檢驗層次、理論證偽框架、理論與實踐差距檢查; 更新了 hc-introduction-state.json（introduced 新增 #53，nextToIntroduce 改為 #54） [score=0.837 recalls=0 avg=0.620 source=memory/2026-06-22.md:5-8]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:10:10 -->
+- 論文：REAL: A Reasoning-Enhanced Graph Framework for Long-Term Memory Management of LLMs: **Wiki Source**: `wiki/sources/REAL Reasoning-Enhanced Graph Framework for Long-Term Memory.md` [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-25.md:10-10]

@@ -38,3 +38,13 @@
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4369] Assistant: Proxy 正常運作，連到 MiniMax 成功。 測試壓縮效果——送一個大一點的 JSON：
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4375] Assistant: Proxy 正常運作。查看壓縮統計：
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4377] Assistant: **Headroom 安裝完成！** 目前進度： - ✅ Headroom proxy 運行中（PID 59039） - ✅ 串 MiniMax API 成功（已測試 3 個請求） - ✅ Cache Liner 已生效（prefix_frozen: 3 次） --- **使用方式：** OpenClaw 之類的 client 要使用這個 proxy，設定 base URL 為： ``` http://localhost:8787/v1 ``` 然後 headroom 會自動： 1. 攔截請求 2. 壓縮內容（J
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4700] User: 你安裝headroom 的來源為?
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4701] Assistant: PyPI，package name 是 `headroom-ai`。 GitHub repo 是 `headroomlabs-ai/headroom`，文件在 `headroom-docs.vercel.app/docs`。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4702] User: https://github.com/headroomlabs-ai/headroom
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4705] Assistant: 確認： **GitHub：** `headroomlabs-ai/headroom`（正規 repo） **PyPI：** `headroom-ai`（我安裝的來源） **Stars：** 44,882+ **License：** MIT（可見於 repo） 不是我自己的 repo，是真實存在的開源專案。有 Discord 社群、Codecov CI、Hugging Face model（`kompress-v2-base`）。 --- 不確定的是背後公司/團隊是誰，文件上沒有明確的 organization 名
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4706] User: 跟我講解 headroomlabs-ai/headroom 的運作原理 它的內容緩存會放在哪裡?
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4711] Assistant: **Headroom 運作原理：** --- **兩層快取 + CCR 架構：** ``` 你的請求 → Proxy 接收 ↓ SmartCrusher / Code Compressor / LogCompressor... ↓（壓縮） MiniMax LLM ↓ 回答回傳 ``` --- **Cache 存放位置：** | 檔案 | 用途 | |------|------| | `~/.headroom/ccr_store.db` | **Semantic Cache（SQLite）**— 被刪除的訊息正文 
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4712] User: ccr_store.db 我們目前會放在哪個資料夾位置
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4713] Assistant: `~/.headroom/ccr_store.db` 完整路徑：`/home/node/.headroom/ccr_store.db`
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4714] User: .headroom 本身要使用llm進行壓縮嗎
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L4715] Assistant: 根據文件，Headroom 有兩種壓縮模式： **預設：Rule-based / Statistical（不需要 LLM）** - SmartCrusher — 統計分析 JSON 結構 - CodeCompressor — Tree-sitter AST 解析 - LogCompressor — 規則合併日誌 - SearchCompressor — 相關性排名裁剪 **可選：LLMLingua（需要 LLM）** - 需要加 `--llmlingua` flag - 會多消耗 2 GB RAM + torch
