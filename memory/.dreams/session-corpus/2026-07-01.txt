@@ -1,0 +1,12 @@
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L30] Assistant: Now let me search for any new LangChain agent posts since the June 25 snapshot.
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L32] Assistant: I can see several new LangChain posts since the June 25 snapshot. Let me fetch the most relevant new ones.
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L38] Assistant: Good findings. I found three new LangChain posts since the June 25 snapshot. Let me save the relevant content and extend the wiki.
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L46] Assistant: Now let me create a new concept page and update the existing entries.
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L48] Assistant: Now link it to related nodes via graphify.
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L52] Assistant: The graphifyy binary doesn't have a `link` command — cross-links are handled via markdown wiki links. Let me update the source page to include the new posts.
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L56] Assistant: Now update the Agent Engineering Checklist to add the new patterns.
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L62] Assistant: Now update the index and log.
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L74] Assistant: Let me verify the key files look correct.
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L78] Assistant: All updates verified. Here's the daily summary: --- **🌿🦉 Rowlet — LLM Wiki Daily Curator Report — 2026-07-01** **Entry reviewed:** `wiki/concepts/Agent Engineering Checklist.md` + source page **Discovery:** LangChain blog had 4 new agent architecture posts (J
+[rowlet/sessions/rowlet/318ff6cc-694b-48b8-aa57-46e662665713.jsonl#L78] Assistant: `raw/web/2026-07-01-langchain-agent-series/untrusted-code-wasm-quickjs.md` **Wiki pages created/updated:** - **New:** `wiki/concepts/Dynamic Subagents.md` — new concept page with code pattern, scale comparison table, OpenClaw relevance mapping - **Updated:** `w
+[rowlet/sessions/rowlet/8bfc6425-a37d-4489-8c5f-7a6c7bcae96a.jsonl#L6] Assistant: 我來執行今日的每日 Agent × 軟體開發潮流研究任務。讓我先讀取必要檔案並啟動流程。

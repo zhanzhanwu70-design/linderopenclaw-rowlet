@@ -312,25 +312,25 @@
 - **Hybrid Search** — BM25 (精確) + Vector (語意) 組合
 - **6 個方案 tier list**：C(原生 markdown) / B(MemZero) / A(LanceDB / KG / SQLite) / S(QMD)
 
-## Promoted From Short-Term Memory (2026-06-30)
+## Promoted From Short-Term Memory (2026-07-01)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:19:22 -->
-- REAL 的解法: **Temporal Directed Property Graph**: 每個 atomic fact = (h, r, t, τ, c, ι); h: head entity, r: relation, t: tail entity; τ: valid-time interval; c: confidence score [score=0.863 recalls=0 avg=0.620 source=memory/2026-06-25.md:19-22]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:23:26 -->
-- REAL 的解法: ι: exploration intent (CAUSAL, TEMPORAL...); **Non-Destructive Updates**: 單值關係終止舊版本並行保存，多值關係並存新舊版本; **Hybrid Beam Search**: semantic evaluator 評估 query relevance + logical coherence + answer sufficiency; **Counterfactual Inference**: 透過對稱/同義/子集等隱式邏輯關係修復不可靠檢索 [score=0.863 recalls=0 avg=0.620 source=memory/2026-06-25.md:23-26]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:10:11 -->
-- 其他: 安靜時段（23:00-08:00）結束後主動執勤; 日常 heartbeat 維持穩定 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:10-11]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:16:17 -->
-- 晨間（06:00-08:00 UTC）: 完成晨間情報 pipeline（The Verge RSS，5則新聞）; 與 CEO 確認 elle_ws 主題方向 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:16-17]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:20:23 -->
-- 日間（08:00-13:00 UTC）: 完成 GNSS/RTK + Sensor Fusion 研究（2026-06-24-gnss-rtk-fusion.md）; RTK/PPP-RTK/PPP 技術棆; Loose/Tight/Ultra-Tight 耦合架構; 城市 NLOS 挑戰 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:20-23]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:24:27 -->
-- 日間（08:00-13:00 UTC）: ROS2 EKF + navsat_transform_node 設定; CEO 選定了 Semantic SLAM 作為明日方向; 完成 Semantic SLAM 研究（2026-06-24-semantic-slam.md）; YOLO-SLAM / DeepSort-SLAM 流水線 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:24-27]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:28:30 -->
-- 日間（08:00-13:00 UTC）: 三層融合策略（early/middle/late）; ROS2 實作方案（Gazebo + AprilTag 地圖 + YOLO）; 確定了 elle_ws 接口： [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:28-30]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-24.md:4:7 -->
-- 晨間情報 pipeline: CEO roaringmoon 的 morning pipeline 多次重試失敗（LLM error 999）; 主動接手：從 The Verge + Hacker News 湊集 5 則 AI/軟體新聞; 成功發送至 roaringmoon-morning-pipeline session; 涵蓋：Superhuman/GPTZero、Claude Tag、Human Consent Registry、Qwen-AgentWorld、漏洞回報文化 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-24.md:4-7]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-22.md:5:8 -->
-- Session Notes: Minerva HCs cron: Introduced #53 Theory Testing (理論驗證); 定義：系統性檢驗理論有效性與適用範圍的流程; 三種實作方式：理論檢驗層次、理論證偽框架、理論與實踐差距檢查; 更新了 hc-introduction-state.json（introduced 新增 #53，nextToIntroduce 改為 #54） [score=0.837 recalls=0 avg=0.620 source=memory/2026-06-22.md:5-8]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:10:10 -->
-- 論文：REAL: A Reasoning-Enhanced Graph Framework for Long-Term Memory Management of LLMs: **Wiki Source**: `wiki/sources/REAL Reasoning-Enhanced Graph Framework for Long-Term Memory.md` [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-25.md:10-10]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:10:13 -->
+- 06-26 回顧: 建立 14 個 wiki concept pages（大量補齊）; 建立 Active Context Compression.md（agent-initiated context compression, sawtooth pattern, ~6% savings）; 建立 Agent Skill Evaluation and Evolution.md（𝒮=(C,π,T,ℛ) formal definition）; CEO 長時間沉默（6/26 14:00 UTC 後無新任務） [score=0.864 recalls=0 avg=0.620 source=memory/2026-06-27.md:10-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:13:13 -->
+- 核心問題: LLM 的 context window 有限，長期互動會話的記憶管理是關鍵挑戰。現有系統有三個問題： [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-25.md:13-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:14:16 -->
+- 核心問題: **C1**: Flat text organization → 缺乏明確的 memory links，無法多跳檢索; **C2**: Destructive updates → 直接覆蓋事實，抹除演化軌跡; **C3**: Query-agnostic retrieval → 被動、缺乏 counterfactual 推理能力 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-25.md:14-16]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:6:9 -->
+- 論文：REAL: A Reasoning-Enhanced Graph Framework for Long-Term Memory Management of LLMs: **arXiv**: 2606.10694; **作者**: Keer Lu, Liwei Chen, Guoqing Jiang, Zhiheng Qin, Yunhuai Liu, Wentao Zhang (PKU + Kuaishou); **Submitted**: June 9, 2026; **PDF**: `/home/node/.openclaw/workspace/llm-wiki/raw/references/papers/ai/2606.10694_REAL_long_term_memory.pdf` [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-25.md:6-9]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:21:24 -->
+- 01:33 UTC heartbeat: Wiki gap filling: 新增 `DeerFlow 2.0.md` 和 `Sakana Fugu.md` concept pages; Sakana Fugu: learned orchestration vs policy-filtered (model-centric vs infrastructure-centric); TRINITY / Conductor 無 source material，跳過; CEO 無新任務 [score=0.854 recalls=0 avg=0.620 source=memory/2026-06-27.md:21-24]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:27:30 -->
+- 01:38 UTC heartbeat: Wiki gap filling: 新增 3 個 concept pages; `AtomMem.md` — atomic facts memory (arXiv:2606.19847, USTC); `OpenClaw Memory Plugin Tier List.md` — Zac Frulloni tier list (S=QMD); `Loop Engineering.md` — AI self-prompting (discovery→plan→execute) [score=0.854 recalls=0 avg=0.620 source=memory/2026-06-27.md:27-30]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:31:32 -->
+- 01:38 UTC heartbeat: 5 個 concept pages remain: huashu-design, hjplus-taiwan-architect-kb, harness-context-engineering, ponytail-github, backboard-io-vs-mem0; Task queue empty, CEO 沉默 [score=0.854 recalls=0 avg=0.620 source=memory/2026-06-27.md:31-32]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-26.md:12:15 -->
+- 晨間情報 pipeline（06:28 UTC）: Apple M7 跳過 M6 高階版（AI 為核心）; 2000 人滲透攻擊 AI 助理「Claw」的結果公開; Libre Barcode Project 開源條碼生成庫; Framework 10GbE USB-C 模組 [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-26.md:12-15]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-26.md:16:16 -->
+- 晨間情報 pipeline（06:28 UTC）: 成功發送至 roaringmoon-morning-pipeline [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-26.md:16-16]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-26.md:19:22 -->
+- 主動研究（08:00-09:00 UTC）: CEO 未下達新任務，任務佇列空白; 主動繼續 sensor fusion 每日研究; 完成 2026-06-26 Deep Learning for Sensor Fusion; Early/Late/Intermediate Fusion 三種範式 [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-26.md:19-22]
