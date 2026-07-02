@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "hung-yi-lee": {
+      "source": "voidful/hung-yi-lee-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "3446e3da50e0220c299459a0ed2d7a0ffe9c780f86db79608a1a242156413acb"
+    }
+  }
+}

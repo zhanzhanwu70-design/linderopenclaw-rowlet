@@ -1,0 +1,28 @@
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L18595] Assistant: **Rowlet — 晨間 AI × 軟體開發情報 2026-07-02** --- **1. Anthropic Claude Fable 5 正式恢復上線** 經過數週與 Trump 政府的談判，Claude Fable 5 重新開放使用。 Anthropic 在 X 帳號發布影片公告，同時發布部落格文章說明談判過程。此事件與政府監管 AI 模型的邊界密切相關。 URL: https://www.theverge.com/ai-artificial-intelligence --- **2. OpenAI遭
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L18595] Assistant: GLM-5.2 的新測試工具（Harness）** Hacker News 熱議 ZCode（z.ai），專為 GLM-5.2 設計的測試工具。討論串累積 184 則評論，與先前 Semgrep 顯示 GLM-5.2 在安全測試击败 Claude 的發現相互呼應。 URL: https://zcode.z.ai/en --- **5. Apple 與 EU 談判 Siri AI 服務受阻** Tim Cook 與 EU 科技主管 Henna Virkkunen 會面，討論 Apple Intelligence 
+[rowlet/sessions/rowlet/7241fced-62c2-4394-88b0-f58660c2fa10.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/d9a60c8f-aaa7-4f14-b20c-200e1da68463.jsonl#L31] Assistant: Good content. I'll save the RLM article and update the Dynamic Subagents concept with this RLMs context, which directly motivated the pattern.
+[rowlet/sessions/rowlet/d9a60c8f-aaa7-4f14-b20c-200e1da68463.jsonl#L37] Assistant: Now let me update the source page to record the new RLM article:
+[rowlet/sessions/rowlet/d9a60c8f-aaa7-4f14-b20c-200e1da68463.jsonl#L39] Assistant: Now link the new raw artifact to the Dynamic Subagents concept:
+[rowlet/sessions/rowlet/d9a60c8f-aaa7-4f14-b20c-200e1da68463.jsonl#L49] Assistant: Done. Here's the summary: - **Selected entry:** `wiki/concepts/Dynamic Subagents.md` - **Extension:** Discovered LangChain's new **RLMs in Deep Agents** article (Jul 1) which directly motivates the Dynamic Subagents pattern — context rot is solved by programmat
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L6] Assistant: 我先確認狀態與工具，然後啟動研究流程。
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L10] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L13] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L16] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L19] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L22] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L25] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L28] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L31] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L35] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L38] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L40] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L43] Assistant: I have enough high-quality data. Let me check one more source for any OpenClaw-related news and then write the report.
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L45] Assistant: </think>
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L48] Assistant: Now let me write the report and supporting artifacts. I'll save the key sources, update the wiki log, and write the report. (caveman style for my own notes — this is internal task execution) action: write 2-3 raw snapshots → write report → update log → final di
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L56] Assistant: Now I need to update the wiki log and create concept pages. Let me append to wiki/log.md and create concept entries.
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L75] Assistant: **🌿🦉 Rowlet 每日 Agent × 軟體開發情報 — 2026-07-02** **今日 5 個重點：** 1. **arXiv:2606.30775「A Single Rewrite Suffices」** — Meta 在 production enterprise agent（9 skills, 372 regression cases）實驗：一次 LLM rewrite + FP/FN cases 就能達到 79.2% F1（手工 79.4%），人時從 120 min 降到 3.8 min（**
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L75] Assistant: https://blog.modelcontextprotocol.io/posts/sdk-betas-2026-07-28/ 3. **LangChain OpenWiki + RLMs in Deep Agents（同日雙發）** — OpenWiki：open-source agent + CLI 自動生成 repo-level wiki，每天 GitHub Action 根據 `git diff` 更新，只在 AGENTS.md 寫 reference。RLM：model 把 context 當 REPL 
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L75] Assistant: determinism 降 d=−0.72~−0.76。Sparse-but-correct citation 比 dense citation 在 routing 上更穩。 https://arxiv.org/abs/2606.30689 5. **arXiv:2605.26302「Your Agents Are Aging Too」+ AgingBench** — Jianing Zhu 等：4 種老化機制（compression / interference / revision / maintenance），
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L75] Assistant: description single rewrite） - arXiv:2606.30689（citation discipline trade-off） - arXiv:2605.26302（agent lifespan / AgingBench） - arXiv:2606.30774（interactive feedback bottleneck — 學生 utilization > 老師身份） - arXiv:2606.30810（CURE: contrastive unlearning for evolvin
+[rowlet/sessions/rowlet/e996ffaa-6da6-4e11-bc51-1d4edd985446.jsonl#L75] Assistant: Trending（today）✓ · LangChain Blog RSS（2026-07-01）✓ · Anthropic Python SDK Releases RSS ✓ · MCP official blog ✓ · LLM Wiki graph（Architecture / Agent skills / Memory）✓ · PyPI RSS（sampled）✓ **產出：** `~/workspace-rowlet/architecture-daily-report.md`（9.2 KB）+ 4 raw 

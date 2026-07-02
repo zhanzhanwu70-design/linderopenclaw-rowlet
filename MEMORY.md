@@ -312,25 +312,29 @@
 - **Hybrid Search** — BM25 (精確) + Vector (語意) 組合
 - **6 個方案 tier list**：C(原生 markdown) / B(MemZero) / A(LanceDB / KG / SQLite) / S(QMD)
 
-## Promoted From Short-Term Memory (2026-07-01)
+## NemoClaw 水位線監控設計決策（2026-07-02）
+- **水位線監控嚴禁放在 Worker 行程內部** — Worker 可被 evict，狀態會丟失
+- 正確位置：NemoClaw 沙盒層（具備 process 監控能力）
+- 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
+- 等待設備到位後通知 Charizard 實作時注意此點
 
-<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:10:13 -->
-- 06-26 回顧: 建立 14 個 wiki concept pages（大量補齊）; 建立 Active Context Compression.md（agent-initiated context compression, sawtooth pattern, ~6% savings）; 建立 Agent Skill Evaluation and Evolution.md（𝒮=(C,π,T,ℛ) formal definition）; CEO 長時間沉默（6/26 14:00 UTC 後無新任務） [score=0.864 recalls=0 avg=0.620 source=memory/2026-06-27.md:10-13]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:13:13 -->
-- 核心問題: LLM 的 context window 有限，長期互動會話的記憶管理是關鍵挑戰。現有系統有三個問題： [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-25.md:13-13]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:14:16 -->
-- 核心問題: **C1**: Flat text organization → 缺乏明確的 memory links，無法多跳檢索; **C2**: Destructive updates → 直接覆蓋事實，抹除演化軌跡; **C3**: Query-agnostic retrieval → 被動、缺乏 counterfactual 推理能力 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-25.md:14-16]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-25.md:6:9 -->
-- 論文：REAL: A Reasoning-Enhanced Graph Framework for Long-Term Memory Management of LLMs: **arXiv**: 2606.10694; **作者**: Keer Lu, Liwei Chen, Guoqing Jiang, Zhiheng Qin, Yunhuai Liu, Wentao Zhang (PKU + Kuaishou); **Submitted**: June 9, 2026; **PDF**: `/home/node/.openclaw/workspace/llm-wiki/raw/references/papers/ai/2606.10694_REAL_long_term_memory.pdf` [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-25.md:6-9]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:21:24 -->
-- 01:33 UTC heartbeat: Wiki gap filling: 新增 `DeerFlow 2.0.md` 和 `Sakana Fugu.md` concept pages; Sakana Fugu: learned orchestration vs policy-filtered (model-centric vs infrastructure-centric); TRINITY / Conductor 無 source material，跳過; CEO 無新任務 [score=0.854 recalls=0 avg=0.620 source=memory/2026-06-27.md:21-24]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:27:30 -->
-- 01:38 UTC heartbeat: Wiki gap filling: 新增 3 個 concept pages; `AtomMem.md` — atomic facts memory (arXiv:2606.19847, USTC); `OpenClaw Memory Plugin Tier List.md` — Zac Frulloni tier list (S=QMD); `Loop Engineering.md` — AI self-prompting (discovery→plan→execute) [score=0.854 recalls=0 avg=0.620 source=memory/2026-06-27.md:27-30]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:31:32 -->
-- 01:38 UTC heartbeat: 5 個 concept pages remain: huashu-design, hjplus-taiwan-architect-kb, harness-context-engineering, ponytail-github, backboard-io-vs-mem0; Task queue empty, CEO 沉默 [score=0.854 recalls=0 avg=0.620 source=memory/2026-06-27.md:31-32]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-26.md:12:15 -->
-- 晨間情報 pipeline（06:28 UTC）: Apple M7 跳過 M6 高階版（AI 為核心）; 2000 人滲透攻擊 AI 助理「Claw」的結果公開; Libre Barcode Project 開源條碼生成庫; Framework 10GbE USB-C 模組 [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-26.md:12-15]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-26.md:16:16 -->
-- 晨間情報 pipeline（06:28 UTC）: 成功發送至 roaringmoon-morning-pipeline [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-26.md:16-16]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-26.md:19:22 -->
-- 主動研究（08:00-09:00 UTC）: CEO 未下達新任務，任務佇列空白; 主動繼續 sensor fusion 每日研究; 完成 2026-06-26 Deep Learning for Sensor Fusion; Early/Late/Intermediate Fusion 三種範式 [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-26.md:19-22]
+## Promoted From Short-Term Memory (2026-07-02)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-06-26.md:23:26 -->
+- 主動研究（08:00-09:00 UTC）: DeepFusion / PointAugmenting / SuperFusion / EPNet 架構; Kalman Filter + Deep Learning 混合; ROS2 實作方案; 對 ELLE_WS 的應用建議 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-26.md:23-26]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-26.md:4:5 -->
+- Quiet Hours（23:00-08:00 UTC）: 任務佇列保持空白; CEO 未下達新任務 [score=0.856 recalls=0 avg=0.620 source=memory/2026-06-26.md:4-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:16:18 -->
+- 待完成: TopoClaw paper download（pending很長一段時間）; ELLE_WS Phase 3（等待 repos/ code）; 其他來源的 concept page 檢查 [score=0.846 recalls=0 avg=0.620 source=memory/2026-06-27.md:16-18]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-27.md:4:7 -->
+- 凌晨觀察: 00:53 UTC heartbeat → empty task queue; 00:58 UTC heartbeat → empty task queue; CEO morning pipeline ran successfully (Rowlet + Charizard reports delivered); Pipeline is cron-triggered, not task-queue triggered [score=0.846 recalls=0 avg=0.620 source=memory/2026-06-27.md:4-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-26.md:8:11 -->
+- 晨間情報 pipeline（06:28 UTC）: Quiet hours 刚结束（08:00前），主動執行 morning pipeline; sources: The Verge RSS + Hacker News（2026-06-26 早上）; 交付 5 則新聞：; OpenAI GPT-5.6 延後發布（川普政府國安要求） [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-26.md:8-11]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-29.md:13:16 -->
+- HEARTBEAT.md Issue (未解決): HEARTBEAT.md 第一行 HEARTBEAT_OK 已刪除; 但 heartbeat 事件來的時候，系統只預期回覆，我還是只回覆了 HEARTBEAT_OK; **問題核心**：heartbeat 是「事件觸發 → 我回覆」模式，不是「執行 HEARTBEAT.md 內容」模式; **需要確認**：heartbeat 事件的回覆格式，是否可以承載實際檢查結果 [score=0.815 recalls=0 avg=0.620 source=memory/2026-06-29.md:13-16]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-29.md:30:33 -->
+- Kun Chen L8 Workflow（最重要）: No Mistakes Pipeline：adversarial review + evidence + babysitting PR; Goodnight Have Fun：long-running loop tool，設 token cap / iteration cap; Treehouse：Git Work Tree 管理，不用自己記憶; **與 Sakana Fugu 差異**：Kun Chen 是人建立系統讓模型服從，Sakana 是模型自己學協調 [score=0.815 recalls=0 avg=0.620 source=memory/2026-06-29.md:30-33]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-28.md:21:24 -->
+- 18:33 UTC (02:33 Taiwan 2026-06-29): whisper-cli was running (378% CPU, 3.6GB mem) transcribing `uCKhOmth2ms` (LangChain: "The best AI agents are simpler than you think"); Killed it — not my transcription job, external agent spawned it; audio.wav exists but no transcript yet; Load normalized back to ~2.66 after kill [score=0.803 recalls=0 avg=0.620 source=memory/2026-06-28.md:21-24]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-28.md:27:27 -->
+- 22:58 UTC (06:58 Taiwan): 每日論文討論 cron: still shows "in 2m" at 06:58 — same delay pattern as yesterday [score=0.803 recalls=0 avg=0.620 source=memory/2026-06-28.md:27-27]
