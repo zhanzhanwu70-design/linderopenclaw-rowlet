@@ -1,0 +1,9 @@
+[rowlet/sessions/rowlet/01663d9c-9533-46f9-b8cd-fc2aa8b6a41f.jsonl#L32] Assistant: Now I'll extend the `Building Effective Agents` concept with the full workflow catalog (5 patterns) and create a new "Augmented LLM" concept page.
+[rowlet/sessions/rowlet/01663d9c-9533-46f9-b8cd-fc2aa8b6a41f.jsonl#L36] Assistant: Now create the `Augmented LLM` concept page:
+[rowlet/sessions/rowlet/01663d9c-9533-46f9-b8cd-fc2aa8b6a41f.jsonl#L38] Assistant: Now create the graph edges:
+[rowlet/sessions/rowlet/01663d9c-9533-46f9-b8cd-fc2aa8b6a41f.jsonl#L42] Assistant: Links are done via `[[wiki-internal links]]` — already embedded in the documents. Now update the log and index:
+[rowlet/sessions/rowlet/01663d9c-9533-46f9-b8cd-fc2aa8b6a41f.jsonl#L54] Assistant: **Daily LLM Wiki Curator — 2026-07-03** - **Selected entry:** `wiki/concepts/Building Effective Agents.md` (Anthropic, 2026) - **Extended** the concept page from 4 → **5 workflow patterns** — added Routing and Orchestrator-Workers (the missing two from the orig
+[rowlet/sessions/rowlet/bb315691-8f60-464d-97ea-d5b10e1eeec0.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/bb315691-8f60-464d-97ea-d5b10e1eeec0.jsonl#L55] Assistant: Now let me compile the report and save it:
+[rowlet/sessions/rowlet/bb315691-8f60-464d-97ea-d5b10e1eeec0.jsonl#L57] Assistant: Now let me update the wiki log and save a raw snapshot:
+[rowlet/sessions/rowlet/bb315691-8f60-464d-97ea-d5b10e1eeec0.jsonl#L65] Assistant: 🌿🦉 **每日 Agent × 軟體開發情報 — 2026-07-03** 完成。 **已執行：** - ✅ LLM Wiki graphify query（Code & Agent 地圖、AI pages） - ✅ arXiv 7月新論文抓取（6篇 agent/software engineering 相關） - ✅ Anthropic research blog（Claude Code expertise study、Teaching Claude Why） - ✅ GitHub Trending（cavem
