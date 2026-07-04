@@ -7,3 +7,13 @@
 [rowlet/sessions/rowlet/bb315691-8f60-464d-97ea-d5b10e1eeec0.jsonl#L55] Assistant: Now let me compile the report and save it:
 [rowlet/sessions/rowlet/bb315691-8f60-464d-97ea-d5b10e1eeec0.jsonl#L57] Assistant: Now let me update the wiki log and save a raw snapshot:
 [rowlet/sessions/rowlet/bb315691-8f60-464d-97ea-d5b10e1eeec0.jsonl#L65] Assistant: 🌿🦉 **每日 Agent × 軟體開發情報 — 2026-07-03** 完成。 **已執行：** - ✅ LLM Wiki graphify query（Code & Agent 地圖、AI pages） - ✅ arXiv 7月新論文抓取（6篇 agent/software engineering 相關） - ✅ Anthropic research blog（Claude Code expertise study、Teaching Claude Why） - ✅ GitHub Trending（cavem
+[rowlet/sessions/rowlet/16925bdd-093d-44cb-a382-936e3e54d30d.jsonl#L6] Assistant: 🌿🦉 論文討論時間！讓我搜尋相關論文。
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L19319] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L32114] Assistant: 8 pending transcriptions found — all have audio.wav but stale `in_progress` flags. Updating metadata and launching one transcription:
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L32136] Assistant: All 8 entries cleaned. Starting transcription for most recent pending video in background:
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L32160] Assistant: Transcription complete (515 lines). Now writing wiki and launching next pending:
+[rowlet/sessions/rowlet/d0b49642-4eff-4d19-a953-83d28d0ce91e.jsonl#L14] Assistant: 找到了！**Memory OS of AI Agent**（EMNLP 2025）— 非常契合上下文處理主題。下載 PDF 並閱讀。
+[rowlet/sessions/rowlet/d0b49642-4eff-4d19-a953-83d28d0ce91e.jsonl#L26] Assistant: 很好，完整讀完了。現在存檔、建立 source entry、更新 code-agent。
+[rowlet/sessions/rowlet/d0b49642-4eff-4d19-a953-83d28d0ce91e.jsonl#L38] Assistant: code-agent.md 有完整的 Context Processing 區塊。加入 MemoryOS。
+[rowlet/sessions/rowlet/d0b49642-4eff-4d19-a953-83d28d0ce91e.jsonl#L46] Assistant: 完成。以下是今日論文報告： --- ## 📄 今日論文：Memory OS of AI Agent **作者**：Kang, Ji, Zhao, Bai（北郵 + 騰訊 AI Lab） **會議**：EMNLP 2025 **GitHub**：https://github.com/BAI-LAB/MemoryOS --- ### 儲存位置 | 類型 | 路徑 | |------|------| | PDF | `raw/references/papers/ai/2025-memory-os-ai-agent.pdf
+[rowlet/sessions/rowlet/d0b49642-4eff-4d19-a953-83d28d0ce91e.jsonl#L46] Assistant: Score**：`Heat = Nvisit + Linteraction + Rrecency`（三維度：訪問次數、互動長度、最近訪問時間） --- ### 最值得討論的 5 個重點 1. **OS 類比是概念突破**：分段分頁 + FIFO + LRU eviction 直接搬作業系統的記憶體管理邏輯進 agent memory，概念上乾淨且可解釋性高 2. **Heat Score 的三維度設計**：Nvisit（高頻訪問）、Linteraction（高參與度）、Rrecency（最近使用）同時考慮，比單一維度
