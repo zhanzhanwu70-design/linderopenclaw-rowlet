@@ -318,25 +318,11 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-03)
+## Promoted From Short-Term Memory (2026-07-05)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-06-29.md:10:10 -->
-- Pending from yesterday: [x] uCKhOmth2ms transcription complete (4068 lines) → wiki: sierra-agents-langchain-podcast.md [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-29.md:10-10]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-29.md:21:23 -->
-- Sakana Fugu 新認知: Fugu Ultra 的 Conductor 是固定三家模型（Opus 4.8 / GPT 5.5 / Gemini 3.1 Pro），不是任意池子; Conductor 輸出三件事：Subtask 任務清單 + Worker 分配 + Context Access（每個 Worker 可看到前面哪些步驟答案）; 公司背景：David Ha（前 Google Brain）+ Llion Jones（Transformer 論文作者） [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-29.md:21-23]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-29.md:26:29 -->
-- Kun Chen L8 Workflow（最重要）: 船長哲學：前期 Lavish 規劃 + 後期 No Mistakes Quality Bar，中間全部交給 AI; 工具棧：Westerm + tmax + Neovim + Claude Code/Codex CLI/Open Code; Memory 兩層：Global（27行原則）+ Project（累積學習）; Axi Framework：工具設計對 agent 效率影響巨大（GitHub MCP vs CLI = 3x token + 2x latency） [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-29.md:26-29]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-29.md:6:9 -->
-- Pending from yesterday: [x] kddVQq62P4Y transcription complete (280 lines) → wiki sources written; [x] 7n9qbuzwS-U transcription complete → wiki: openclaw-advanced-tips-ai-chao-yuan-yu.md; [x] BFNMNIPnnIk transcription complete (719 lines) → wiki: sakana-fugu-silicon-valley-justkiddingtech.md; [x] iQyg-KypKAA transcription complete (1077 lines) → wiki: l8-principal-agentic-engineering-workflow-kun-chen.md [score=0.845 recalls=0 avg=0.620 source=memory/2026-06-29.md:6-9]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-28.md:11:13 -->
-- System State: Disk: 76%; Mem: ~2100-2200MB; Load: 0.08-0.53 (peaks during cron jobs) [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-28.md:11-13]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-28.md:16:18 -->
-- Notes: All daily crons completed. Next window: 07:00 Taiwan 2026-06-29.; Gap filling continues during low power mode.; Long Context Processing Survey created (08 sources → 3 narratives). [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-28.md:16-18]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-28.md:30:33 -->
-- 23:04 UTC (07:04 Taiwan 2026-06-29) — 每日論文討論: 讀了：Context Compression Is Not One Thing (Bei et al. 2026, arXiv:2606.14875); 主題：Agent 上下文處理 — Context Compression & Summarization; 核心：區分 symbolic re-expression vs coherent summarization 兩種根本不同的壓縮策略; 重要貢獻：Telegraph English — entity-relation 格式，在相同 token 預算下比 coherent summary 高 13-20 F1 pp [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-28.md:30-33]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-28.md:6:8 -->
-- Cron Jobs Status: 每日論文討論 07:00 Taiwan → fired ~07:23 (delayed); 每日 LLM Wiki 巡讀與擴寫 09:00 Taiwan → completed; 每日 Agent × 軟體開發潮流研究 10:00 Taiwan → completed [score=0.835 recalls=0 avg=0.620 source=memory/2026-06-28.md:6-8]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:10:11 -->
-- 00:58 UTC (08:58 Taiwan): 每日論文討論 cron（58fe15dc）已於 00:05 UTC 執行成功; Cron 系統正常運行 [score=0.815 recalls=0 avg=0.620 source=memory/2026-06-30.md:10-11]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:4:6 -->
-- 00:03 UTC (08:03 Taiwan): 新的一天開始，Day 7 uptime; CEO 任務安靜，系統正常運行; 昨日 crons 全部正常執行（09:05 UTC catch-up） [score=0.815 recalls=0 avg=0.620 source=memory/2026-06-30.md:4-6]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:4:6 -->
+- 00:00 UTC (08:00 Taiwan) — New Month Start: July 2026 begins; Day 7 uptime complete; CEO tasks quiet, system auto-running [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-01.md:4-6]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:13:14 -->
+- 00:03 UTC (08:03 Taiwan) — July 1 2026: Day 8 uptime begins; System nominal [score=0.818 recalls=0 avg=0.620 source=memory/2026-07-01.md:13-14]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:9:10 -->
+- 22:53 UTC (06:53 Taiwan): Day 8 uptime approaching, system nominal; No CEO tasks received today [score=0.818 recalls=0 avg=0.620 source=memory/2026-07-01.md:9-10]

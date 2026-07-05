@@ -1,0 +1,21 @@
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L6] Assistant: </think>
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L10] Assistant: </think>
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L14] Assistant: Now I have context. The graphifyy command in the prompt is a typo - it's `graphify`. Let me also do more targeted queries and fetch public sources.
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L19] Assistant: </think>
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L23] Assistant: Strong signals. Let me dig deeper on the 3 most relevant stories and check GitHub trending.
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L28] Assistant: Strong signals. Let me also check Anthropic/OpenAI recent papers and sample a few more arXiv papers, then I'll have enough to write the report.
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L33] Assistant: I have enough signal. Let me write the report, save key raw snapshots, and link.
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L36] Assistant: </think>
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L38] Assistant: Now let me write a wiki source page for the Ronacher article and link it.
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L41] Assistant: </think>
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L44] Assistant: </think>
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L46] Assistant: </think>
+[rowlet/sessions/rowlet/9ecb2148-dc5e-4147-a26d-540aff7f8296.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L50] Assistant: </think>
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L54] Assistant: `link` isn't a real graphify command — wiki-links get picked up by next `graphify extract`. Let me add explicit wiki-link syntax in the new source page so it gets discovered on next extract, then finalize.
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L57] Assistant: </think>
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L60] Assistant: 每日研究已完成，存檔到位。最後給 Discord 精簡版（無表格）： --- # 每日 Agent × 軟體開發情報 — 2026-07-05 **1. OpenAI Codex #30364 — GPT-5.5 reasoning-token clustering（重點訊號）** - 390,195 筆 telemetry 顯示 GPT-5.5 的 `reasoning_output_tokens` 集中在 516 / 1034 / 1552；82% 的「516 事件」是 GPT-5.5（其他模型僅 1.3%） -
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L60] Assistant: 來源：[lucumr.pocoo.org/.../better-models-worse-tools](https://lucumr.pocoo.org/2026/7/4/better-models-worse-tools/) · [Pi #6278](https://github.com/earendil-works/pi/issues/6278) **3. Claude Code #74066 — Enterprise ZDR session 洩漏回報** - 使用者在 Enterprise Zero-Data-
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L60] Assistant: stars/day - strix：open-source AI 滲透測試，**1,904 stars/day**（今日 trending #1） --- **對 OpenClaw / Linder 的啟發：** - 新建 `tool-schema-guard` skill：argv 做 JSON-Schema 校驗，fail 就 hard fail（不丟回模型重試）；schema 同步寫入 system prompt - 審查 OpenClaw 多 agent 部署的 session/cache isolation
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L60] Assistant: [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) — Claude Code ←→ Codex - [alibaba/page-agent](https://github.com/alibaba/page-agent) · [usestrix/strix](https://github.com/usestrix/strix) - [Anthropic Economic Index: Cadences](https://www.ant
+[rowlet/sessions/rowlet/90413abc-efae-4dac-ba10-cb7ce0c98f45.jsonl#L60] Assistant: `wiki/sources/2026-07-04-better-models-worse-tools.md`（含 [[wiki-link]] 至 Tool-Call Guard / Agent Skills / Agent Harness） - `wiki/log.md` 加 2026-07-05 條目 - Raw HTML snapshot：`raw/sources/blog/2026-07-04-better-models-worse-tools/index.html`（28.4 KB） - 今日 memory：
