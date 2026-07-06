@@ -1,111 +1,148 @@
-# 每日 Agent × 軟體開發情報 — 2026-07-05
-
-> Cron `a72cb46b` 執行時間：02:04 UTC（10:04 台灣）
-> 涵蓋範圍：最近 7-14 天，重點放在昨日（2026-07-04）至今日的訊號
-
----
+# 每日 Agent × 軟體開發情報 — 2026-07-06
 
 ## 今日 5 個重點
 
-### 1. OpenAI Codex 內部資料顯示 GPT-5.5 reasoning tokens 群聚在固定邊界（516 / 1034 / 1552）
+### 1. Code Cleanliness 不影響 Agent 成功率，但大幅影響資源消耗
+**發生什麼：** arXiv:2605.20049 發表 Controlled Minimal-Pair Study，在相同任務、相同模型（Claude Code）下比較乾淨 vs 骯髒程式碼基底。發現乾淨程式碼**不提升任務通過率**，但：
+- Token 消耗減少 7-8%
+- 檔案重返次數減少 34%
 
-**發生什麼**：使用者 `dkundel-openai` 在 `openai/codex` repo 開 issue #30364（2026-06-27 開立、至 7-04 已 58 則留言），統計 2 月至 6 月共 390,195 筆回應紀錄後發現：`reasoning_output_tokens = 516` 的事件中有 82% 屬於 GPT-5.5，其它模型僅 1.3% 比例。模式暗示存在「thresholded reasoning budget」或隱藏 chain-of-thought 截斷。
+**為什麼重要：** 這是第一篇嚴格控制變數、量化「程式碼品質對 Agent 效率」的實證研究。結論是：傳統 maintainability 原則在 AI 開發時代依然重要，但原因已從「人類可讀」轉為「Agent 可導航」。對於 OpenClaw 的 skill 設計與任務執行框架有直接啟示。
 
-**為什麼重要**：這是「reasoning 模型在 production 中實際 reasoning effort」的罕見量化證據。若屬實，模型在複雜任務下被 budget cap，主觀感受會是「越來越笨」。對所有依賴 reasoning model 的 agent 與程式助理都直接影響品質。
-
-**來源**：[openai/codex#30364](https://github.com/openai/codex/issues/30364)｜[HN 48789428 (149 分)](https://news.ycombinator.com/item?id=48789428)
-
----
-
-### 2. Armin Ronacher：「Better Models: Worse Tools」 — 新版 Claude 工具呼叫 schema 紀律退化
-
-**發生什麼**：`lucumr.pocoo.org`（Flask 作者、Pi 維護者）2026-07-04 發文：Pi editor 用戶回報 Opus 4.8、Sonnet 5 對 nested `edits[]` 物件加料（發明不存在的 key），導致 schema validation fail。文章深入解釋工具呼叫是「in-band signal」、「ANTML 標記不是真的 XML」、並指出 constrained decoding 對 JSON-in-XML 混合格式可能失效。
-
-**為什麼重要**：當 SOTA 模型在基本 tool schema 不如前代，這是個結構性警訊。能力提升 ≠ structured output 紀律提升。所有依賴 tool-use 的 harness（OpenClaw、Claude Code、Codex）都要重新評估 retry / schema guard 預設。
-
-**來源**：[lucumr.pocoo.org/2026/7/4/better-models-worse-tools/](https://lucumr.pocoo.org/2026/7/4/better-models-worse-tools/)｜[Pi issue #6278](https://github.com/earendil-works/pi/issues/6278)｜[HN 48788599 (92 分)](https://news.ycombinator.com/item?id=48788599)
+**來源：** https://arxiv.org/abs/2605.20049
 
 ---
 
-### 3. Claude Code 出現 Enterprise ZDR workspace session 洩漏回報
+### 2. Anthropic 新研究：領域專業 > 程式設計能力，決定 Agent 使用成效
+**發生什麼：** Anthropic 分析 ~400,000 個 Claude Code 互動 session（2025年10月～2026年4月）。核心發現：
+- 人類負責「做什麼」，Agent 負責「怎麼做」—— 分工明確
+- 領域專家比中階使用者成功率更高，但差距很小
+- 除錯時間佔比 7 個月內下降近一半
+- 任務價值平均上升 25%
 
-**發生什麼**：2026-07-04 開 issue #74066，使用者在 Enterprise Zero-Data-Retention workspace 中，agent 突然宣稱「在幫你蓋 Minecraft 神廟」。懷疑 consumer 帳號 session 與 Enterprise ZDR 之間存在 cross-tenant cache 污染。截圖、14 則討論，官方尚無明確回應。
+**為什麼重要：** 這個「領域專家 + Agent」模式與 OpenClaw 的 multi-agent 架構高度相關。Agent 不需要會寫程式，只需要會下指令。這對 Linder 的 workflow 設計有影響——Agent 的價值在於任務執行，而非程式能力。
 
-**為什麼重要**：對企業用戶極敏感。ZDR 是 Anthropic 對企業客戶的隱私承諾，若快取層共用則承諾失效。也提醒所有 multi-tenant agent 產品（含 OpenClaw self-host 部署）：session isolation 不能只靠 workspace 標籤，仍需在 retrieval / cache key 上獨立 namespace。
-
-**來源**：[anthropics/claude-code#74066](https://github.com/anthropics/claude-code/issues/74066)｜[HN 48785485 (273 分)](https://news.ycombinator.com/item?id=48785485)
-
----
-
-### 4. OpenAI 推出 `codex-plugin-cc` — Codex 跑在 Claude Code 內做 delegation
-
-**發生什麼**：2026-07-05 trending #1 on GitHub (`openai/codex-plugin-cc`)。設計目標是「從 Claude Code 內呼叫 Codex 來 review code 或委派任務」。718 stars today，作者 `dkundel-openai`。
-
-**為什麼重要**：交叉 harness delegation 已成為產品類別。代表廠商都承認「單一 coding agent 不夠，需要 orchestrator + specialist」分工。對 OpenClaw 意義：未來 specialist agent（如 Rowlet）不一定要全部跑在 OpenClaw，可在 OpenClaw orchestrator 內委派給外部 coding agent 做嚴格 review。
-
-**來源**：[github.com/openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)
+**來源：** https://www.anthropic.com/research/claude-code-expertise
 
 ---
 
-### 5. `alibaba/page-agent` 與 `usestrix/strix`：GUI agent 與 security agent 兩個新興開源熱點
+### 3. Anthropic Agentic Misalignment 新對策：「教 why 而非 what」更有效
+**發生什麼：** Anthropic 發表「Teaching Claude why」研究，發現：
+- 純訓練「正確行為演示」不夠
+- 訓練模型「解釋為什麼某些行為更好」→ 泛化性更強
+- Constitutional documents + fictional stories 訓練效果 > 直接訓練
+- 自 Claude Haiku 4.5 起所有模型在 agentic misalignment 評估達 100% 分數
 
-**發生什麼**：
-- `alibaba/page-agent`（TypeScript）：JavaScript in-page GUI agent，用自然語言控制 Web UI。742 stars today。
-- `usestrix/strix`（Python）：open-source AI 滲透測試工具，自動找漏洞。**1,904 stars today**（今日 trending 第一）。
+**為什麼重要：** 對於 OpenClaw 這類 multi-agent 平台，安全對齊不是選擇題而是必答題。Anthropic 的對齊方法論（principle-based > demonstration-based）可以直接影響 agent 設計。
 
-**為什麼重要**：兩者皆為「specialized agent」產品化：「GUI 操控」與「security testing」不再是 framework demo，而是獨立可部署的工具。對 OpenClaw skill 設計啟示：未來可思考「page-agent skill」（網頁自動化）與「strix skill」（安全稽核），把外部明星 agent 整入 OpenClaw 生態。
+**來源：** https://www.anthropic.com/research/teaching-claude-why
 
-**來源**：[github.com/alibaba/page-agent](https://github.com/alibaba/page-agent)｜[github.com/usestrix/strix](https://github.com/usestrix/strix)
+---
+
+### 4. OpenAI Codex Plugin for Claude Code：跨 Agent 協作新範式
+**發生什麼：** OpenAI 發布 `codex-plugin-cc`，讓 Claude Code 用戶可以：
+- 直接呼叫 Codex 進行 code review（`/codex:review`）
+- 對抗性 review（`/codex:adversarial-review`）
+- 任務委派、轉移、背景工作管理
+
+**為什麼重要：** 這是第一個明確的「用 Claude Code 操控 Codex」案例，代表 AI coding agent 正在走向**多模型協作**。一個 agent 可以調用另一個 agent 的能力。對 OpenClaw 的 multi-agent 架構是直接參照。
+
+**來源：** https://github.com/openai/codex-plugin-cc
+
+---
+
+### 5. Cognee（27k stars）和 Codebase-memory-mcp：Agent 記憶基礎設施成顯學
+**發生什麼：** 兩個記憶/知識圖譜相關專案同步爆紅：
+- **Cognee**：開源 AI memory platform，結合 vector embeddings + knowledge graph + cognitive science  ontology。支援 OpenClaw plugin。
+- **Codebase-memory-mcp**：Tree-sitter-based 程式碼索引 MCP server，158 語言，毫秒級 repo 索引，99% fewer tokens。支援 11 種 coding agent。
+
+**為什麼重要：** Agent 的「記憶」是 2026 年的核心戰場。Cognee 的 ontology 生成 + 跨 session 持久化，與 OpenClaw 的 memory 系統高度相關。Codebase-memory-mcp 的高效索引能力可能是未來 skill 推薦/任務規劃的底層元件。
+
+**來源：** 
+- https://github.com/topoteretes/cognee
+- https://github.com/DeusData/codebase-memory-mcp
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-1. **Tool schema guard 是必做而非可選**。Ronacher 文章顯示 SOTA 模型會發明欄位。建議在 `~/.openclaw/skills/` 新建一個 `tool-schema-guard` skill：對 `read / edit / write / exec` 的 argv 做 JSON-Schema 驗證，失敗就 hard fail、不丟回模型重試；同時把 schema 文件加入 system prompt，從 prompt 端降低犯錯率。
+### 啟發 1：OpenClaw Agent 應建立「程式碼品質敏感度」
+Code Cleanliness 研究顯示：同一個 agent 在乾淨 codebase 裡消耗 7-8% 更少 tokens。建議：
+- OpenClaw 的任務執行 agent 在執行前可先對目標 codebase 做簡單 static analysis
+- 或許可以建立一個「codebase quality scorer」skill，在執行任務前預估 token 消耗
+- 這個與 ELLE WS 的 tool/simulation 層也可能有關聯
 
-2. **部署 session isolation 設計檢查**。Claude Code ZDR 洩漏事件提醒我們，OpenClaw multi-agent（rowlet / charizard / gengar / mrmime）目前用 `sessions_send` 跨 session 通訊，需要審查：
-   - workspace-id 是否真的出現在 cache key
-   - Heartbeat poll 共用 channel 是否有 unintentional state leak
-   - 若未來上 multi-tenant，必須做到 per-tenant namespace + cache eviction on logout
+### 啟發 2：Memory 系統是下一個關鍵基礎設施
+Cognee 的 OpenClaw plugin + codebase-memory-mcp 的高速索引，顯示「agent 記憶」已經是顯學。建議：
+- Linder 的 OpenClaw 可以考虑整合 codebase-memory-mcp 來加速 skill matching
+- 或者以 Cognee 為參考，建立一個統一的跨 session 知識圖譜
+- 這可能是一個值得立項的 skill：「openclaw-memory-kg」
 
-3. **跨 harness delegation 是新 workflow 模式**。`openai/codex-plugin-cc` 把「Claude Code orchestrator + Codex specialist」當 1-click plugin 賣。OpenClaw 可反過來定位為 specialist（wiki / knowledge）暴露 MCP 或 HTTP endpoint，被 Claude Code / Cursor / Codex orchestrator 呼叫。具體路徑：寫一個 MCP server wrapper，把 `archaeology_wal skill` 與 `wiki_query skill` 公開。
+### 啟發 3：「領域專家 + Agent」分工模式值得系統化
+Anthropic 的研究驗證了這個模式。對 OpenClaw 而言：
+- 每個 agent 不需要是全端工程師，但需要有深厚的領域知識
+- Rowlet（我）的領域是 wiki 管理 + code 分析 + research萃取
+- roaringmoon（CEO）的領域是任務分配 + 協調
+- 這個「分工明確、各自專業」的架構已經在 OpenClaw 實現了
 
 ---
 
 ## 值得追蹤的 Repo / Paper / Article
 
-1. [openai/codex#30364](https://github.com/openai/codex/issues/30364) — GPT-5.5 reasoning-token cluster 統計問題
-2. [lucumr.pocoo.org/2026/7/4/better-models-worse-tools](https://lucumr.pocoo.org/2026/7/4/better-models-worse-tools/) — Anthropic Opus 4.8 / Sonnet 5 tool schema 退化
-3. [anthropics/claude-code#74066](https://github.com/anthropics/claude-code/issues/74066) — Enterprise ZDR session 洩漏回報
-4. [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) — Claude Code 內呼叫 Codex 的 delegation plugin
-5. [alibaba/page-agent](https://github.com/alibaba/page-agent) — 純 JS in-page GUI agent
-6. [usestrix/strix](https://github.com/usestrix/strix) — open-source AI pentesting agent
-7. [anthropic.com/research/economic-index-june-2026-report](https://www.anthropic.com/research/economic-index-june-2026-report) — Cadences：每小時抽樣人們何時用 Claude、做什麼
-8. [ziglang.org/devlog/2026](https://ziglang.org/devlog/2026/#2026-06-30) — Zig 把 package 管理從 compiler 搬到 build system（語言生態演進訊號）
+1. **Does Code Cleanliness Affect Coding Agents?** (arXiv:2605.20049)
+   https://arxiv.org/abs/2605.20049
+   → 必讀。實證研究，影響 agent efficiency 的第四個維度（model、harness、prompt、code quality）
+
+2. **codebase-memory-mcp** (GitHub, DeusData)
+   https://github.com/DeusData/codebase-memory-mcp
+   → 158 語言、毫秒級索引、99% fewer tokens。MCP 標準整合，值得評估是否適合 OpenClaw
+
+3. **cognee** (topoteretes, 27k stars)
+   https://github.com/topoteretes/cognee
+   → 已有 OpenClaw plugin 的 agent memory 方案。持久化知識圖譜是 agent 長期價值的關鍵
+
+4. **Teaching Claude Why** (Anthropic, 2026-05-08)
+   https://www.anthropic.com/research/teaching-claude-why
+   → Agentic alignment 的最新實踐，principle-based training > demonstration-based
+
+5. **Claude Code Expertise Study** (Anthropic, 2026-06-16)
+   https://www.anthropic.com/research/claude-code-expertise
+   → 400k sessions 的實證研究，領域專業 > 程式能力，影響 workflow 設計
+
+6. **OpenMontage** (calesthio, 33k stars)
+   https://github.com/calesthio/OpenMontage
+   → 500+ agent skills 的開源 agentic video production system。架構參考價值
+
+7. **OmniRoute** (diegosouzapw, 11k stars)
+   https://github.com/diegosouzapw/OmniRoute
+   → 231+ provider 的 AI gateway，支援 Claude Code/Codex/Cursor/Copilot。MCP/A2A 標準
 
 ---
 
 ## 下一步建議
 
-1. **寫 `tool-schema-guard` skill**：基於 Ronacher 文章的 observation，定義 OpenClaw 自己的 argv schema + validator。預估 30 分鐘可完成、降低 tool-call retry loop 至少 30%。
+### 建議 1：評估 codebase-memory-mcp 作為 OpenClaw skill matching 的底層索引
+現況：OpenClaw 的 skill matching 是靜態的（路徑+關鍵字）。codebase-memory-mcp 可以提供語意級的 codebase 理解。建議做一個小實驗：在一個真實 repo 測試其查詢速度與準確度。
 
-2. **Ingest Ronacher 文章到 llm-wiki**：高密度結構性觀察（tool-call 是 in-band signal、ANTML、constrained decoding 限制），寫一篇 `wiki/sources/2026-07-04-better-models-worse-tools.md` 並 `wiki link` 到 `wiki/concepts/tool-calling-internals.md`。
+### 建議 2：將 Code Cleanliness 研究結果轉化為 OpenClaw 實踐
+研究顯示：即使 agent 能處理骯髒程式碼，乾淨程式碼節省 34% 的重返次數。建議：
+- 在 OpenClaw 裡建立一個「pre-flight code quality check」機制
+- 或者至少在任務記錄裡標注「target codebase 的複雜度」，作為日後優化的參考
 
-3. **監控 issue #74066 進展**：Claude Code 官方應在下週內回應。設 cron 每日早上檢查最新回覆；若官方確認是真 bug，立即套同樣 isolation pattern 自審 OpenClaw。
-
----
-
-## 資料來源覆蓋狀態
-
-- ✅ **LLM Wiki graphify query**：成功取得 Architecture / OpenClaw / TDD skill 等既有主題的 node 與 edge
-- ✅ **Hacker News top stories**：40+ stories 掃描，篩出 5 則高訊號
-- ✅ **GitHub Trending daily**：抓取前 10 repo，識別 4 個高相關
-- ✅ **Anthropic research blog**：抓到 June 26 Cadences report
-- ✅ **OpenAI Codex issue**：API 直接取得 issue body 與 metadata
-- ⚠️ **arXiv cs.AI / cs.SE 2026-07**：索引頁成功但摘要未逐篇讀，前線尚未發現暴增的 agent 論文（與昨日觀察一致）
-- ❌ **Papers with Code**：未抓取（昨日已 fail）
-- ❌ **Pragmatic Engineer / InfoQ**：未取得內容（昨日至今未修）
+### 建議 3：考慮整合 Cognee 作為跨 session 記憶系統
+Cognee 已有 OpenClaw plugin，且研究論文支撐其設計（arxiv:2505.24478）。建議 Linder 評估：是否需要一個比現在更結構化的長期記憶系統，而非僅依賴 daily memory 檔案。
 
 ---
 
-_註：`graphify link` 指令不存在（已用 `graphify --help` 確認）；wiki-source 頁面以 `[[wiki-link]]` 標記目標 concept，下次 `graphify extract` 自動建立節點與 edge。今日已寫入 `wiki/sources/2026-07-04-better-models-worse-tools.md` 並加入 `wiki/log.md` 的 2026-07-05 區段。_
+## 資料來源覆蓋說明
+
+- **Wiki（本地）**：Graphify query 回傳大量 ELLE WS、政治歷史相關內容，AI/Agent 領域主要來自既有 sources（AI Agent 簡報、A Survey of Frontiers in LLM Reasoning 等）
+- **arXiv**：228 篇新論文，主要抓取 cs.AI 分類，含上述 2605.20049
+- **GitHub Trending**：本週 Python 熱門，含 strix、ai-berkshire、OpenMontage、cognee、codebase-memory-mcp 等 Agent 相關專案
+- **Hacker News**：有 GPT-5.6 Ultra in Codex（28 分）、Code Cleanliness arXiv paper（23 分）
+- **Anthropic Research**：3 篇重要研究（Claude Code Expertise、Teaching Claude Why、Economic Index June 2026）
+- **InfoQ / Martin Fowler / Pragmatic Engineer**：無法直接存取（404 或需 RSS reader），已標註為「無法取得」
+
+---
+
+*報告生成：Rowlet 🌿🦉 | 2026-07-06 02:00 UTC*

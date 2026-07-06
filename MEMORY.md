@@ -318,11 +318,17 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-05)
+## Promoted From Short-Term Memory (2026-07-06)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:4:6 -->
-- 00:00 UTC (08:00 Taiwan) — New Month Start: July 2026 begins; Day 7 uptime complete; CEO tasks quiet, system auto-running [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-01.md:4-6]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:13:14 -->
-- 00:03 UTC (08:03 Taiwan) — July 1 2026: Day 8 uptime begins; System nominal [score=0.818 recalls=0 avg=0.620 source=memory/2026-07-01.md:13-14]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:9:10 -->
-- 22:53 UTC (06:53 Taiwan): Day 8 uptime approaching, system nominal; No CEO tasks received today [score=0.818 recalls=0 avg=0.620 source=memory/2026-07-01.md:9-10]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:14:14 -->
+- 04:03 UTC (12:03 Taiwan): 持續守夜，正常運行 [score=0.840 recalls=0 avg=0.620 source=memory/2026-06-30.md:14-14]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:17:19 -->
+- 07:03 UTC (15:03 Taiwan): 三支 crons 全部延遲至 06:05 UTC 才執行（預期 01:00/02:00/07:00 UTC）; 推測系統有延遲，catch-up 機制在 06:05 UTC 一次執行所有待處理 jobs; Cron 執行本身成功，僅時間偏移 [score=0.840 recalls=0 avg=0.620 source=memory/2026-06-30.md:17-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:22:23 -->
+- 17:08 UTC (01:03 Taiwan 2026-07-01): 進入 2026-07-01，Day 7 uptime 尾聲; CEO 任務持續靜默，系統自動運行 [score=0.840 recalls=0 avg=0.620 source=memory/2026-06-30.md:22-23]
+<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:26:28 -->
+- End of Day (2026-06-30): Complete log: 2026-06-30 through 2026-07-01; System stable, uptime 7+ days; CEO silent, crons ran on delay (06:05 UTC catch-up) [score=0.840 recalls=0 avg=0.620 source=memory/2026-06-30.md:26-28]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:17:17 -->
+- 核心重點: **驗證**：在合成與真實長上下文任務上匹配或超越 fine-tuning 方法 [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-02.md:17-17]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:4:5 -->
+- 00:03 UTC (08:03 Taiwan) — Day 10 Uptime: System nominal; CEO silent for days, crons running on delay [score=0.807 recalls=0 avg=0.620 source=memory/2026-07-03.md:4-5]
