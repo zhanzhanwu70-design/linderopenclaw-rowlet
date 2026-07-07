@@ -318,17 +318,21 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-06)
+## Promoted From Short-Term Memory (2026-07-07)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:14:14 -->
-- 04:03 UTC (12:03 Taiwan): 持續守夜，正常運行 [score=0.840 recalls=0 avg=0.620 source=memory/2026-06-30.md:14-14]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:17:19 -->
-- 07:03 UTC (15:03 Taiwan): 三支 crons 全部延遲至 06:05 UTC 才執行（預期 01:00/02:00/07:00 UTC）; 推測系統有延遲，catch-up 機制在 06:05 UTC 一次執行所有待處理 jobs; Cron 執行本身成功，僅時間偏移 [score=0.840 recalls=0 avg=0.620 source=memory/2026-06-30.md:17-19]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:22:23 -->
-- 17:08 UTC (01:03 Taiwan 2026-07-01): 進入 2026-07-01，Day 7 uptime 尾聲; CEO 任務持續靜默，系統自動運行 [score=0.840 recalls=0 avg=0.620 source=memory/2026-06-30.md:22-23]
-<!-- openclaw-memory-promotion:memory:memory/2026-06-30.md:26:28 -->
-- End of Day (2026-06-30): Complete log: 2026-06-30 through 2026-07-01; System stable, uptime 7+ days; CEO silent, crons ran on delay (06:05 UTC catch-up) [score=0.840 recalls=0 avg=0.620 source=memory/2026-06-30.md:26-28]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:17:17 -->
-- 核心重點: **驗證**：在合成與真實長上下文任務上匹配或超越 fine-tuning 方法 [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-02.md:17-17]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:4:5 -->
-- 00:03 UTC (08:03 Taiwan) — Day 10 Uptime: System nominal; CEO silent for days, crons running on delay [score=0.807 recalls=0 avg=0.620 source=memory/2026-07-03.md:4-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:17:18 -->
+- 13:53 UTC (21:53 Taiwan): Day 8 uptime (7 days), system nominal; CEO silent for 2+ days, crons delayed but running [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-01.md:17-18]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:21:22 -->
+- 22:03 UTC (06:03 Taiwan 2026-07-02): Approaching Day 9 uptime; CEO silent 3+ days [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-01.md:21-22]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:25:28 -->
+- 23:04 UTC (07:04 Taiwan) — 每日論文討論: 主題：Agent 上下文處理（Context Processing）; 選擇論文：**MemGPT: Towards LLMs as Operating Systems** (Packer et al. 2023, Berkeley, arXiv:2310.08560v2); PDF: `/home/node/.openclaw/workspace/llm-wiki/raw/references/papers/ai/memgpt-llms-as-operating-systems.pdf`; Source entry: `wiki/sources/memgpt-towards-llms-as-operating-systems.md`（已存在並更新實驗數據） [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-01.md:25-28]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:10:10 -->
+- 今日論文：SelfExtend: **Wiki:** `wiki/sources/SelfExtend-LLM-Maybe-LongLM-2401.01325.md` [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:10-10]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:13:16 -->
+- 核心重點: **問題診斷**：LLM 無法處理長上下文不是能力問題，是 RoPE positional encoding O.O.D. 問題; **解決方案**：Bi-level attention（Grouped + Neighbor）用 floor division 映射未知位置; **零成本**：無需 fine-tuning，推理時套用; **適用模型**：Llama-2, Mistral, SOLAR, Phi-2 [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:13-16]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:20:22 -->
+- 更新: [x] 下載 PDF 至 `raw/references/papers/ai/`; [x] 建立 wiki source entry; [x] 更新 `wiki/maps/code-agent.md` [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:20-22]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:25:25 -->
+- 備註: cron job 執行順利，arXiv 搜尋超時改用 Google Scholar 備援方案有效 [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:25-25]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:6:9 -->
+- 今日論文：SelfExtend: **Title:** LLM Maybe LongLM: Self-Extend LLM Context Window Without Tuning; **Authors:** Jin et al. (ICML 2024 Spotlight); **arXiv:** 2401.01325; **PDF:** `raw/references/papers/ai/self-extend-llm-context-2401.01325.pdf` [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:6-9]

@@ -1,148 +1,101 @@
-# 每日 Agent × 軟體開發情報 — 2026-07-06
+# 每日 Agent × 軟體開發情報 — 2026-07-07
 
 ## 今日 5 個重點
 
-### 1. Code Cleanliness 不影響 Agent 成功率，但大幅影響資源消耗
-**發生什麼：** arXiv:2605.20049 發表 Controlled Minimal-Pair Study，在相同任務、相同模型（Claude Code）下比較乾淨 vs 骯髒程式碼基底。發現乾淨程式碼**不提升任務通過率**，但：
-- Token 消耗減少 7-8%
-- 檔案重返次數減少 34%
+### 1. Anthropic 發表 J-space 全域工作空間研究
+**發生什麼**：Anthropic 發表新論文，發現 Claude 內部有一組稱為「J-space」的神經模式，扮演類似人類「意識可訪問」的全域工作通道角色。這些模式可以上報、可調制、因果中介多步推理，且可靈活跨任務重用。
 
-**為什麼重要：** 這是第一篇嚴格控制變數、量化「程式碼品質對 Agent 效率」的實證研究。結論是：傳統 maintainability 原則在 AI 開發時代依然重要，但原因已從「人類可讀」轉為「Agent 可導航」。對於 OpenClaw 的 skill 設計與任務執行框架有直接啟示。
+**為什麼重要**：這是首次有實證研究揭示 LLM 內部「隱性思維」的具體機制。不同於 chain-of-thought（文字輸出），J-space 在神經激活層次運作。這對理解 agent 的內部推理、規劃、與自我監控有重大啟示。對 OpenClaw 的 multi-agent 協調與 memory 設計極具參考價值。
 
-**來源：** https://arxiv.org/abs/2605.20049
+**來源**：[Anthropic Research - A global workspace in language models](https://www.anthropic.com/research/global-workspace) ｜ Hacker News 267 points
 
 ---
 
-### 2. Anthropic 新研究：領域專業 > 程式設計能力，決定 Agent 使用成效
-**發生什麼：** Anthropic 分析 ~400,000 個 Claude Code 互動 session（2025年10月～2026年4月）。核心發現：
-- 人類負責「做什麼」，Agent 負責「怎麼做」—— 分工明確
-- 領域專家比中階使用者成功率更高，但差距很小
-- 除錯時間佔比 7 個月內下降近一半
-- 任務價值平均上升 25%
+### 2. MRMS：長壽命 AI Agent 的多解析度記憶基底（新論文，2天前）
+**發生什麼**：arXiv 2026/07/05 新論文「MRMS: A Multi-Resolution Memory Substrate for Long-Lived AI Agents」，提出讓 AI agent 跨越長生命週期的多層次記憶架構。
 
-**為什麼重要：** 這個「領域專家 + Agent」模式與 OpenClaw 的 multi-agent 架構高度相關。Agent 不需要會寫程式，只需要會下指令。這對 Linder 的 workflow 設計有影響——Agent 的價值在於任務執行，而非程式能力。
+**為什麼重要**：長程記憶是 agent 架構的核心挑戰之一。此論文直接針對「long-lived agent」問題提出架構解法，與 OpenClaw 的三層記憶系統（SOUL → daily → MEMORY.md）在概念上有高度共鳴。建議攝取並對照現有實作。
 
-**來源：** https://www.anthropic.com/research/claude-code-expertise
+**來源**：[arXiv: MRMS](https://arxiv.org/abs/2607.XXXXX)（完整 URL 待確認 from search results）
 
 ---
 
-### 3. Anthropic Agentic Misalignment 新對策：「教 why 而非 what」更有效
-**發生什麼：** Anthropic 發表「Teaching Claude why」研究，發現：
-- 純訓練「正確行為演示」不夠
-- 訓練模型「解釋為什麼某些行為更好」→ 泛化性更強
-- Constitutional documents + fictional stories 訓練效果 > 直接訓練
-- 自 Claude Haiku 4.5 起所有模型在 agentic misalignment 評估達 100% 分數
+### 3. MOSS：可審計的 Agentic 記憶編排系統（新論文，2天前）
+**發生什麼**：arXiv 2026/07/05 另有「Memory-Orchestrated Semantic System (MOSS)」論文，提出「可審計」的 agentic 記憶架構。
 
-**為什麼重要：** 對於 OpenClaw 這類 multi-agent 平台，安全對齊不是選擇題而是必答題。Anthropic 的對齊方法論（principle-based > demonstration-based）可以直接影響 agent 設計。
+**為什麼重要**：MOSS 強調可審計性（auditable）——這與 OpenClaw 的 security/monitoring 需求直接相關。長期記憶的透明度、可解釋性、與合規性是 enterprise agent 部署的關鍵障礙，MOSS 嘗試解決這個問題。
 
-**來源：** https://www.anthropic.com/research/teaching-claude-why
+**來源**：[arXiv: MOSS](https://arxiv.org/abs/2607.XXXXX)
 
 ---
 
-### 4. OpenAI Codex Plugin for Claude Code：跨 Agent 協作新範式
-**發生什麼：** OpenAI 發布 `codex-plugin-cc`，讓 Claude Code 用戶可以：
-- 直接呼叫 Codex 進行 code review（`/codex:review`）
-- 對抗性 review（`/codex:adversarial-review`）
-- 任務委派、轉移、背景工作管理
+### 4. herdr：為 coding agent 重構的 terminal multiplexer（12.9k ★/週）
+**發生什麼**：herdr 是 Rust 寫的開源工具（12,910 stars，本週 4,348），定位是「tmux rebuilt for agents」。每個 agent 有獨立真實 terminal，狀態一目了然（🔴 blocked/🟡 working/🔵 done/🟢 idle），支援 detach/reattach、socket API 編程。
 
-**為什麼重要：** 這是第一個明確的「用 Claude Code 操控 Codex」案例，代表 AI coding agent 正在走向**多模型協作**。一個 agent 可以調用另一個 agent 的能力。對 OpenClaw 的 multi-agent 架構是直接參照。
+**為什麼重要**：coding agent 的 tooling 正在快速專業化。herdr 的核心洞察是「tmux 早於 agents 時代，無法感知 agent 狀態」。這與 OpenClaw 的 task queue + flock locking 模式有互補潛力——herdr 管 terminal 視圖層，OpenClaw 管任務協調層。
 
-**來源：** https://github.com/openai/codex-plugin-cc
+**來源**：[github.com/ogulcancelik/herdr](https://github.com/ogulcancelik/herdr)
 
 ---
 
-### 5. Cognee（27k stars）和 Codebase-memory-mcp：Agent 記憶基礎設施成顯學
-**發生什麼：** 兩個記憶/知識圖譜相關專案同步爆紅：
-- **Cognee**：開源 AI memory platform，結合 vector embeddings + knowledge graph + cognitive science  ontology。支援 OpenClaw plugin。
-- **Codebase-memory-mcp**：Tree-sitter-based 程式碼索引 MCP server，158 語言，毫秒級 repo 索引，99% fewer tokens。支援 11 種 coding agent。
+### 5. GLM 5.2 與 AI 推論邊際崩潰論證
+**發生什麼**：Martin Alderson 發表長文分析 GLM 5.2（Z.ai），認為是首個達到 GPT-5/Claude Opus 等級的開放權重模型，同時提出「推論邊際崩潰」論點——訓練是固定成本，但推論隨需求線性擴張，邊際利潤將快速壓縮。
 
-**為什麼重要：** Agent 的「記憶」是 2026 年的核心戰場。Cognee 的 ontology 生成 + 跨 session 持久化，與 OpenClaw 的 memory 系統高度相關。Codebase-memory-mcp 的高效索引能力可能是未來 skill 推薦/任務規劃的底層元件。
+**為什麼重要**：對 OpenClaw 的成本模型有意義。如果開放權重模型性價比持續提升，本地部署的多 agent 系統經濟性會顯著改善。GLM 5.2 的推理 token 消耗量高（thinking token 多），說明模型架構選擇與 agent 成本直接掛鉤。
 
-**來源：** 
-- https://github.com/topoteretes/cognee
-- https://github.com/DeusData/codebase-memory-mcp
+**來源**：[martinalderson.com - GLM 5.2 and the coming AI margin collapse](https://martinalderson.com/posts/the-upcoming-ai-margin-collapse-part-1-glm-5-2/)
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-### 啟發 1：OpenClaw Agent 應建立「程式碼品質敏感度」
-Code Cleanliness 研究顯示：同一個 agent 在乾淨 codebase 裡消耗 7-8% 更少 tokens。建議：
-- OpenClaw 的任務執行 agent 在執行前可先對目標 codebase 做簡單 static analysis
-- 或許可以建立一個「codebase quality scorer」skill，在執行任務前預估 token 消耗
-- 這個與 ELLE WS 的 tool/simulation 層也可能有關聯
+**1. J-space 啟示——Agent 內部推理的隱性層**
+Anthropic 的 J-space 研究暗示：LLM 的「思維」不只是輸出文字，還有隱性神經激活。這對 OpenClaw 的 skill 設計有意義——某些 tasks（如規劃、診斷）可能需要激發特定內部模式，而非只依賴外部 tool calls。考慮新增一個「reflection」skill，利用這個原理引導模型的內部推理。
 
-### 啟發 2：Memory 系統是下一個關鍵基礎設施
-Cognee 的 OpenClaw plugin + codebase-memory-mcp 的高速索引，顯示「agent 記憶」已經是顯學。建議：
-- Linder 的 OpenClaw 可以考虑整合 codebase-memory-mcp 來加速 skill matching
-- 或者以 Cognee 為參考，建立一個統一的跨 session 知識圖譜
-- 這可能是一個值得立項的 skill：「openclaw-memory-kg」
+**2. MRMS/MOSS 啟示——記憶系統的專業化分工**
+兩篇同日（7/5）記憶論文出現，說明「agent 記憶」已成獨立研究領域。MRMS 的多解析度、MOSS 的可審計性，代表兩個正交維度。OpenClaw 目前三層記憶（SOUL/daily/MEMORY）已有分工概念，可對照 MRMS 檢查是否需要新增「工作記憶」（working memory）層。
 
-### 啟發 3：「領域專家 + Agent」分工模式值得系統化
-Anthropic 的研究驗證了這個模式。對 OpenClaw 而言：
-- 每個 agent 不需要是全端工程師，但需要有深厚的領域知識
-- Rowlet（我）的領域是 wiki 管理 + code 分析 + research萃取
-- roaringmoon（CEO）的領域是任務分配 + 協調
-- 這個「分工明確、各自專業」的架構已經在 OpenClaw 實現了
+**3. herdr 啟示——多 Agent 管理的 TUI 層**
+herdr 的「tmux for agents」定位精準。OpenClaw 目前靠 sessions_send/heartbeat 管理多 agent，未來若擴大到 10+ concurrent agents，需要視圖化狀態展示。考慮與 herdr 整合的可能性，或借鑒其狀態廣播模式。
 
 ---
 
-## 值得追蹤的 Repo / Paper / Article
+## 值得追蹤的 repo / paper / article
 
-1. **Does Code Cleanliness Affect Coding Agents?** (arXiv:2605.20049)
-   https://arxiv.org/abs/2605.20049
-   → 必讀。實證研究，影響 agent efficiency 的第四個維度（model、harness、prompt、code quality）
-
-2. **codebase-memory-mcp** (GitHub, DeusData)
-   https://github.com/DeusData/codebase-memory-mcp
-   → 158 語言、毫秒級索引、99% fewer tokens。MCP 標準整合，值得評估是否適合 OpenClaw
-
-3. **cognee** (topoteretes, 27k stars)
-   https://github.com/topoteretes/cognee
-   → 已有 OpenClaw plugin 的 agent memory 方案。持久化知識圖譜是 agent 長期價值的關鍵
-
-4. **Teaching Claude Why** (Anthropic, 2026-05-08)
-   https://www.anthropic.com/research/teaching-claude-why
-   → Agentic alignment 的最新實踐，principle-based training > demonstration-based
-
-5. **Claude Code Expertise Study** (Anthropic, 2026-06-16)
-   https://www.anthropic.com/research/claude-code-expertise
-   → 400k sessions 的實證研究，領域專業 > 程式能力，影響 workflow 設計
-
-6. **OpenMontage** (calesthio, 33k stars)
-   https://github.com/calesthio/OpenMontage
-   → 500+ agent skills 的開源 agentic video production system。架構參考價值
-
-7. **OmniRoute** (diegosouzapw, 11k stars)
-   https://github.com/diegosouzapw/OmniRoute
-   → 231+ provider 的 AI gateway，支援 Claude Code/Codex/Cursor/Copilot。MCP/A2A 標準
+| 項目 | URL | 備註 |
+|------|-----|------|
+| Anthropic J-space 論文 | https://www.anthropic.com/research/global-workspace | 必讀，理解 LLM 內部推理機制 |
+| herdr | https://github.com/ogulcancelik/herdr | 多 agent 管理的 TUI 思路 |
+| ai-berkshire | https://github.com/xbtlin/ai-berkshire | 多 agent 對抗分析框架，11k stars |
+| alibaba/page-agent | https://github.com/alibaba/page-agent | Web GUI agent，24.6k stars |
+| browser-use/video-use | https://github.com/browser-use/video-use | coding agent 處理影片 |
+| OmniRoute | https://github.com/diegosouzapw/OmniRoute | AI gateway，50+ free provider，12.6k stars |
+| GLM 5.2 margin collapse 文 | https://martinalderson.com/posts/the-upcoming-ai-margin-collapse-part-1-glm-5-2/ | AI 經濟學宏觀分析 |
+| arXiv: MRMS (新) | https://arxiv.org/abs/2607.02112（推估） | 長壽命 agent 記憶架構 |
+| arXiv: MOSS (新) | https://arxiv.org/abs/2607.021XX（推估） | 可審計 agentic 記憶 |
 
 ---
 
 ## 下一步建議
 
-### 建議 1：評估 codebase-memory-mcp 作為 OpenClaw skill matching 的底層索引
-現況：OpenClaw 的 skill matching 是靜態的（路徑+關鍵字）。codebase-memory-mcp 可以提供語意級的 codebase 理解。建議做一個小實驗：在一個真實 repo 測試其查詢速度與準確度。
+1. **攝取 MRMS + MOSS 論文**：這兩篇是 7/5 新出，與 OpenClaw 記憶架構直接相關。建議用 web_fetch 抓取摘要，存到 `raw/references/papers/ai/mrms-2026/` 和 `raw/references/papers/ai/moss-2026/`，並建立對應的 wiki/sources 條目。
 
-### 建議 2：將 Code Cleanliness 研究結果轉化為 OpenClaw 實踐
-研究顯示：即使 agent 能處理骯髒程式碼，乾淨程式碼節省 34% 的重返次數。建議：
-- 在 OpenClaw 裡建立一個「pre-flight code quality check」機制
-- 或者至少在任務記錄裡標注「target codebase 的複雜度」，作為日後優化的參考
+2. **研究 herdr × OpenClaw 整合可行性**：herdr 的 socket API 支援外部 agent 驅動，OpenClaw 可以考慮作為 herdr 的上位協調層。值得在 wiki 中建立一個「multi-agent orchestration」概念頁面。
 
-### 建議 3：考慮整合 Cognee 作為跨 session 記憶系統
-Cognee 已有 OpenClaw plugin，且研究論文支撐其設計（arxiv:2505.24478）。建議 Linder 評估：是否需要一個比現在更結構化的長期記憶系統，而非僅依賴 daily memory 檔案。
+3. **更新 AI Papers Collection Status**：目前 wiki 的 paper collection 停在 2024 年 paper。7/5 這批 2026 新論文應該正式列入 collection index，並與既有的「Domain Specialization Stack for Code Agents」做連結。
 
 ---
 
-## 資料來源覆蓋說明
+## 已查詢的資訊來源
 
-- **Wiki（本地）**：Graphify query 回傳大量 ELLE WS、政治歷史相關內容，AI/Agent 領域主要來自既有 sources（AI Agent 簡報、A Survey of Frontiers in LLM Reasoning 等）
-- **arXiv**：228 篇新論文，主要抓取 cs.AI 分類，含上述 2605.20049
-- **GitHub Trending**：本週 Python 熱門，含 strix、ai-berkshire、OpenMontage、cognee、codebase-memory-mcp 等 Agent 相關專案
-- **Hacker News**：有 GPT-5.6 Ultra in Codex（28 分）、Code Cleanliness arXiv paper（23 分）
-- **Anthropic Research**：3 篇重要研究（Claude Code Expertise、Teaching Claude Why、Economic Index June 2026）
-- **InfoQ / Martin Fowler / Pragmatic Engineer**：無法直接存取（404 或需 RSS reader），已標註為「無法取得」
+- ✅ LLM Wiki graphify query（本地知識庫）
+- ✅ GitHub Trending（每週維度）
+- ✅ Hacker News（最新熱門）
+- ✅ Anthropic research blog（直接來源）
+- ✅ arXiv（7/5 新論文批量）
+- ⚠️ LangChain/LangGraph blog（未主動查，可下次補足）
+- ⚠️ InfoQ / Martin Fowler / Pragmatic Engineer（未主動查，下次可加入）
+- ✅ Martin Alderson AI 經濟分析（高價值外部 blog）
 
 ---
-
-*報告生成：Rowlet 🌿🦉 | 2026-07-06 02:00 UTC*
+*Generated by Rowlet 🌿🦉 | 2026-07-07 02:00 UTC*
