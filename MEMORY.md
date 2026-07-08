@@ -318,21 +318,21 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-07)
+## Promoted From Short-Term Memory (2026-07-08)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:17:18 -->
-- 13:53 UTC (21:53 Taiwan): Day 8 uptime (7 days), system nominal; CEO silent for 2+ days, crons delayed but running [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-01.md:17-18]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:21:22 -->
-- 22:03 UTC (06:03 Taiwan 2026-07-02): Approaching Day 9 uptime; CEO silent 3+ days [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-01.md:21-22]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-01.md:25:28 -->
-- 23:04 UTC (07:04 Taiwan) — 每日論文討論: 主題：Agent 上下文處理（Context Processing）; 選擇論文：**MemGPT: Towards LLMs as Operating Systems** (Packer et al. 2023, Berkeley, arXiv:2310.08560v2); PDF: `/home/node/.openclaw/workspace/llm-wiki/raw/references/papers/ai/memgpt-llms-as-operating-systems.pdf`; Source entry: `wiki/sources/memgpt-towards-llms-as-operating-systems.md`（已存在並更新實驗數據） [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-01.md:25-28]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:10:10 -->
-- 今日論文：SelfExtend: **Wiki:** `wiki/sources/SelfExtend-LLM-Maybe-LongLM-2401.01325.md` [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:10-10]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:13:16 -->
-- 核心重點: **問題診斷**：LLM 無法處理長上下文不是能力問題，是 RoPE positional encoding O.O.D. 問題; **解決方案**：Bi-level attention（Grouped + Neighbor）用 floor division 映射未知位置; **零成本**：無需 fine-tuning，推理時套用; **適用模型**：Llama-2, Mistral, SOLAR, Phi-2 [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:13-16]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:20:22 -->
-- 更新: [x] 下載 PDF 至 `raw/references/papers/ai/`; [x] 建立 wiki source entry; [x] 更新 `wiki/maps/code-agent.md` [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:20-22]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:25:25 -->
-- 備註: cron job 執行順利，arXiv 搜尋超時改用 Google Scholar 備援方案有效 [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:25-25]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-02.md:6:9 -->
-- 今日論文：SelfExtend: **Title:** LLM Maybe LongLM: Self-Extend LLM Context Window Without Tuning; **Authors:** Jin et al. (ICML 2024 Spotlight); **arXiv:** 2401.01325; **PDF:** `raw/references/papers/ai/self-extend-llm-context-2401.01325.pdf` [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-02.md:6-9]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:17:19 -->
+- 00:08 UTC (08:08 Taiwan 2026-07-04): 2026-06-29-F8X9_Dp3ZUk transcription 完成 (3026 lines) → wiki source written; 2026-06-28-kddVQq62P4Y 補完成狀態 (280 lines) → wiki source written; 已啟動 2026-06-27-GvIZ-1B59Cg transcription (PID 301578) [score=0.852 recalls=0 avg=0.620 source=memory/2026-07-03.md:17-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:26:26 -->
+- 00:18 UTC (08:18 Taiwan 2026-07-04): ✅ 所有 8 筆待處理逐字稿全部完成（pending 數量: 0） [score=0.852 recalls=0 avg=0.620 source=memory/2026-07-03.md:26-26]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:13:14 -->
+- 23:28 UTC: 2026-07-02-2P5JKA6RYo8 transcription 完成 (515 lines) → wiki source written; 已啟動 2026-06-30 transcription (PID 66282) [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-03.md:13-14]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:22:25 -->
+- 00:18 UTC (08:18 Taiwan 2026-07-04): 2026-06-27-GvIZ-1B59Cg transcription 完成 → wiki source written; 2026-06-23-WyABi1C0oWA 完成 (1023 lines) → wiki source written; 2026-06-25-UXfkQokND4g 完成 (382 lines) → wiki source written; 2026-06-27-TOWSmjvQW8s 完成 (2354 lines) → wiki source written [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-03.md:22-25]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:8:10 -->
+- 23:18 UTC (07:18 Taiwan 2026-07-04): 發現 8 筆待處理逐字稿（音檔存在但 transcription_status 為 in_progress 且 PID 已消失）; 全部更新為 pending 狀態：2026-06-23, 25, 27(x2), 28, 29, 30, 07-02; 已啟動 2026-07-02 逐字稿（PID 5454），其餘待手動排程 [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-03.md:8-10]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:21:23 -->
+- 學習 / 修正: **`npx graphifyy link` 是 typo** — 真實指令為 `graphify query / extract / add`，cron 描述未來建議改寫; graphify query "Architecture" 預設 BFS 仍偏向特定專案文件節點（reconciliation）；要用更精準的 `context_filter` 才能找到 OpenClaw / agent 相關; HN API 路徑（`item/<id>.json`）可用，比 web_fetch 更穩定 [score=0.815 recalls=0 avg=0.620 source=memory/2026-07-05.md:21-23]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:5:5 -->
+- 執行: 依 cron `a72cb46b` 完成每日研究任務： [score=0.815 recalls=0 avg=0.620 source=memory/2026-07-05.md:5-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:3:5 -->
+- 07:18 UTC (15:18 Taiwan 2026-07-04): 系統正常運行，CEO 靜默，無新任務; 待處理逐字稿: 0 筆（昨晚已全部完成）; Cron 58fe15dc 論文討論下次執行約 16h 後（07:00 台灣 2026-07-05） [score=0.803 recalls=0 avg=0.620 source=memory/2026-07-04.md:3-5]

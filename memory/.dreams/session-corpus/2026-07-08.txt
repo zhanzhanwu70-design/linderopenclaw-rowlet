@@ -1,0 +1,24 @@
+[rowlet/sessions/rowlet/7368648a-3ff3-463c-b339-6a8e06834e08.jsonl#L38] Assistant: Now I have a clear picture. Three major memory systems were added in the same week: AtomMem (June 18), MRMS (July 5), and MOSS (July 5). The AtomMem concept page predates the latter two and lacks cross-references. I'll update AtomMem and create a synthesis comp
+[rowlet/sessions/rowlet/7368648a-3ff3-463c-b339-6a8e06834e08.jsonl#L46] Assistant: Now I'll update the AtomMem concept page and create a new synthesis page comparing the three major memory systems.
+[rowlet/sessions/rowlet/7368648a-3ff3-463c-b339-6a8e06834e08.jsonl#L50] Assistant: Now let me create the graph edges connecting the new synthesis page to existing nodes:
+[rowlet/sessions/rowlet/7368648a-3ff3-463c-b339-6a8e06834e08.jsonl#L62] Assistant: Now let me update the frontmatter and cross-link the MRMS and MOSS source pages:
+[rowlet/sessions/rowlet/7368648a-3ff3-463c-b339-6a8e06834e08.jsonl#L64] Assistant: Now update MRMS and MOSS source pages with cross-references:
+[rowlet/sessions/rowlet/7368648a-3ff3-463c-b339-6a8e06834e08.jsonl#L70] Assistant: Now let me try to add graph edges for the new synthesis page. Let me look at how existing wiki links are stored:
+[rowlet/sessions/rowlet/7368648a-3ff3-463c-b339-6a8e06834e08.jsonl#L86] Assistant: Now let me append the daily log entry:
+[rowlet/sessions/rowlet/7368648a-3ff3-463c-b339-6a8e06834e08.jsonl#L90] Assistant: Let me do a final verification of what was changed:
+[rowlet/sessions/rowlet/7368648a-3ff3-463c-b339-6a8e06834e08.jsonl#L92] Assistant: All changes verified. Here's the Discord summary: --- 🌿🦉 **LLM Wiki 每日巡讀 — 2026-07-08** **Entry reviewed:** `wiki/concepts/AtomMem.md`（2026-06-21，領先 MRMS/MOSS 三週但尚未關聯） **發現：** 三篇 agent 記憶論文（AtomMem Jun18、MRMS+MOSS Jul5）在 2026 年 6-7 月接連出現，共同指向「純向量 RAG 不足」的結論，但
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L8] Assistant: </think>
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L12] Assistant: </think>
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L16] Assistant: </think>
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L21] Assistant: </think>
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L26] Assistant: I have enough signal now. Let me save a couple of high-value raw snapshots and then compose the report.
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L30] Assistant: </think>
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L41] Assistant: </think>
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L45] Assistant: </think>
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L49] Assistant: </think>
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L52] Assistant: </think>
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L54] Assistant: 研究完成。報告已存到 `/home/node/.openclaw/workspace-rowlet/architecture-daily-report.md`，三份 raw snapshot 存到 `llm-wiki/raw/code-agents/2026-07/`，摘要頁面寫到 `wiki/sources/2026-07-08-agent-research-daily.md`，wiki/log.md 已更新。（註：`npx graphifyy link` 不是有效指令；圖譜邊會在下一次 `graphify ext
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L54] Assistant: harness engineering / memory stores。→ https://blog.langchain.com/improving-agents-is-a-data-mining-problem/ 3. **LangChain 開源 OpenWiki：給 coding agent 用的 repo 文檔代理**（Jul 1）— `npm i -g openwiki && openwiki --init`，自動生成 wiki、隨 PR 更新、AGENTS.md 指向 wiki 而非內嵌。呼應 Karpa
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L54] Assistant: Cowork 的 blast-radius 防護。延續 Sandbox → Auto mode → Managed Agents brain/hands 解耦 → Containment。**安全設計從 permission prompt 走向架構性 cap**。→ https://www.anthropic.com/engineering **對 OpenClaw / Linder 的啟發** - **Eval hygiene 必須先於 benchmark 採用** — 在 OpenClaw 的 evals ski
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L54] Assistant: https://blog.langchain.com/improving-agents-is-a-data-mining-problem/ 3. OpenWiki — https://github.com/langchain-ai/openwiki 4. Anthropic containment — https://www.anthropic.com/engineering 5. Geoffrey Litt "Understand to participate" — https://simonwillison.ne
+[rowlet/sessions/rowlet/e9ddfb00-39f7-45d6-948b-c6b9ca898ee6.jsonl#L54] Assistant: Wiki 合流點觀察，每週檢查 release。
