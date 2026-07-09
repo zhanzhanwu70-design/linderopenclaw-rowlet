@@ -318,21 +318,23 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-08)
+## Promoted From Short-Term Memory (2026-07-09)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:17:19 -->
-- 00:08 UTC (08:08 Taiwan 2026-07-04): 2026-06-29-F8X9_Dp3ZUk transcription 完成 (3026 lines) → wiki source written; 2026-06-28-kddVQq62P4Y 補完成狀態 (280 lines) → wiki source written; 已啟動 2026-06-27-GvIZ-1B59Cg transcription (PID 301578) [score=0.852 recalls=0 avg=0.620 source=memory/2026-07-03.md:17-19]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:26:26 -->
-- 00:18 UTC (08:18 Taiwan 2026-07-04): ✅ 所有 8 筆待處理逐字稿全部完成（pending 數量: 0） [score=0.852 recalls=0 avg=0.620 source=memory/2026-07-03.md:26-26]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:13:14 -->
-- 23:28 UTC: 2026-07-02-2P5JKA6RYo8 transcription 完成 (515 lines) → wiki source written; 已啟動 2026-06-30 transcription (PID 66282) [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-03.md:13-14]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:22:25 -->
-- 00:18 UTC (08:18 Taiwan 2026-07-04): 2026-06-27-GvIZ-1B59Cg transcription 完成 → wiki source written; 2026-06-23-WyABi1C0oWA 完成 (1023 lines) → wiki source written; 2026-06-25-UXfkQokND4g 完成 (382 lines) → wiki source written; 2026-06-27-TOWSmjvQW8s 完成 (2354 lines) → wiki source written [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-03.md:22-25]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-03.md:8:10 -->
-- 23:18 UTC (07:18 Taiwan 2026-07-04): 發現 8 筆待處理逐字稿（音檔存在但 transcription_status 為 in_progress 且 PID 已消失）; 全部更新為 pending 狀態：2026-06-23, 25, 27(x2), 28, 29, 30, 07-02; 已啟動 2026-07-02 逐字稿（PID 5454），其餘待手動排程 [score=0.824 recalls=0 avg=0.620 source=memory/2026-07-03.md:8-10]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:21:23 -->
-- 學習 / 修正: **`npx graphifyy link` 是 typo** — 真實指令為 `graphify query / extract / add`，cron 描述未來建議改寫; graphify query "Architecture" 預設 BFS 仍偏向特定專案文件節點（reconciliation）；要用更精準的 `context_filter` 才能找到 OpenClaw / agent 相關; HN API 路徑（`item/<id>.json`）可用，比 web_fetch 更穩定 [score=0.815 recalls=0 avg=0.620 source=memory/2026-07-05.md:21-23]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:5:5 -->
-- 執行: 依 cron `a72cb46b` 完成每日研究任務： [score=0.815 recalls=0 avg=0.620 source=memory/2026-07-05.md:5-5]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:3:5 -->
-- 07:18 UTC (15:18 Taiwan 2026-07-04): 系統正常運行，CEO 靜默，無新任務; 待處理逐字稿: 0 筆（昨晚已全部完成）; Cron 58fe15dc 論文討論下次執行約 16h 後（07:00 台灣 2026-07-05） [score=0.803 recalls=0 avg=0.620 source=memory/2026-07-04.md:3-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:12:12 -->
+- 訊號（5 重點）: **alibaba/page-agent** + **usestrix/strix** — GUI agent 與 security agent 新興熱點 [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-05.md:12-12]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:15:18 -->
+- 已產出: `~/workspace-rowlet/architecture-daily-report.md`（6.3 KB）; `wiki/sources/2026-07-04-better-models-worse-tools.md`（含 wiki-link to Tool-Call Guard / Agent Skills / Agent Harness）; `wiki/log.md` 加 2026-07-05 條目; Raw snapshot `raw/sources/blog/2026-07-04-better-models-worse-tools/index.html` (28.4 KB) [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-05.md:15-18]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:26:27 -->
+- 待監控: Claude Code #74066 是否被 Anthropic 官方回應（設每日 cron 較佳）; codex-plugin-cc adoption 速度（明日再查 trending） [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-05.md:26-27]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:8:11 -->
+- 訊號（5 重點）: **OpenAI Codex #30364** (GPT-5.5 reasoning-token clustering at 516/1034/1552, 390K records 統計) — HN 48789428 (149 分); **Armin Ronacher "Better Models: Worse Tools"** — Opus 4.8 / Sonnet 5 tool schema 退化 — HN 48788599 (92 分); **Claude Code #74066** — Enterprise ZDR session 洩漏回報（隱私疑慮）— HN 48785485 (273 分); **openai/codex-plugin-cc** — Claude Code 內呼叫 Codex 做 delegation，718 stars/day [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-05.md:8-11]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:11:13 -->
+- LocateAnything: NVIDIA 視覺語言模型; 核心創新：Parallel Box Decoding (PBD) — 比 Qwen3-VL 快 10 倍; 論文：arXiv:2605.27365 [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:11-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:16:19 -->
+- 影片處理：eNAmVWbSqJM: 標題：「AI幫他30天賺300萬美元：普通人也能學的那套」; 頻道：硅谷梅强，5 分鐘（305 秒），195 行逐字稿; 已完成 wiki 入庫：`wiki/sources/ai-d2c-brand-30days-3million.md`; 內容：D2C 普拉提防滑襪案例，五步方法論（市場選擇→AI調研→身份化品牌→專業拍攝→三秒鉤子內容） [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:16-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:22:24 -->
+- Heartbeat 行為修正: Linder 指出：我沒有真的執行 HEARTBEAT.md 的檢查，只是回 HEARTBEAT_OK; 已刪除 HEARTBEAT.md 中的轉錄檢查（原目的是避免每次都poll）; Linder 要求：不要在 heartbeat 做這件事 [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:22-24]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:27:27 -->
+- Whisper Cron 機制（新設計）: Linder 要求：影片處理的監控不要綁 heartbeat，改用獨立的 cron [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:27-27]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:29:32 -->
+- Whisper Cron 機制（新設計）: 只有在有影片要處理時才啟動; 每 5 分鐘檢查一次; 轉錄結束後停止 cron; 已更新 `/home/node/.openclaw/skills/video-processing/SKILL.md` [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:29-32]

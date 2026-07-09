@@ -1,0 +1,34 @@
+[rowlet/sessions/rowlet/2acc3e3a-cc44-4f66-ba5d-9d5d87cf4821.jsonl#L39] Assistant: Now let me update the StreamingLLM source page with the adoption timeline:
+[rowlet/sessions/rowlet/2acc3e3a-cc44-4f66-ba5d-9d5d87cf4821.jsonl#L43] Assistant: Now let me append to the log:
+[rowlet/sessions/rowlet/2acc3e3a-cc44-4f66-ba5d-9d5d87cf4821.jsonl#L49] Assistant: No `link` subcommand available in this graphify version. Skipping edge creation — the page update stands on its own. **Summary for Discord:** - 🌿🦉 **LLM Wiki 巡讀** — StreamingLLM (概念+來源頁) - **來源審查**：`wiki/sources/streamingllm-attention-sinks-infinite-context.m
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L6] Assistant: 我來執行每日 Agent × 軟體開發潮流研究任務。先從 wiki graph 開始。
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L9] Assistant: Wiki 主要回報政治歷史節點，AI/Agent 細節較少。先看昨日報告檢查延續性，再去搜尋新資料。
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L12] Assistant: 昨日（其實是同日 02:12）已有完整報告。我先抓取真正新的 7/9 訊號，再決定是疊加還是標註「無重大新訊號」。
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L16] Assistant: GitHub Trending 今日有 4 個**新訊號**昨天沒覆蓋：addyosmani/agent-skills（Google Chrome 團隊主管做的 production skill repo，74k stars, +1297/day）、TencentDB-Agent-Memory（local 4-tier memory）、last30days-skill（直接競爭 daily cron 模式）、OfficeCLI（Office for agents）。 繼續抓 MCP / LangChain / Cur
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L21] Assistant: 關鍵新發現！讓我快速確認 Anthropic / Claude Code / OpenAI 同時段有無 release：
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L25] Assistant: 抓到 4 個關鍵新訊號：LangChain × NVIDIA NemoClaw + 「harness engineering」官方化（昨天 7/8）、addyosmani/agent-skills 74k stars（skill marketplace 已成）、TencentDB Agent Memory（4-tier memory 商品化）、OpenAI GPT-Live + GeneBench-Pro + SWE-Bench Pro 審查（昨日 7/8 連發）、Anthropic Fable 5 + 跨廠 jai
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L32] Assistant: 寫 wiki source entries + 更新 index.md / log.md：
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L37] Assistant: </think>
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L43] Assistant: </think>
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L47] Assistant: </think>
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L55] Assistant: Graphify 此版本無 `link` 子指令 — 連結透過 wiki page content cross-ref 完成（已寫在每篇的 Raw snapshot / 為什麼要看 / URL 段落）。現在寫主報告並覆蓋同日 02:12 的版本：
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L57] Assistant: 存今日 memory log，然後輸出 Discord 精簡版：
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L8] Assistant: </think>
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L12] Assistant: </think>
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L16] Assistant: </think>
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L19] Assistant: </think>
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L23] Assistant: Today's research subject. I'll work efficiently and parallel for fresh signals.
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L27] Assistant: </think>
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L31] Assistant: </think>
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L34] Assistant: Now I have enough signal. Let me save snapshots and build the report in parallel.
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L38] Assistant: Now create wiki source pages and update the wiki index/log.
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L43] Assistant: Wiki index is missing — likely it's named differently. Let me check.
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L45] Assistant: No `wiki/index.md` exists — only `log.md` and `CONTEXT.md`. So the index instruction refers to a non-existent file; I'll just append to `log.md` and not invent a fake index. Now append today's log entry.
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L50] Assistant: </think>
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L59] Assistant: 📡 **每日 Agent × 軟體開發情報 — 2026-07-09（補強版）** **今日主軸**：skill marketplace 收斂 + harness engineering 變 vendor 級 + multi-vendor safety 框架成形。 5 個**新訊號**（補強 02:12 早期報告）： 🔧 **addyosmani/agent-skills（74k stars, +1.3k/日）** — Google Chrome team lead 公開 24 個 production skil
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L59] Assistant: 完全對位 graphify loop。 🛡️ **Anthropic × Amazon × MS × Google Glasswing** — 共同提出 industry-wide framework for scoring jailbreak severity（Anthropic News 6/30）。同窗內 OpenAI 釋 GPT-Live + System Card。**frontier labs 已把 safety/eval release 變 regulated event** — `sealed-ev
+[rowlet/sessions/rowlet/71094042-f534-4e25-8726-c3ddf119cbdb.jsonl#L59] Assistant: cron 自動把 memory/YYYY-MM-DD.md 摘要進 MEMORY.md，1 小時可寫完。 📂 完整報告：`~/workspace-rowlet/architecture-daily-report.md` 🗂 4 篇 raw snapshot：`llm-wiki/raw/code-agents/2026-07-09/`（addyosmani、langchain-nemoclaw、anthropic-fable5、tencentdb） 📝 4 篇 wiki sources 已落定 + log.md 
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L55] Assistant: Now I have the frontmatter template. Let me update the two new source pages to include `related` and proper type frontmatter, then write the daily architecture report.
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L58] Assistant: Now write the daily architecture report and update the local copy.
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L63] Assistant: Report is on disk. Now write the Discord reply — concise, no markdown tables, fits #木木鴞 channel style.
+[rowlet/sessions/rowlet/89394b33-8fb5-441b-8527-993c233099d0.jsonl#L65] Assistant: Report is generated and saved.
