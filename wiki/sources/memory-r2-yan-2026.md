@@ -66,13 +66,59 @@ Group-relative methods（如 GRPO）假設所有 rollouts 來自同一個 effect
 
 ---
 
+## 新增深度發現（2026-07-15 每日論文討論）
+
+### Method 層面關鍵發現
+
+1. **Chunk-wise Memory Construction（分塊建構）**
+   - 每個 session 再切成 K 個 chunks，extractor + manager 在每個 chunk 上交替運行
+   - 把 session 從單一 transition 變成多步決策過程，可隨更多 evidence 逐步 refine
+   - 消融實驗：N=10（太多 chunks）反而下降，N=4（太少）不夠 refinement，最佳值在兩者之間
+
+2. **Length-Normalized Step-level RL（步驟級別長度正規化）**
+   - 問題：extractor 和 manager 生成長度不同，直接 token-level RL 會讓輸出長的 role 收到更多 loss terms
+   - 解法：每個 extractor/manager call 視為一個 step aggregation，統一 weight
+   - 消融：無此正規化 F1 從 49.67 降到 43.53
+
+3. **Memory Penalty（壓縮懲罰）**
+   - Token-level F1 reward 之外，加上內存膨脹懲罰：記憶 tokens 超過 session tokens 的 α fraction 就開始扣分
+   - λcomp 控制懲罰強度，實驗找到最佳值 0.3
+
+4. **LoGo-GRPO 的 Global vs. Local Branch 混合機制**
+   - Global branch：全部 n 個 rollouts 正常比較，保留端到端學習
+   - Local branch：每個 session 以 plocal 概率被選中，從 anchor rollout 的 memory state 重新 rollout m 次
+   - Local rerollouts 因為共享起點，comparisons 更乾淨
+
+5. **M-Fail：記憶覆蓋率診斷指標**
+   - Required evidence location IDs 中有多少比例完全沒出現在 memory bank
+   - 完整 LoGo-GRPO + curriculum 可把 M-Fail 壓到 6.72%，無 curriculum 直接 32-session 訓練 M-Fail 爆炸到 72.1%
+
+### 實驗結果亮點
+
+- **Memory-R2 (7B) vs Memory-R1**：F1 43.14→50.60，B1 36.44→44.01
+- **泛化性超強**：只在 LoCoMo 2 個對話上訓練，zero-shot 到 LongMemEval F1 從 27.88→50.60
+- **小模型受益最大**：Qwen2.5-3B F1 從 10.3→46.8（+36.5），遠超大模型的相對增益
+- **延遲降低**：訓練後的 policy 生成更簡潔的 memory 操作，3B 和 7B 的 per-conversation 延遲都下降
+- **Training-free 最佳 baseline（MemoryOS）只有 34.64 F1**，比 Memory-R2 差 15+ F1 points
+
+### 為何這篇值得讀（行動呼籲）
+
+| 維度 | Memory-R2 解決了什麼 |
+|------|------|
+| **問題新穎度** | 第一篇明確指出「memory 使環境 non-stationary」導致 GRPO credit assignment 失效 |
+| **實用性** | 只需要 2 個訓練對話就能泛化，data-efficient |
+| **系統性** | 同時優化 formation + evolution，不是只做 retrieval |
+| **可操作性** | Chunk + curriculum + step-norm 三件套明確，其他 memory agent 可直接採用 |
+
+---
+
 ## 討論問題（值得團隊討論）
 
-1. **實用性評估**：LoGo-GRPO 的 local rerollouts 需要多次 rollout，計算開銷是否值得？在 production 環境中如何取捨？
-2. **與現有方案的取捨**：MemGPT、MemoryBank 等 inference-time memory system 和 Memory-R2 的 training-time credit assignment 是否可以結合？
-3. **Progressive curriculum 的泛化性**：從 8→16→32 sessions 的 curriculum 是否適用於其他 agent tasks（如 code generation、robotics）？
-4. **對 OpenClaw 的啟發**：Rowlet 目前如何管理長對話歷史？Memory-R2 的信用分配概念可以如何應用於多 session 的工具使用？
-5. **Shared-parameter co-learning**：Fact extractor 和 Memory manager 共享參數的設計是否會造成 capacity conflict？如何在實作中平衡？
+1. **Local rerollout 的計算代價**：每個 session 都要多跑 m 次 rerollouts，這個 overhead 在 production 是否值得？
+2. **對 OpenClaw Rowlet 的啟發**：我們目前的三層記憶（SOUL + daily + MEMORY.md）是否可以套用 LoGo-GRPO 的 local rerollout 概念來評估哪些記憶決策真正帶來好結果？
+3. **M-Fail 指標**：可用來診斷 Rowlet 的 heartbeat 是否真的把關鍵資訊寫入記憶，還是只是在 context 裡飄著沒落地。
+4. **Progressive curriculum 的遷移**：OpenClaw 的新 agent onboarding（從簡單到複雜的 task）是否就是隱式的 curriculum？
+5. **Shared-parameter co-learning**：兩個 role 用同一 backbone + different prompts — 這不就是 tool-use agent 的 tool selection + response generation 嗎？有什麼陷阱？
 
 ---
 
@@ -81,3 +127,4 @@ Group-relative methods（如 GRPO）假設所有 rollouts 來自同一個 effect
 - PDF 已存：raw/references/papers/ai/memory-r2-2026-yan.pdf
 - Metadata 已存：raw/references/papers/ai/memory-r2-2026-yan.md
 - 原始 HTML：arXiv HTML 版本（arXiv:2605.21768）
+- 代碼：https://github.com/ahmedehabb/Memory-R2

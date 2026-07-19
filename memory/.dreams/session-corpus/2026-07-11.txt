@@ -1,0 +1,43 @@
+[rowlet/sessions/rowlet/587c8cf3-ee9a-4245-a4be-079894de2c4e.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/6ad0cd1a-9438-4eda-9916-dd2058d6c3bf.jsonl#L15] Assistant: Good entry. Let me find the underlying raw sources and extend this.
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9263] User: Continue the OpenClaw runtime event.
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9264] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9265] User: Continue the OpenClaw runtime event.
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9266] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9267] User: Continue the OpenClaw runtime event.
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9268] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9271] Assistant: 在！🌿🦉
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9272] User: [Discord #木木鴞 channel id:1482363974119854234 +6m Sat 2026-07-11 13:42:04 UTC] Linder (linder780615): 理解 儲存到llm-wiki raw並撰寫 wiki條目 <file name="OpenClaw_MiniMax_invalid_api_key---a8d5d2ad-87aa-4b6e-bf0b-ab5e9ce32047.txt" mime="text/plain"> <<<EXTERNAL_UNTRUSTED_CONT
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9272] User: "minimax-portal/MiniMax-M2.7" 確認： Provider Base URL Model Step 2：確認 API Key 是否存在 不要直接輸出完整 Key。 只檢查： Boolean(config.env.MINIMAX_API_KEY) 以及 Boolean(provider.apiKey) 避免 Key 洩漏。 Step 3：確認 Provider 使用的是哪把 Key 判斷： provider.apiKey ↓ literal api key env reference oauth p
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9272] User: "model":"MiniMax-M2.7", "messages":[...] } 如果： HTTP 200 代表： API Key 正確 網路正常 Base URL 正確 Model 正常 MiniMax Server 正常 可以直接排除： MiniMax API 問題 Step 7：縮小問題範圍 若： OpenClaw： invalid api key 但是： Direct fetch： HTTP 200 代表： 真正問題一定在 OpenClaw Runtime。 而不是： API Key MiniMax Netwo
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9272] User: 每驗證一層，就排除一層，最終把問題範圍縮小到真正的元件，而不是憑直覺修改設定。 本次學到的 Debug 方法（可套用到所有 LLM Provider） 這次其實建立了一個很通用的 LLM Provider 除錯模型： LLM Error │ ▼ 1. Provider Configuration │ ▼ 2. Credential Source │ ▼ 3. Runtime Configuration │ ▼ 4. Direct HTTP API Test │ ▼ 5. Framework Runtime 這套流程不只適用
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9273] Assistant: 收到！儲存進 wiki 並寫條目。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9285] Assistant: ✅ 已儲存並寫入 wiki： **Raw**：`raw/references/process/2026-07-11-openaclaw-minimax-debug-workflow.md` **Wiki**：`wiki/concepts/openclow-llm-provider-debug-model.md` --- 🌿🦉 **重點摘要** 這份檔案的核心價值：建立了**通用 LLM Provider 除錯模型**（5-layer）。 當看到 `invalid api key` 多數人直覺是 API Key
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9287] User: Raw：raw/references/process/2026-07-11-openaclaw-minimax-debug-workflow.md Wiki：wiki/concepts/openclow-llm-provider-debug-model.md 這份有問題 因為還是要用 minimax-provider 用他們的coding plan消耗會減少很多
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9288] Assistant: 了解！感謝修正。MiniMax 有專門的 coding plan，用那個端點消耗會大幅減少。我來更新 wiki 條目，補充這個重要資訊。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9294] Assistant: 也更新一下 raw 檔：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9300] Assistant: ✅ 已更新。 主要是補充了 **MiniMax Coding Plan** 這個重要限制： > 直接用 MiniMax 的 coding 專屬端點/plan，消耗會比標準呼叫**減少很多**。 所以完整流程變成： ``` 1. 確認 Provider 設定 2. 確認 API Key 存在 3. 檢查是否有更優惠的 Coding Plan 可用 ← 重要！ 4. Direct HTTP Test 5. Framework Runtime 確認 ``` 感謝糾正！這個修正讓 wiki 實用很多。
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36830] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36832] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36834] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36836] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36838] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36840] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36842] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36844] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36846] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36848] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36850] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36852] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36854] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36856] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36858] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36860] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36862] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36864] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36866] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36868] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36870] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36872] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36874] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L36876] Assistant: [assistant turn failed before producing content]

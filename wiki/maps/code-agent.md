@@ -50,9 +50,19 @@ MemGPT 將 LLM context window 視為有限主記憶體，透過 working context�
 
 ContextWeaver 將 tool-use interaction trace 建成 dependency graph，避免 sliding window / semantic retrieval 丟失邏輯依賴。適合 SWE-Bench 類多步 coding agent 任務。
 
-### [[memory-r2-yan-2026]] — training memory operations
+### [[memory-r2-yan-2026]] — training memory operations with LoGo-GRPO
 
-Memory-R2 處理 long-horizon memory-augmented agents 的 credit assignment 問題，重點在訓練期間如何公平評估 memory write/update/delete 對後續結果的影響。
+**核心發現（2026-07-15 深讀）**：Memory-R2 解決的是「memory 使環境 non-stationary」導致 GRPO credit assignment 失效的問題。
+
+**LoGo-GRPO 雙分支**：
+- **Global branch**：全部 rollouts 正常 GRPO 比較，保留端到端學習
+- **Local branch**：從同一 intermediate memory state 重新 rollout，比較乾淨（不被 earlier session divergence 污染）
+
+**Chunk-wise construction**：session 再分 K 個 chunks，extractor + manager 交替運行，每個 chunk 是一個 step，長度正規化防止 bias。
+
+**Progressive curriculum**：8→16→32 sessions 逐步擴展。直接 32-session 訓練 M-Fail 爆炸到 72.1%，有 curriculum 才 6.72%。
+
+**亮點數字**：7B 模型 F1 50.60（vs Memory-R1 43.14），只訓練 2 個對話就能 zero-shot 泛化；3B F1 +36.5 points。
 
 ### [[organize-then-retrieve-2026-hsu]] — hierarchical memory navigation (HORMA)
 

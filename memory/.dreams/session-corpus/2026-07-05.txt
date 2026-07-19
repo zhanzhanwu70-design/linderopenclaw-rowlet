@@ -49,3 +49,4 @@
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8644] Assistant: 24 分鐘，「Kioxia AiSAQ：SSD 取代 DRAM」。轉換並啟動轉錄：
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8650] Assistant: 24 分鐘 Kioxia AiSAQ，背景轉錄中（PID 388），完成後我自動處理。 另外，LangGraph 課程（jGg_1h0qzaM）轉錄似乎失敗了，音頻還在但 audio.txt 不見了。讓我一併確認：
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8654] Assistant: LangGraph 課程已完成（2185 行）！之前的 session 已經處理過了。讓我確認 wiki：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8943] Assistant: LangGraph 課程已完成並存進 wiki。現在專注 Kioxia AiSAQ（PID 388），完成後我自動處理。

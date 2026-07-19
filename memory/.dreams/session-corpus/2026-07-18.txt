@@ -1,0 +1,33 @@
+[rowlet/sessions/rowlet/07c216cd-6fc6-4665-98e1-6061cf4e1017.jsonl#L21] Assistant: Good finds. There are new LangChain posts from July 8-17 that aren't captured yet. Let me grab the most relevant one for the agent architecture series.
+[rowlet/sessions/rowlet/07c216cd-6fc6-4665-98e1-6061cf4e1017.jsonl#L27] Assistant: Good content. Let me save these and update the wiki.
+[rowlet/sessions/rowlet/07c216cd-6fc6-4665-98e1-6061cf4e1017.jsonl#L32] Assistant: Now create the concept page for OpenWiki Brains:
+[rowlet/sessions/rowlet/07c216cd-6fc6-4665-98e1-6061cf4e1017.jsonl#L34] Assistant: Now update the source page to add the new July posts:
+[rowlet/sessions/rowlet/07c216cd-6fc6-4665-98e1-6061cf4e1017.jsonl#L36] Assistant: Now link the new concept page and update the log:
+[rowlet/sessions/rowlet/07c216cd-6fc6-4665-98e1-6061cf4e1017.jsonl#L41] Assistant: No `link` command available. Proceeding to log and index:
+[rowlet/sessions/rowlet/07c216cd-6fc6-4665-98e1-6061cf4e1017.jsonl#L52] Assistant: Done. Here's the summary: --- **📚 LLM Wiki Daily Curator — 2026-07-18** - **Reviewed:** `LangChain Agent Architecture Series` entry (source + concept) - **Problem found:** LangChain blog posted 11 new articles Jul 8–17 not captured in the series source page - 
+[rowlet/sessions/rowlet/07c216cd-6fc6-4665-98e1-6061cf4e1017.jsonl#L52] Assistant: titles/dates from Jul 8–17 with category tags - **Graphify link:** skipped (`npx graphifyy link` not available in this environment) - **Logged:** `wiki/log.md` entry for 2026-07-18
+[rowlet/sessions/rowlet/26c2a8bc-d147-4950-acb6-da9c511909e8.jsonl#L14] Assistant: .
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L6] Assistant: 開始每日 Agent × 軟體開發潮流研究。先查本地 LLM wiki，再搜集公開資料。
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L10] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L13] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L16] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L19] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L22] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L25] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L28] Assistant: 昨天（7/17）已有一份完整報告。今天（7/18）要找「過去 24-48 小時」的新訊號，不是重複昨日內容。並行抓多個來源：
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L33] Assistant: 抓到一個高價值的 GitHub trending：`Nutlope/hallmark`（Anti-AI-slop design skill for Claude Code/Cursor/Codex，今日 +1485 stars）。這跟 OpenClaw skill 系統直接相關，再深入挖：
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L38] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L43] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L48] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L53] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L58] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L63] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L68] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L71] Assistant: 材料夠了。寫報告並存檔。先檢查 wiki 索引結構：
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L77] Assistant: 材料齊全。寫報告並存檔：
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L79] Assistant: 存 raw snapshots 與對應 wiki 來源頁：
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L85] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L89] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L93] Assistant: </think>
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L95] Assistant: 全部到位。回覆到 Discord #木木鴞（精簡版，無 markdown table）： --- 🐦 **每日 Agent × 軟體開發情報 — 2026-07-18** 主題：containment 工程化 + cross-vendor skill + Copilot SDK 多語言 + multi-agent state 外化 + agent 經濟學方法論。 **今日 5 個重點** 1. **Anthropic《How we contain Claude》**（featured） — 把 blast radi
+[rowlet/sessions/rowlet/5eee639b-c5a9-4ce1-b840-ba19de13ed36.jsonl#L95] Assistant: **github/copilot-sdk**（+233 stars today） — Copilot CLI engine 變成 6 語言 SDK（Python/Node/Go/Rust/.NET/Java）。Agent runtime commoditization 開始。對 OpenClaw：skill-runner 與 Copilot SDK 暴露的 primitive（planning / tool invocation / file edit）同構，可做 benchmark。 4. **SearchOS (

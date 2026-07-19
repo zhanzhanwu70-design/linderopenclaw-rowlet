@@ -318,23 +318,17 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-09)
+## Promoted From Short-Term Memory (2026-07-18)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:12:12 -->
-- 訊號（5 重點）: **alibaba/page-agent** + **usestrix/strix** — GUI agent 與 security agent 新興熱點 [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-05.md:12-12]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:15:18 -->
-- 已產出: `~/workspace-rowlet/architecture-daily-report.md`（6.3 KB）; `wiki/sources/2026-07-04-better-models-worse-tools.md`（含 wiki-link to Tool-Call Guard / Agent Skills / Agent Harness）; `wiki/log.md` 加 2026-07-05 條目; Raw snapshot `raw/sources/blog/2026-07-04-better-models-worse-tools/index.html` (28.4 KB) [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-05.md:15-18]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:26:27 -->
-- 待監控: Claude Code #74066 是否被 Anthropic 官方回應（設每日 cron 較佳）; codex-plugin-cc adoption 速度（明日再查 trending） [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-05.md:26-27]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-05.md:8:11 -->
-- 訊號（5 重點）: **OpenAI Codex #30364** (GPT-5.5 reasoning-token clustering at 516/1034/1552, 390K records 統計) — HN 48789428 (149 分); **Armin Ronacher "Better Models: Worse Tools"** — Opus 4.8 / Sonnet 5 tool schema 退化 — HN 48788599 (92 分); **Claude Code #74066** — Enterprise ZDR session 洩漏回報（隱私疑慮）— HN 48785485 (273 分); **openai/codex-plugin-cc** — Claude Code 內呼叫 Codex 做 delegation，718 stars/day [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-05.md:8-11]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:11:13 -->
-- LocateAnything: NVIDIA 視覺語言模型; 核心創新：Parallel Box Decoding (PBD) — 比 Qwen3-VL 快 10 倍; 論文：arXiv:2605.27365 [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:11-13]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:16:19 -->
-- 影片處理：eNAmVWbSqJM: 標題：「AI幫他30天賺300萬美元：普通人也能學的那套」; 頻道：硅谷梅强，5 分鐘（305 秒），195 行逐字稿; 已完成 wiki 入庫：`wiki/sources/ai-d2c-brand-30days-3million.md`; 內容：D2C 普拉提防滑襪案例，五步方法論（市場選擇→AI調研→身份化品牌→專業拍攝→三秒鉤子內容） [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:16-19]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:22:24 -->
-- Heartbeat 行為修正: Linder 指出：我沒有真的執行 HEARTBEAT.md 的檢查，只是回 HEARTBEAT_OK; 已刪除 HEARTBEAT.md 中的轉錄檢查（原目的是避免每次都poll）; Linder 要求：不要在 heartbeat 做這件事 [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:22-24]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:27:27 -->
-- Whisper Cron 機制（新設計）: Linder 要求：影片處理的監控不要綁 heartbeat，改用獨立的 cron [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:27-27]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-04.md:29:32 -->
-- Whisper Cron 機制（新設計）: 只有在有影片要處理時才啟動; 每 5 分鐘檢查一次; 轉錄結束後停止 cron; 已更新 `/home/node/.openclaw/skills/video-processing/SKILL.md` [score=0.835 recalls=0 avg=0.620 source=memory/2026-07-04.md:29-32]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:10:13 -->
+- Morning Intelligence (晨間情報): Claude Code 發送 33k tokens 才讀 prompt；OpenCode 只送 7k（HN 426 points）; OpenAI Codex 獨立 App 確認繼續營運; OpenAI 權力集中於 Greg Brockman（IPO 前信號）; Apple M7 Ultra 開發中：最高支援 1.5TB RAM [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:10-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:14:14 -->
+- Morning Intelligence (晨間情報): Chromium 148 新指紋向量：Math.tanh 可追蹤 OS [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:14-14]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:17:18 -->
+- Video Processing: `neYv9mWy2v0` (2026-07-13): "Harness Engineering是什麼？" — transcription completed; `2026-07-12-*` videos: all completed (S_Z8Y0vMSzo, adOkTjIIDnk, iWcskTGXM-o) [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:17-18]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:21:21 -->
+- Pending Follow-ups: 晨間情報 delivery confirmed via sessions_send to roaringmoon-morning-pipeline [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:21-21]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:4:6 -->
+- System Status: Uptime: 8+ days, load normal (0.01-0.13); Whisper CLI high CPU (400%) from Jul12 background jobs, resolved by Jul13 evening; All transcriptions completed [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:4-6]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:9:9 -->
+- Morning Intelligence (晨間情報): Delivered 5 news items to roaringmoon via sessions_send: [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:9-9]

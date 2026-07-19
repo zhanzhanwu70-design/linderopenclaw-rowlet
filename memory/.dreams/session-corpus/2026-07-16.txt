@@ -1,0 +1,21 @@
+[rowlet/sessions/rowlet/46c58243-39c2-4312-b3db-0753d35f9ddd.jsonl#L36] Assistant: Good. The paper is well-documented. Now I'll create a dedicated concept page for **Context Rot** — the paper's key named phenomenon — and update the Less Context Better Agents page with fuller details from the paper.
+[rowlet/sessions/rowlet/46c58243-39c2-4312-b3db-0753d35f9ddd.jsonl#L38] Assistant: Now update the source page with the DOI and fuller paper metadata:
+[rowlet/sessions/rowlet/46c58243-39c2-4312-b3db-0753d35f9ddd.jsonl#L40] Assistant: Now update the concept page to add the Context Rot reference and a bit more detail:
+[rowlet/sessions/rowlet/46c58243-39c2-4312-b3db-0753d35f9ddd.jsonl#L42] Assistant: Now append to the log:
+[rowlet/sessions/rowlet/46c58243-39c2-4312-b3db-0753d35f9ddd.jsonl#L48] Assistant: Done. Here's the summary: **每日 LLM Wiki 巡讀 (2026-07-16)** - **Reviewed**: `wiki/concepts/Less Context Better Agents.md` (arXiv:2606.10209, Microsoft Research) - **New page**: `wiki/concepts/Context Rot.md` — 命名現象「上下文腐爛」的概念頁。Context Rot 是 effective recall 隨 cont
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9627] Assistant: Done. Here's the summary: **每日 LLM Wiki 巡讀 (2026-07-16)** - **Reviewed**: `wiki/concepts/Less Context Better Agents.md` (arXiv:2606.10209, Microsoft Research) - **New page**: `wiki/concepts/Context Rot.md` — 命名現象「上下文腐爛」的概念頁。Context Rot 是 effective recall 隨 co
+[rowlet/sessions/rowlet/e3fe2f13-a528-4bc2-82f8-9c2cbfe2cc69.jsonl#L8] Assistant: </think>
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L12] Assistant: 找到幾篇相關論文。讓我深入看這篇 **ACE: Pluggable Adaptive Context Elasticizer across Agents** — 看起来很符合上下文處理的主題。
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L15] Assistant: 那些 ID 不對。讓我直接搜尋 ACE 這篇論文：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L17] Assistant: 找到了！**arXiv:2606.31564** — ACE: Pluggable Adaptive Context Elasticizer across Agents。讓我下載論文 PDF 並取得摘要：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L20] Assistant: PDF 下載成功（597KB）。讓我也抓 HTML 版本方便讀取全文，同時建立 wiki 條目：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L23] Assistant: 很好！論文的核心內容讀到了。現在建立 wiki source 條目：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L26] Assistant: 現在更新 code-agent map，加入 ACE 論文：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L28] Assistant: 讓我讀取完整檔案：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L30] Assistant: 讓我找精確位置編輯：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L32] Assistant: 使用 exec 來做精確替換：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L34] Assistant: 讓我讀取確切的行號範圍：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L36] Assistant: 檔案有複雜的 Unicode 字符。讓我用 Python 來處理插入：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L38] Assistant: 完成！讓我驗證一下所有檔案：
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L40] Assistant: --- ## 📄 每日論文討論回報 ### 讀了哪篇 **ACE: Pluggable Adaptive Context Elasticizer across Agents** - **作者**: Ning Liao et al. (Meituan + Shanghai Jiao Tong University) - **arXiv**: [2606.31564](https://arxiv.org/abs/2606.31564) - **時間**: 2026-06-30 ### 存到哪 - PDF: `raw/r
+[rowlet/sessions/rowlet/c7760ae3-55ca-43b4-a682-b70facb9c79a.jsonl#L40] Assistant: **Context Orchestration Layer**: 每個決策步驟動態決定每個歷史步驟是 `Raw | Abstract | Drop` **3. Elasticizer ℰ 的設計** 用 LLM 實作 elasticizer，輸入是 task description + 所有步驟的 abstractions，輸出是每個歷史步驟在當前步驟應該怎麼呈現的調度決策。重點是最後一步總是保持完整 raw。 **4. 可逆性（Reversibility）的實作** 被標記為 `Drop` 的內容只是「此刻不在 c
