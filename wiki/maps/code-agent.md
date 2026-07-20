@@ -68,20 +68,29 @@ ContextWeaver 將 tool-use interaction trace 建成 dependency graph，避免 sl
 
 HORMA 將經驗組織成檔案系統式階層結構，summarized entities 連結到 raw trajectories。區分「資訊遺漏導致失敗」vs「誤導/過載導致失敗」兩種 failure modes，用 RL-trained navigation module 選擇最小但足夠的 context。在長任務中僅需 22.17% baseline token 用量。
 
+### [[ace-liao-2026]] — elastic reversible context orchestration (2026-07-19)
+
+**核心貢獻**：提出 irreversibility 與 inflexibility 問題的根本解法 — 雙層架構（Message Maintenance Layer + Context Orchestration Layer）。Message Maintenance Layer 同時存 raw + abstract，永不覆寫；Context Orchestration Layer 每步動態重建，決定每條歷史訊息是 raw / abstract / drop。
+
+**與其他方法的關鍵差異**：完全 training-free，以 external wrapper 套用到 4 種框架（ReAct、DeepAgent、WebThinker、MiroFlow），全部有 consistent 改善。
+
+**對我們的啟發**：Lossless + reversible 的設計正是我們目前架構缺少的 — 目前 MEMORY.md / daily memory 的更新是 irreversible append/truncate，未來可以借鑒 ACE 的 elastic type 分配思路。
+
 ### [[lost-in-the-middle-2023-liu]] — empirical foundation: U-shaped long-context curve
 
 Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1.3 做 controlled experiment，系統性展示 LLM 對 long context 的利用是 **U-shaped**：relevant information 放在 context 開頭或結尾表現最好，放在中段會掉到接近 random baseline。**Long-context fine-tuned model (LongChat-13B) 與 closed SOTA (GPT-3.5, Claude) 都不能免疫**。這篇是後續所有 selective retrieval / virtual context / memory paging 路線的經驗地基 — 它直接回答「為什麼我們不該把全部 history 塞進 context」。
 
 ## Synthesis
 
-目前六篇形成一個互補堆疊：
+目前七篇形成一個互補堆疊：
 
 1. **Lost in the Middle**：經驗基礎 — 證明「context 越長 ≠ 表現越好」，U-shaped curve，middle 會被忽略。
-2. **Context Engineering Survey**：統一 taxonomy，回答「整個領域怎麼分類」的問題，是其餘四篇的上層框架。
+2. **Context Engineering Survey**：統一 taxonomy，回答「整個領域怎麼分類」的問題，是其餘六篇的上層框架。
 3. **MemGPT**：runtime memory tiers + virtual context paging，直接繞過 stuffing。
 4. **ContextWeaver**：dependency-aware selection，讓取回的 context 保留因果/邏輯結構。
 5. **Memory-R2**：training-time credit assignment，讓 agent 學會更好的 memory operations。
 6. **HORMA**：hierarchical organize-then-retrieve，用 RL navigation 選擇最小 sufficient context。
+7. **ACE**：elastic reversible context orchestration，training-free wrapper，動態每步重建 context，最大化資訊密度。
 
 對 OpenClaw / Rowlet 類 agent，可映射為：
 
@@ -95,7 +104,7 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 
 ## 新論文補充：意圖鏈視角
 
-現有六篇 + OnePred 形成七篇互補堆疊（新增 OnePred）：
+現有七篇 + OnePred + ACE 形成九篇互補堆疊：
 
 1. **Lost in the Middle**：U-shaped curve 經驗基礎
 2. **Context Engineering Survey**：統一 taxonomy
@@ -103,7 +112,10 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 4. **ContextWeaver**：dependency-aware selection
 5. **Memory-R2**：training-time credit assignment
 6. **HORMA**：hierarchical organize-then-retrieve
-7. **OnePred**：recursive intent memory + two-stage RL curriculum（第一個將「預測什麼」與「如何壓縮」分離訓練的方法）
+7. **OnePred**：recursive intent memory + two-stage RL curriculum
+8. **ACE**：elastic reversible context orchestration（第一個 training-free、wrapper-style、每步動態重建的方案）
+
+其中 ACE 與其他方法最大差異：**不需訓練、不改框架**。它不是另一種 compression 策略，而是把 irreversibility 問題的根本解法（雙層 lossless storage + elastic per-step orchestration）帶入所有框架。
 
 其中 OnePred 與 HORMA 都解決同一底層問題（bounded context），但切入角度互補：HORMA 用 hierarchical organization + RL navigation；OnePred 用同一 LLM 遞迴更新意圖鏈 + 兩階段 curriculum 解決 cold-start compression problem。
 
@@ -113,3 +125,5 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 
 1. **Mid-prompt 衰減**：當 heartbeat 把 `memory/YYYY-MM-DD.md` + 多個 tool 結果 + wiki dumps 串進對話中段，重要的 earlier tool result 可能掉進 U-shape 谷底。
 2. **Long-session 退化**：多 session 串接的 conversation，舊 session 的關鍵資訊一旦被新 session 推到中段，就會被模型忽略。需倚賴 [[memgpt-packer-2024]] 的 recall storage 或 [[organize-then-retrieve-2026-hsu]] 的 hierarchical summary 來主動 page-in。
+
+3. **缺乏 reversible context management**：目前的 daily memory 是 append-only，wiki 是 static retrieval。[[ace-liao-2026]] 的啟發是：即使是我們的分層記憶系統，也可以借鑒「每步動態重建 context」的思路 — 不是用固定策略管理記憶，而是根據當前任務需求彈性選擇呈現形式（raw / abstract / drop）。這對 OpenClaw 的 heartbeat 整合特別有意義。

@@ -1,44 +1,161 @@
 #!/bin/bash
-# Transcription Monitor - checks for completed whisper transcriptions and processes them
-# Run from: /home/node/.openclaw/workspace/llm-wiki/raw/video
+# Transcription Monitor - finishes local video transcription ingestion.
 #
-# Features:
-# 1. Detect completed transcription (PID gone, status=in_progress)
-# 2. Rename audio.txt → transcript.txt
-# 3. Update metadata.json status
-# 4. Summarize transcript via LLM
-# 5. Write summary to wiki source
-# 6. Announce to Linder in Discord
+# Pipeline:
+# 1. Detect finished whisper jobs, including in_progress rows with no PID.
+# 2. Normalize raw transcript output.
+# 3. Summarize transcript once and keep summary.md beside the raw files.
+# 4. Create or update wiki/sources.
+# 5. Append wiki log and Rowlet daily memory.
+# 6. Mark the item completed only after durable writes succeed.
 
 WIKI_DIR="/home/node/.openclaw/workspace/llm-wiki"
 VIDEO_DIR="$WIKI_DIR/raw/video"
 OPENCLAW_DIR="/home/node/.openclaw"
-DISCORD_CHANNEL="1482363974119854234"
+ROWLET_MEMORY_DIR="/home/node/.openclaw/workspace-rowlet/memory"
+OPENCLAW_BIN="$OPENCLAW_DIR/node_modules/.bin/openclaw"
 
 announce() {
     echo "[$(date)] $1"
 }
 
-# Read secret for LLM API
+json_get() {
+    local file="$1"
+    local key="$2"
+    python3 - "$file" "$key" <<'PY' 2>/dev/null
+import json, sys
+path, key = sys.argv[1], sys.argv[2]
+with open(path, "r", encoding="utf-8") as f:
+    data = json.load(f)
+value = data.get(key, "")
+print("" if value is None else value)
+PY
+}
+
+json_update() {
+    local file="$1"
+    local status="$2"
+    local error="$3"
+    local wiki_file="${4:-}"
+    local summary_file="${5:-}"
+    python3 - "$file" "$status" "$error" "$wiki_file" "$summary_file" <<'PY'
+import json, sys
+from datetime import datetime, timezone
+
+path, status, error, wiki_file, summary_file = sys.argv[1:6]
+with open(path, "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+data["ingestion_status"] = status
+data["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+if status == "completed":
+    data["transcription_status"] = "completed"
+    data["pid"] = None
+    data.pop("last_error", None)
+elif error:
+    data["last_error"] = error
+    data["retry_count"] = int(data.get("retry_count") or 0) + 1
+
+if wiki_file:
+    data["wiki_file"] = wiki_file
+if summary_file:
+    data["summary_file"] = summary_file
+
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
+    f.write("\n")
+PY
+}
+
+fail_item() {
+    local metafile="$1"
+    local status="$2"
+    local message="$3"
+    announce "  -> $status: $message"
+    json_update "$metafile" "$status" "$message"
+}
+
 get_api_key() {
     cat "$OPENCLAW_DIR/secrets/minimax-api-key.txt" 2>/dev/null
 }
 
-# Summarize transcript using LLM
+slugify() {
+    python3 - "$1" "$2" <<'PY'
+import re, sys
+title, video_id = sys.argv[1], sys.argv[2]
+base = title.strip().lower()
+base = re.sub(r"[^0-9a-zA-Z\u4e00-\u9fff]+", "-", base).strip("-")
+base = base[:80].strip("-") or "youtube-video"
+print(f"{base}-{video_id}.md")
+PY
+}
+
+find_wiki_file() {
+    local video_id="$1"
+    local sources="$WIKI_DIR/wiki/sources"
+    [ -d "$sources" ] || return 1
+    find "$sources" -maxdepth 1 -type f -iname "*${video_id}*.md" 2>/dev/null | head -1
+}
+
+create_wiki_source() {
+    local metafile="$1"
+    local transcript_file="$2"
+    local video_id="$3"
+    local title="$4"
+    local wiki_file="$5"
+
+    local channel upload_date duration raw_dir rel_transcript
+    channel=$(json_get "$metafile" "channel")
+    [ -n "$channel" ] || channel=$(json_get "$metafile" "uploader")
+    upload_date=$(json_get "$metafile" "upload_date")
+    duration=$(json_get "$metafile" "duration")
+    raw_dir=$(basename "$(dirname "$metafile")")
+    rel_transcript="raw/video/$raw_dir/$(basename "$transcript_file")"
+
+    {
+        echo "---"
+        echo "id: youtube-$video_id"
+        echo "title: \"${title:-YouTube video}\""
+        echo "source: youtube"
+        echo "videoId: $video_id"
+        [ -n "$channel" ] && echo "channel: \"$channel\""
+        [ -n "$upload_date" ] && echo "upload_date: $upload_date"
+        [ -n "$duration" ] && echo "duration: $duration"
+        echo "transcription_status: transcribed"
+        echo "tags:"
+        echo "  - youtube"
+        echo "  - video-ingest"
+        echo "---"
+        echo ""
+        echo "# ${title:-YouTube video}"
+        echo ""
+        echo "## Status"
+        echo ""
+        echo "- [x] Raw video archived"
+        echo "- [x] Local transcript available: \`$rel_transcript\`"
+        echo "- [ ] Summary reviewed"
+        echo ""
+        echo "## Raw Files"
+        echo ""
+        echo "- Transcript: \`$rel_transcript\`"
+        echo "- Metadata: \`raw/video/$raw_dir/metadata.json\`"
+    } > "$wiki_file"
+}
+
 summarize_transcript() {
     local transcript_file="$1"
     local title="$2"
     local video_id="$3"
-    
-    # Read transcript (first 3000 lines to stay within budget)
-    local transcript=$(head -n 3000 "$transcript_file" 2>/dev/null)
+    local transcript
+    transcript=$(head -n 3000 "$transcript_file" 2>/dev/null)
     if [ -z "$transcript" ]; then
-        echo "ERROR: Could not read transcript file"
+        echo "ERROR: could not read transcript file"
         return 1
     fi
-    
-    # Build prompt
-    local prompt="你是一個研究萃取專家。請濃縮以下 YouTube 影片逐字稿，输出一個結構化的摘要。
+
+    local prompt
+    prompt="你是一個研究萃取專家。請濃縮以下 YouTube 影片逐字稿，輸出一個結構化摘要，全部使用繁體中文。
 
 ## 影片標題
 $title
@@ -47,7 +164,6 @@ $title
 $transcript
 
 ## 輸出格式
-請用以下格式輸出（全部用繁體中文）：
 
 ### 影片基本資訊
 - 頻道/講者：
@@ -55,148 +171,252 @@ $transcript
 - 日期：
 
 ### 一句話總結
-（用一句話描述影片核心內容，不超過50字）
+用一句話描述影片核心內容，不超過50字。
 
 ### 章節重點
-（將內容分成3-5個章節，每個章節用2-3句話描述重點）
+將內容分成3-5個章節，每個章節用2-3句話描述重點。
 
 ### 關鍵術語
-（列出5-10個影片中出現的重要術語或概念）
+列出5-10個影片中出現的重要術語或概念。
 
 ### 主要內容
-（用500-800字詳細描述影片的完整內容，涵蓋所有重要觀點和細節）
+用500-800字詳細描述影片的完整內容，涵蓋重要觀點和細節。
 
 ### 對 Rowlet 的啟示
-（這部影片的內容與 Rowlet/LLM Wiki/OpenClaw/AI Agent 相關的話，寫出2-3點具體的啟示；如果無關則寫「與 AI Agent 研究無直接關聯」）
+若內容與 Rowlet、LLM Wiki、OpenClaw 或 AI Agent 相關，寫出2-3點具體啟示；若無關則寫「與 AI Agent 研究無直接關聯」。
 
 ### 原始檔案
 - 影片：$video_id
-- 逐字稿：raw/video/$(basename $(dirname "$transcript_file"))/transcript.txt"
-    
-    # Call LLM API (MiniMax, OpenAI-compatible)
-    local api_key=$(get_api_key)
-    local response=$(curl -s -X POST "https://api.minimax.io/v1/chat/completions" \
+- 逐字稿：raw/video/$(basename "$(dirname "$transcript_file")")/$(basename "$transcript_file")"
+
+    local api_key response summary
+    api_key=$(get_api_key)
+    if [ -z "$api_key" ]; then
+        echo "ERROR: MiniMax API key missing"
+        return 1
+    fi
+
+    local payload
+    payload=$(PROMPT="$prompt" python3 - <<'PY'
+import json
+import os
+
+print(json.dumps({
+    "model": "MiniMax-M2.7",
+    "messages": [
+        {
+            "role": "system",
+            "content": "你是一個研究萃取專家，擅長從原始文字中提取關鍵資訊並結構化整理。",
+        },
+        {
+            "role": "user",
+            "content": os.environ.get("PROMPT", ""),
+        },
+    ],
+    "max_tokens": 2000,
+    "temperature": 0.3,
+}, ensure_ascii=False))
+PY
+)
+
+    response=$(curl -s -X POST "https://api.minimax.io/v1/chat/completions" \
         -H "Authorization: Bearer $api_key" \
         -H "Content-Type: application/json" \
-        -d "{
-            \"model\": \"MiniMax-M2.7\",
-            \"messages\": [
-                {\"role\": \"system\", \"content\": \"你是一個研究萃取專家，擅長從原始文字中提取關鍵資訊並結構化整理。\"},
-                {\"role\": \"user\", \"content\": $(echo "$prompt" | jq -Rs .)}
-            ],
-            \"max_tokens\": 2000,
-            \"temperature\": 0.3
-        }" 2>/dev/null)
-    
-    # Extract content from response
-    local summary=$(echo "$response" | python3 -c "
+        -d "$payload" 2>/dev/null)
+
+    summary=$(echo "$response" | python3 -c "
 import json, sys
 try:
-    d = json.load(sys.stdin)
-    print(d.get('choices', [{}])[0].get('message', {}).get('content', 'ERROR: No content'))
-except Exception as e:
-    print(f'ERROR: {e}')
+    data = json.load(sys.stdin)
+    print(data.get('choices', [{}])[0].get('message', {}).get('content', 'ERROR: No content'))
+except Exception as exc:
+    print(f'ERROR: {exc}')
 " 2>/dev/null)
-    
+
     echo "$summary"
 }
 
-# Announce to Discord
+write_wiki_summary() {
+    local wiki_file="$1"
+    local summary_file="$2"
+
+    if grep -q "## 影片濃縮摘要" "$wiki_file" 2>/dev/null; then
+        return 0
+    fi
+
+    local tmp
+    tmp="${wiki_file}.tmp"
+    {
+        awk 'BEGIN{p=0} /^---$/ {p++; print; next} p<2 {print; next} p==2 && !done {print ""; print "## 影片濃縮摘要"; print ""; while ((getline line < sf) > 0) print line; close(sf); print ""; print "---"; print ""; done=1} {print}' sf="$summary_file" "$wiki_file"
+    } > "$tmp"
+    mv "$tmp" "$wiki_file"
+}
+
+append_log_once() {
+    local video_id="$1"
+    local title="$2"
+    local wiki_file="$3"
+    local log_file="$WIKI_DIR/wiki/log.md"
+    local memory_file="$ROWLET_MEMORY_DIR/$(date -u +%F).md"
+    local rel_wiki="${wiki_file#$WIKI_DIR/}"
+
+    if [ -f "$log_file" ] && ! grep -q "video-ingest:$video_id" "$log_file"; then
+        {
+            echo ""
+            echo "- $(date -u +%F) video-ingest:$video_id completed: [$title]($rel_wiki)"
+        } >> "$log_file"
+    fi
+
+    mkdir -p "$ROWLET_MEMORY_DIR"
+    if [ ! -f "$memory_file" ] || ! grep -q "video-ingest:$video_id" "$memory_file"; then
+        {
+            echo ""
+            echo "- video-ingest:$video_id completed and written to llm-wiki: $rel_wiki"
+        } >> "$memory_file"
+    fi
+}
+
 announce_discord() {
     local video_id="$1"
     local title="$2"
     local wiki_file="$3"
-    
-    local msg="🌿🦉 **轉錄完成！**
+    local msg
+    msg="Rowlet 影片入庫完成：
 
-**$title**
+$title
 
-已自動濃縮並寫入 wiki：
-$wiki_file
+wiki: $wiki_file
+video: $video_id"
 
-要了解內容請說「跟我詳細講講」。"
-    
-    # Use sessions_send to announce (fires to current session which routes to Discord)
-    "$OPENCLAW_DIR/node_modules/.bin/openclaw" sessions send rowlet "$msg" 2>/dev/null || \
-    echo "[$(date)] Discord announcement skipped (sessions_send failed)"
+    "$OPENCLAW_BIN" sessions send rowlet "$msg" 2>/dev/null || \
+        announce "  -> Discord/session announcement skipped"
 }
 
-# Find all metadata.json files with in_progress status
-find "$VIDEO_DIR" -name "metadata.json" -type f | while read -r metafile; do
+audit() {
+    python3 - "$VIDEO_DIR" "$WIKI_DIR/wiki/sources" <<'PY'
+import json, pathlib, collections, sys
+raw = pathlib.Path(sys.argv[1])
+sources = pathlib.Path(sys.argv[2])
+source_text = []
+if sources.exists():
+    for p in sources.glob("*.md"):
+        try:
+            source_text.append((p, p.read_text(encoding="utf-8", errors="ignore")))
+        except Exception:
+            pass
+
+counts = collections.Counter()
+problems = []
+for meta in raw.rglob("metadata.json") if raw.exists() else []:
+    try:
+        data = json.loads(meta.read_text(encoding="utf-8"))
+    except Exception as exc:
+        counts["parse_error"] += 1
+        problems.append(f"parse_error\t{meta}\t{exc}")
+        continue
+    video_id = data.get("videoId") or data.get("id") or meta.parent.name.rsplit("-", 1)[-1]
+    status = data.get("ingestion_status") or data.get("transcription_status") or "missing"
+    counts[status] += 1
+    matches = [(p, t) for p, t in source_text if video_id and (video_id.lower() in p.name.lower() or video_id in t)]
+    has_summary = any("影片濃縮摘要" in text for _, text in matches)
+    if status != "completed" or not matches or not has_summary:
+        problems.append(f"{status}\t{video_id}\t{meta.parent.name}\twiki={bool(matches)}\tsummary={has_summary}")
+
+print("counts:", dict(counts))
+print("problems:")
+for item in problems[:80]:
+    print(item)
+PY
+}
+
+process_item() {
+    local metafile="$1"
+    local dir status pid video_id title transcript_file summary_file wiki_file wiki_name lines summary
+
     dir=$(dirname "$metafile")
-    
-    # Check if transcription is in progress
-    status=$(python3 -c "import json; d=json.load(open('$metafile')); print(d.get('transcription_status','unknown'))" 2>/dev/null)
-    pid=$(python3 -c "import json; d=json.load(open('$metafile')); print(d.get('pid',''))" 2>/dev/null)
-    video_id=$(python3 -c "import json; d=json.load(open('$metafile')); print(d.get('videoId',''))" 2>/dev/null)
-    title=$(python3 -c "import json; d=json.load(open('$metafile')); print(d.get('title',''))" 2>/dev/null)
-    
-    if [ "$status" = "in_progress" ]; then
-        # Check if PID is still running
-        if [ -n "$pid" ] && ! ps -p "$pid" > /dev/null 2>&1; then
-            announce "🎬 Transcription completed: $video_id ($title)"
-            
-            # Check for audio.txt (whisper output) and rename to transcript.txt
-            if [ -f "$dir/audio.txt" ]; then
-                mv "$dir/audio.txt" "$dir/transcript.txt"
-                announce "  → Renamed audio.txt → transcript.txt"
-            fi
-            
-            # Update metadata.json
-            python3 -c "
-import json
-with open('$metafile', 'r') as f:
-    d = json.load(f)
-d['transcription_status'] = 'completed'
-d['pid'] = None
-with open('$metafile', 'w') as f:
-    json.dump(d, f, ensure_ascii=False, indent=2)
-"
-            announce "  → Updated metadata.json status: completed"
-            
-            # Find wiki source file
-            slug=$(echo "$video_id" | tr '[:upper:]' '[:lower:]')
-            wiki_file=$(find "$WIKI_DIR/wiki/sources" -name "*$slug*.md" 2>/dev/null | head -1)
-            
-            # Step 4: Summarize transcript
-            if [ -f "$dir/transcript.txt" ]; then
-                lines=$(wc -l < "$dir/transcript.txt")
-                announce "  → Summarizing transcript ($lines lines)..."
-                
-                summary=$(summarize_transcript "$dir/transcript.txt" "$title" "$video_id")
-                
-                if echo "$summary" | grep -q "ERROR"; then
-                    announce "  → LLM summarization failed: $summary"
-                else
-                    # Append summary to wiki source
-                    if [ -n "$wiki_file" ] && [ -f "$wiki_file" ]; then
-                        # Extract frontmatter (first ---) and rest of file
-                        frontmatter=$(awk '/^---/ && ++f <= 1; f==1 && /^---/ {print; exit}' "$wiki_file")
-                        body=$(awk 'BEGIN{p=0} /^---/ {p++; if(p>1) print} p>=1 && !/^---/' "$wiki_file")
-                        
-                        # Build new content with summary appended
-                        {
-                            echo "$frontmatter"
-                            echo ""
-                            echo "## 📝 影片濃縮摘要"
-                            echo ""
-                            echo "$summary"
-                            echo ""
-                            echo "---"
-                            echo "$body"
-                        } > "${wiki_file}.tmp"
-                        
-                        mv "${wiki_file}.tmp" "$wiki_file"
-                        announce "  → Summary written to wiki: $wiki_file"
-                        
-                        # Step 5: Announce to Linder
-                        announce "  → Announcing to Linder..."
-                        announce_discord "$video_id" "$title" "$wiki_file"
-                    else
-                        announce "  → No wiki source file found, skipping summary"
-                    fi
-                fi
-            fi
-        fi
+    status=$(json_get "$metafile" "ingestion_status")
+    [ -n "$status" ] || status=$(json_get "$metafile" "transcription_status")
+    [ -n "$status" ] || status="unknown"
+
+    case "$status" in
+        completed) return 0 ;;
+        in_progress|transcribed|summary_failed|summarized|wiki_failed|logged|unknown) ;;
+        *) return 0 ;;
+    esac
+
+    pid=$(json_get "$metafile" "pid")
+    video_id=$(json_get "$metafile" "videoId")
+    [ -n "$video_id" ] || video_id=$(json_get "$metafile" "id")
+    title=$(json_get "$metafile" "title")
+    [ -n "$video_id" ] || video_id=$(basename "$dir" | awk -F- '{print $NF}')
+    [ -n "$title" ] || title="$video_id"
+
+    if [ "$status" = "in_progress" ] && [ -n "$pid" ] && ps -p "$pid" >/dev/null 2>&1; then
+        return 0
     fi
+
+    announce "Processing video ingest: $video_id ($title)"
+
+    transcript_file="$dir/transcript.txt"
+    if [ ! -s "$transcript_file" ] && [ -s "$dir/audio.txt" ]; then
+        mv "$dir/audio.txt" "$transcript_file"
+        announce "  -> normalized audio.txt to transcript.txt"
+    fi
+
+    if [ ! -s "$transcript_file" ]; then
+        fail_item "$metafile" "transcription_missing_output" "no transcript.txt or audio.txt found"
+        return 0
+    fi
+
+    json_update "$metafile" "transcribed" "" "" "$dir/summary.md"
+
+    summary_file="$dir/summary.md"
+    if [ ! -s "$summary_file" ]; then
+        lines=$(wc -l < "$transcript_file")
+        announce "  -> summarizing transcript ($lines lines)"
+        summary=$(summarize_transcript "$transcript_file" "$title" "$video_id")
+        if echo "$summary" | grep -q "^ERROR:"; then
+            fail_item "$metafile" "summary_failed" "$summary"
+            return 0
+        fi
+        printf '%s\n' "$summary" > "$summary_file"
+    fi
+
+    json_update "$metafile" "summarized" "" "" "$summary_file"
+
+    wiki_file=$(find_wiki_file "$video_id")
+    if [ -z "$wiki_file" ]; then
+        wiki_name=$(slugify "$title" "$video_id")
+        wiki_file="$WIKI_DIR/wiki/sources/$wiki_name"
+        create_wiki_source "$metafile" "$transcript_file" "$video_id" "$title" "$wiki_file" || {
+            fail_item "$metafile" "wiki_failed" "could not create wiki source"
+            return 0
+        }
+        announce "  -> created wiki source: $wiki_file"
+    fi
+
+    write_wiki_summary "$wiki_file" "$summary_file" || {
+        fail_item "$metafile" "wiki_failed" "could not write summary to wiki source"
+        return 0
+    }
+
+    json_update "$metafile" "wiki_written" "" "$wiki_file" "$summary_file"
+
+    append_log_once "$video_id" "$title" "$wiki_file" || {
+        fail_item "$metafile" "log_failed" "could not append wiki log or memory"
+        return 0
+    }
+
+    json_update "$metafile" "completed" "" "$wiki_file" "$summary_file"
+    announce "  -> completed: $wiki_file"
+    announce_discord "$video_id" "$title" "$wiki_file"
+}
+
+if [ "${1:-}" = "--audit" ]; then
+    audit
+    exit 0
+fi
+
+find "$VIDEO_DIR" -name "metadata.json" -type f | while read -r metafile; do
+    process_item "$metafile"
 done

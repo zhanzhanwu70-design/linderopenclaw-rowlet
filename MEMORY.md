@@ -318,17 +318,23 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-18)
+## Promoted From Short-Term Memory (2026-07-20)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:10:13 -->
-- Morning Intelligence (晨間情報): Claude Code 發送 33k tokens 才讀 prompt；OpenCode 只送 7k（HN 426 points）; OpenAI Codex 獨立 App 確認繼續營運; OpenAI 權力集中於 Greg Brockman（IPO 前信號）; Apple M7 Ultra 開發中：最高支援 1.5TB RAM [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:10-13]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:14:14 -->
-- Morning Intelligence (晨間情報): Chromium 148 新指紋向量：Math.tanh 可追蹤 OS [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:14-14]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:17:18 -->
-- Video Processing: `neYv9mWy2v0` (2026-07-13): "Harness Engineering是什麼？" — transcription completed; `2026-07-12-*` videos: all completed (S_Z8Y0vMSzo, adOkTjIIDnk, iWcskTGXM-o) [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:17-18]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:21:21 -->
-- Pending Follow-ups: 晨間情報 delivery confirmed via sessions_send to roaringmoon-morning-pipeline [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:21-21]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:4:6 -->
-- System Status: Uptime: 8+ days, load normal (0.01-0.13); Whisper CLI high CPU (400%) from Jul12 background jobs, resolved by Jul13 evening; All transcriptions completed [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:4-6]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-13.md:9:9 -->
-- Morning Intelligence (晨間情報): Delivered 5 news items to roaringmoon via sessions_send: [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-13.md:9-9]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:10:13 -->
+- 新增 Wiki 條目: `wiki/concepts/isaac-ros-nvidia.md` — Isaac ROS 完整解析（6845 bytes）; 與 ROS 2 關係; Isaac for Mobility vs Manipulation; NITROS 加速機制 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:10-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:14:17 -->
+- 新增 Wiki 條目: GEM 套件地圖（感知/推理/導航/機械臂/仿真/工具）; cuVSLAM 與 nvblox 整合; 最新 4.5.0 版本動態; 與 ELLE WS 的關聯 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:14-17]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:20:21 -->
+- 現有 Isaac ROS Wiki 條目: `wiki/concepts/vslam-isaac-cuvslam.md` — cuVSLAM 深度技術解析; ELLE WS nodes 下 5 個 Isaac ROS 節點頁面 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:20-21]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:24:25 -->
+- 22:38 UTC: Video processing: 2026-07-14-7pSZx9-VT3k "Token消耗减少120倍？Codebase-Memory-MCP的性能突破原理解析" — transcription completed; 2026-07-14-Uc9zcFGkN8I also completed (title unknown) [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:24-25]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:5:7 -->
+- 研究內容: 研究 NVIDIA Isaac ROS 完整架構; 涵蓋：NITROS、兩大 Workflow（Mobility/Manipulation）、GEM 套件地圖; 最新版本 4.5.0（July 6, 2026）重大更新 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:5-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-16.md:10:11 -->
+- Standing Rule Check: All video transcription statuses: completed; No pending in_progress entries [score=0.818 recalls=0 avg=0.620 source=memory/2026-07-16.md:10-11]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-16.md:4:7 -->
+- System Status: Uptime: 10 days 9h; Load: 0.32 (normal); No new video files since 2026-07-14; CEO silent 17+ days [score=0.818 recalls=0 avg=0.620 source=memory/2026-07-16.md:4-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:31:33 -->
+- 23:36 UTC - 每日論文討論：Memory-R2: **論文**：Memory-R2: Fair Credit Assignment for Long-Horizon Memory-Augmented LLM Agents **作者**：Yan et al., LMU Munich / Siemens, arXiv:2605.21768, May 2026 **PDF**：`raw/references/papers/ai/memory-r2-2026-yan.pdf` [score=0.807 recalls=0 avg=0.620 source=memory/2026-07-15.md:31-33]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:4:7 -->
+- 05:39 UTC - NVIDIA-ISAAC-ROS GitHub Repos: Linder 分享 GitHub 組織頁面; 已存進 wiki：`wiki/sources/nvidia-isaac-ros-github-repos.md`; 共 27 個倉庫，含 stars/forks/description; Top: isaac_ros_visual_slam (1.4k⭐), pose_estimation (474⭐), object_detection (191⭐) [score=0.807 recalls=0 avg=0.620 source=memory/2026-07-15.md:4-7]
