@@ -318,23 +318,15 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-20)
+## Promoted From Short-Term Memory (2026-07-22)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:10:13 -->
-- 新增 Wiki 條目: `wiki/concepts/isaac-ros-nvidia.md` — Isaac ROS 完整解析（6845 bytes）; 與 ROS 2 關係; Isaac for Mobility vs Manipulation; NITROS 加速機制 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:10-13]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:14:17 -->
-- 新增 Wiki 條目: GEM 套件地圖（感知/推理/導航/機械臂/仿真/工具）; cuVSLAM 與 nvblox 整合; 最新 4.5.0 版本動態; 與 ELLE WS 的關聯 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:14-17]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:20:21 -->
-- 現有 Isaac ROS Wiki 條目: `wiki/concepts/vslam-isaac-cuvslam.md` — cuVSLAM 深度技術解析; ELLE WS nodes 下 5 個 Isaac ROS 節點頁面 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:20-21]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:24:25 -->
-- 22:38 UTC: Video processing: 2026-07-14-7pSZx9-VT3k "Token消耗减少120倍？Codebase-Memory-MCP的性能突破原理解析" — transcription completed; 2026-07-14-Uc9zcFGkN8I also completed (title unknown) [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:24-25]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-14.md:5:7 -->
-- 研究內容: 研究 NVIDIA Isaac ROS 完整架構; 涵蓋：NITROS、兩大 Workflow（Mobility/Manipulation）、GEM 套件地圖; 最新版本 4.5.0（July 6, 2026）重大更新 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-14.md:5-7]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-16.md:10:11 -->
-- Standing Rule Check: All video transcription statuses: completed; No pending in_progress entries [score=0.818 recalls=0 avg=0.620 source=memory/2026-07-16.md:10-11]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-16.md:4:7 -->
-- System Status: Uptime: 10 days 9h; Load: 0.32 (normal); No new video files since 2026-07-14; CEO silent 17+ days [score=0.818 recalls=0 avg=0.620 source=memory/2026-07-16.md:4-7]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:31:33 -->
-- 23:36 UTC - 每日論文討論：Memory-R2: **論文**：Memory-R2: Fair Credit Assignment for Long-Horizon Memory-Augmented LLM Agents **作者**：Yan et al., LMU Munich / Siemens, arXiv:2605.21768, May 2026 **PDF**：`raw/references/papers/ai/memory-r2-2026-yan.pdf` [score=0.807 recalls=0 avg=0.620 source=memory/2026-07-15.md:31-33]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:4:7 -->
-- 05:39 UTC - NVIDIA-ISAAC-ROS GitHub Repos: Linder 分享 GitHub 組織頁面; 已存進 wiki：`wiki/sources/nvidia-isaac-ros-github-repos.md`; 共 27 個倉庫，含 stars/forks/description; Top: isaac_ros_visual_slam (1.4k⭐), pose_estimation (474⭐), object_detection (191⭐) [score=0.807 recalls=0 avg=0.620 source=memory/2026-07-15.md:4-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:12:15 -->
+- 論文資訊: **標題**：協助遞物服務型機器人系統開發研究; **英文**：Study on Development of a Robotic System with Assistive Delivery Service; **學校**：國立臺灣科技大學 自動化及控制研究所; **時間**：111年7月（2022） [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-15.md:12-15]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:16:17 -->
+- 論文資訊: **作者**：吳展毅（M10812913）; **指導教授**：郭永麟 博士 [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-15.md:16-17]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:20:22 -->
+- 研究內容: 主題：開發可遞物給使用者的服務型人形機器人; 整合：語音處理 + 物件/人手辨識（CNN/ResNet）+ 六軸機械手臂; 系統成功率 42%，語音辨識 90%，物件辨識 90%，遞物成功率 94% [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-15.md:20-22]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:25:27 -->
+- Wiki 條目: `wiki/sources/linder-graduation-thesis-2022-robot-delivery-service.md`; Raw PDF：`raw/documents/2026-07-15-linder-graduation-thesis.pdf`（150頁）; 全文提取：`raw/documents/2026-07-15-linder-graduation-thesis-extract.txt`（92,185字元） [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-15.md:25-27]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-16.md:14:16 -->
+- End of Day (22:38 UTC): Uptime: 11 days 5h, load 0.16 (normal); No new videos since 2026-07-14 (2+ days gap); CEO silent 19+ days [score=0.811 recalls=0 avg=0.620 source=memory/2026-07-16.md:14-16]
