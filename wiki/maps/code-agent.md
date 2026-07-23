@@ -114,10 +114,15 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 6. **HORMA**：hierarchical organize-then-retrieve
 7. **OnePred**：recursive intent memory + two-stage RL curriculum
 8. **ACE**：elastic reversible context orchestration（第一個 training-free、wrapper-style、每步動態重建的方案）
+9. **SelfMem**：self-optimizing memory framework — 讓 agent 透過 feedback signals 自己探索、評估、改進記憶策略，而非跟隨預設格式
 
 其中 ACE 與其他方法最大差異：**不需訓練、不改框架**。它不是另一種 compression 策略，而是把 irreversibility 問題的根本解法（雙層 lossless storage + elastic per-step orchestration）帶入所有框架。
 
 其中 OnePred 與 HORMA 都解決同一底層問題（bounded context），但切入角度互補：HORMA 用 hierarchical organization + RL navigation；OnePred 用同一 LLM 遞迴更新意圖鏈 + 兩階段 curriculum 解決 cold-start compression problem。
+
+SelfMem 與其他方法的根本差異：**所有現有方法（MemGPT、ACE、HORMA、OnePred）都是「給 agent 魚」——定義好 memory schema、retrieval rule、或 compression strategy，讓 agent 按照既定方式執行。SelfMem 是「教 agent 釣魚」——不給固定策略，只提供 memory tools + feedback signals，讓 agent 自己 discover better memory behavior。**
+
+SelfMem 的 feedback 是可觀察的 tool outputs（非 gold answer / scalar reward），agent 在 language 層面 reason about quality–cost trade-offs。這與 Memory-R2 用 RL 解決 credit assignment 形成互補：SelfMem 不需要 training，是 inference-time optimization；Memory-R2 是 training-time learning。
 
 ### 對我們自己的工程提醒
 
