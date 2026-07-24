@@ -16,3 +16,13 @@
 [rowlet/sessions/rowlet/be305ab8-d7b9-4a57-a33a-febd329af56a.jsonl#L96] Assistant: porting：https://terrytao.wordpress.com/2026/07/11/old-and-new-apps-via-modern-coding-agents/ - Grok CLI The Pulse：https://newsletter.pragmaticengineer.com/p/the-pulse-groks-cli-caught-uploading - Juggler CRDT session：https://github.com/juggler-ai/juggler - arXi
 [rowlet/sessions/rowlet/be305ab8-d7b9-4a57-a33a-febd329af56a.jsonl#L96] Assistant: `safety/long-horizon` skill 與 `sessions.abort(reason)` tool；拿 `raw/code/` legacy 模組試行 `porting-copilot` skill smoke test。 3. `permission-audit` heartbeat 排程（每週）；`raw/openclaw/2026.7.2-beta.3/` 已存 release notes raw snapshot 供後續 grep。 **產出檔案** - `~/workspace-rowl
 [rowlet/sessions/rowlet/be305ab8-d7b9-4a57-a33a-febd329af56a.jsonl#L96] Assistant: **查過但未採用**：modelcontextprotocol.io/blog 仍 404（明日試 /news）、infoq feed 今日無新 AI 文章、Thoughtworks insights rss 404、LangGraph 1.2.9 / Cognee 1.4.0 沒有結構性變化、CrewAI 1.15.4/5 寫進明日 skills 摘要。
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11759] Assistant: EP08 有進度了（3.3KB）！繼續等：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11765] Assistant: 轉錄仍在進行（很慢，因為同時只有少數 process 有記憶體）。先把 EP08-12 的 wiki 框架寫好：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11785] Assistant: 轉錄仍在進行，繼續追蹤。已經完成 EP01-07 的 wiki 濃縮，EP08-12 正在處理中。讓我繼續等：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11789] Assistant: 同時跑5個太慢了。砍掉重來，一次跑一部：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11797] Assistant: EP08 完成（347行）！啟動 EP09，讀 EP08：
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11809] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11811] Assistant: hi 🌿
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11812] User: 你幫我看這個
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11815] Assistant: 還有 EP10-12 在跑，EP09 剛完成。快速狀態更新： | EP | 逐字稿大小 | Wiki | |----|-----------|------| | EP01 | 8.2K ✅ | ✅ 完成 | | EP02 | 23K ✅ | ✅ 完成 | | EP03 | 34K ✅ | ✅ 完成 | | EP04 | 25K ✅ | ✅ 完成 | | EP05 | 30K ✅ | ✅ 完成 | | EP06 | 24K ✅ | ✅ 完成 | | EP07 | 15K ✅ | ✅ 完成 | | EP08 | 1
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L11819] Assistant: 有足夠內容了！一口氣寫完 EP09-12 的 wiki：
