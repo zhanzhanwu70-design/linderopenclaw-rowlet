@@ -318,15 +318,9 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-22)
+## Promoted From Short-Term Memory (2026-07-25)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:12:15 -->
-- 論文資訊: **標題**：協助遞物服務型機器人系統開發研究; **英文**：Study on Development of a Robotic System with Assistive Delivery Service; **學校**：國立臺灣科技大學 自動化及控制研究所; **時間**：111年7月（2022） [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-15.md:12-15]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:16:17 -->
-- 論文資訊: **作者**：吳展毅（M10812913）; **指導教授**：郭永麟 博士 [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-15.md:16-17]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:20:22 -->
-- 研究內容: 主題：開發可遞物給使用者的服務型人形機器人; 整合：語音處理 + 物件/人手辨識（CNN/ResNet）+ 六軸機械手臂; 系統成功率 42%，語音辨識 90%，物件辨識 90%，遞物成功率 94% [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-15.md:20-22]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-15.md:25:27 -->
-- Wiki 條目: `wiki/sources/linder-graduation-thesis-2022-robot-delivery-service.md`; Raw PDF：`raw/documents/2026-07-15-linder-graduation-thesis.pdf`（150頁）; 全文提取：`raw/documents/2026-07-15-linder-graduation-thesis-extract.txt`（92,185字元） [score=0.845 recalls=0 avg=0.620 source=memory/2026-07-15.md:25-27]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-16.md:14:16 -->
-- End of Day (22:38 UTC): Uptime: 11 days 5h, load 0.16 (normal); No new videos since 2026-07-14 (2+ days gap); CEO silent 19+ days [score=0.811 recalls=0 avg=0.620 source=memory/2026-07-16.md:14-16]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:16:19 -->
+- Sources confirmed: GitHub Trending daily ✅; GitHub Releases atom (Codex, Claude Code, LangGraph, MS Agent Framework, uv) ✅; Martin Fowler feed ✅; InfoQ AI/ML feed ✅ [score=0.803 recalls=0 avg=0.620 source=memory/2026-07-20.md:16-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:20:23 -->
+- Sources confirmed: Hugging Face Trending Papers ✅; arXiv API ❌ 429; MCP blog ❌ 404; LangGraph / Codex releases 沒有結構性變化，僅 versioning [score=0.803 recalls=0 avg=0.620 source=memory/2026-07-20.md:20-23]
