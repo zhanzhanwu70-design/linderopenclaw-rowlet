@@ -20,3 +20,23 @@
 [rowlet/sessions/rowlet/fdf3329b-bcb2-4e1f-828c-147eaf89c3d8.jsonl#L158] Assistant: CursorBench 0.5% from Fable 5 at half cost - [Allen AI Shippy](https://huggingface.co/blog/allenai/shippy-tech-blog) — OpenClaw first production deployment - [DBOS Postgres LISTEN/NOTIFY](https://www.dbos.dev/blog/postgres-listen-notify-scalability) — 60K writ
 [rowlet/sessions/rowlet/fdf3329b-bcb2-4e1f-828c-147eaf89c3d8.jsonl#L158] Assistant: 512 pts ## 下一步 1. `wiki/maps/openclaw-model-routing-2026-08.md` 補 4 維度 routing policy + 寫 `model-router` skill proposal v0.1。 2. `write-a-skill-openclaw` SKILL.md 加 Deterministic CLI wrapper 段落（Shippy pattern）。 3. `openclaw-runtime-monitor` 加 secret-in-static-
 [rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L13] Assistant: 512 pts ## 下一步 1. `wiki/maps/openclaw-model-routing-2026-08.md` 補 4 維度 routing policy + 寫 `model-router` skill proposal v0.1。 2. `write-a-skill-openclaw` SKILL.md 加 Deterministic CLI wrapper 段落（Shippy pattern）。 3. `openclaw-runtime-monitor` 加 secret-in-static-a
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L14] User: https://youtu.be/JPGo_5fczaA?si=Q4m-ofonrGmy95BY 整理重點
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L15] Assistant: 收到！執行標準 YouTube 入庫流程：
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L18] Assistant: 標題：**模型越強，Superpowers 和 MattPocock-Skills 應該刪除誰？** 開始下載與轉錄流程：
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L23] Assistant: 9分鐘影片。開始轉錄：
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L26] Assistant: 轉錄完成。整理重點並存檔：
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L33] Assistant: 整理完成！ --- ## 影片重點：MattPocock Skills vs Superpowers **核心問題**：模型變強後，該刪除哪個工作流？ ### 結論 | 場景 | 推薦 | |------|------| | **強模型**（GPT-5.6 / Kimi K3 / Fable-5）| MattSkills ✅ | | **弱模型** 或 需要小組 Review | Superpowers ✅ | ### 關鍵差異 兩者流程幾乎相同，差別在「計畫書寫」這步： - **MattSkills**：PRD 文
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L34] User: [User sent media without caption]
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L40] User: [User sent media without caption]
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L47] Assistant: 收到語音訊息，但無法存取音頻檔案（路徑找不到）。可以重新傳送一次，或是直接告訴我你想說什麼？
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L48] User: 請問要如何讓你可以接收音頻
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L127] Assistant: 根據我查到的資料，音頻處理需要以下設定： ## 目前狀態 系統已有： - ✅ `ffmpeg` / `ffprobe` — 已安裝 - ✅ `whisper-cli` — 已安裝 (`/home/node/.local/bin/whisper-cli`) - ✅ 你的 `whispercpp-transcribe` wrapper — 已就緒 ## 音頻轉錄需求 OpenClaw 針對 Discord 語音訊息（voice message）的處理： 1. **自動偵測**朗讀 CLI（whisper-cli） 2.
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L129] Assistant: 收到。直接設定音頻轉錄功能。
+[rowlet/sessions/rowlet/c7304a44-bc8f-4f5c-8b0b-e3e35dfdd7b2.jsonl#L73] Assistant: Now I'll create the wiki source entry for AtomMem, which has the raw paper but no wiki source:
+[rowlet/sessions/rowlet/c7304a44-bc8f-4f5c-8b0b-e3e35dfdd7b2.jsonl#L75] Assistant: Now let me fix the link in code-agent.md - it references `sources/atomem-2026-yao` but the actual file is `2606-atommem-atomic-facts-memory`:
+[rowlet/sessions/rowlet/c7304a44-bc8f-4f5c-8b0b-e3e35dfdd7b2.jsonl#L92] Assistant: --- ## 📚 每日論文討論回報 **主題**：Agent 上下文處理（Context Processing） ### 發現：AtomMem（已讀過但缺 wiki 條目） 今天的任務我選擇處理一個之前讀過但還沒建立 wiki 條目的論文：**AtomMem**。 **論文資訊：** - **標題**：AtomMem: Building Simple and Effective Memory System for LLM Agents via Atomic Facts - **作者**：Yao et al. (US
+[rowlet/sessions/rowlet/c7304a44-bc8f-4f5c-8b0b-e3e35dfdd7b2.jsonl#L92] Assistant: + Temporal Profile | 情節記憶 + 穩定時間屬性 | | Associative Memory Graph | 透過 entity overlap / shared events / dialogue context 關聯召回 | **3. 解決兩個核心困境** - **Storage bloat vs. information loss** → selective atomic extraction（不是 raw，也不是摘要） - **Dynamic update vs. instability
+[rowlet/sessions/rowlet/c7304a44-bc8f-4f5c-8b0b-e3e35dfdd7b2.jsonl#L92] Assistant: top-k 精確（error string + file path + tool name + time 交會檢索） ### 額外修復 - 發現 `wiki/maps/code-agent.md` 中有 3 處 `atomem-2026-yao` 連結指向不存在的 wiki source，已一併修正為 `2606-atommem-atomic-facts-memory` ### wiki/maps/code-agent.md 更新狀態 - ✅ 已存在並更新（AtomMem 條目已連結到正確的 wiki source）
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L133] Assistant: 設定完成。重啟 gateway 生效：
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L157] User: 你檢查一下你為何收不到音頻 然後自行排除
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L185] Assistant: 發現問題：`whisper-cli` 需要模型路徑，但 OpenClaw 配置的時候沒辦法直接设環境變數。我來做一個 wrapper script：

@@ -318,9 +318,25 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-25)
+## Promoted From Short-Term Memory (2026-07-26)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:16:19 -->
-- Sources confirmed: GitHub Trending daily ✅; GitHub Releases atom (Codex, Claude Code, LangGraph, MS Agent Framework, uv) ✅; Martin Fowler feed ✅; InfoQ AI/ML feed ✅ [score=0.803 recalls=0 avg=0.620 source=memory/2026-07-20.md:16-19]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:20:23 -->
-- Sources confirmed: Hugging Face Trending Papers ✅; arXiv API ❌ 429; MCP blog ❌ 404; LangGraph / Codex releases 沒有結構性變化，僅 versioning [score=0.803 recalls=0 avg=0.620 source=memory/2026-07-20.md:20-23]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:10:13 -->
+- 晨間情報 / Daily Architecture Research (02:03 UTC): Martin Fowler DSLs + Archaeologist Copilot — 證據驅動 + DSL 約束為 LLM harness; 對 OpenClaw 3 條啟發：升級 Skills API 成 first-class、建立 archaeologist/dsl-author skill、permission 解析器多 dialect + 自我終止。; 9 個值得追蹤 repo/paper/article 已列。; 3 條下一步：寫 wiki/sources/agent-framework-1-11、archaeologist skill pilot、permission-audit heartbeat。 [score=0.836 recalls=0 avg=0.620 source=memory/2026-07-20.md:10-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:26:29 -->
+- 系統: 02:03 UTC cron 觸發; graphifyy query 200 個 node 命中（community 1 主要為 AI / Agent 相關；其他社群混雜歷史/政治）; workspace-rowlet memory 目錄健全; 報告覆寫昨日 architecture-daily-report.md，無下游依賴 [score=0.836 recalls=0 avg=0.620 source=memory/2026-07-20.md:26-29]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:4:4 -->
+- 晨間情報 / Daily Architecture Research (02:03 UTC): 已完成 2026-07-20 每日 Agent × 軟體開發情報研究，產出 `architecture-daily-report.md`。 [score=0.836 recalls=0 avg=0.620 source=memory/2026-07-20.md:4-4]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:12:14 -->
+- System Events: Gateway restart occurred during LLM request (timeout); Session recovered normally after restart; All heartbeat polls responsive (HEARTBEAT_OK) [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:12-14]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:17:19 -->
+- Pending: MetaCogAgent paper download (long-standing gap); CEO silent since 2026-06-29晨間情報; ELLE_WS Phase 3 blocker unchanged [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:17-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:21:21 -->
+- Pending: video-ingest:empMprbZsSo completed and written to llm-wiki: wiki/sources/hr-jasmin-liberal-arts-semiconductor-executive-empMprbZsSo.md [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:21-21]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:23:23 -->
+- Pending: video-ingest:h-7pmcDloco completed and written to llm-wiki: wiki/sources/我开了家公司-员工全是-ai-只有我一个人类-h-7pmcDloco.md [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:23-23]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:4:7 -->
+- 晨間情報 (2026-07-19): Delivered 5 news items to roaringmoon via sessions_send:; GPT-5.6 CDC proof (30-year math gap); Moonshine AI 500kb TTS/ASR; Netflix $600M Ben Affleck AI startup acquisition [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:4-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:8:9 -->
+- 晨間情報 (2026-07-19): Apple removing AI "nudify" apps; SpaceX pursuing DoD cloud contracts [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:8-9]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:6:9 -->
+- 晨間情報 / Daily Architecture Research (02:03 UTC): MS Agent Framework 1.11.0 — Skills API stable + progressive MCP disclosure + message injection middleware; AlphaEvolve GA on Gemini Enterprise — client-side evaluator，進化式代碼最佳化（Klarna 2x、JetBrains -15~20%、FM Logistic -10.4%）; Netflix GenPage — 單一 generative model，prompt 強化 > 模型放大（6.9% vs 1.3%）; Claude Code v2.1.214/215 — permission 硬化 + EndConversation + OTel/message.uuid [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-20.md:6-9]

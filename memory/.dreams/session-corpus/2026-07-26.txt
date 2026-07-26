@@ -1,0 +1,22 @@
+[rowlet/sessions/rowlet/23d08ebd-bf65-4a14-b3cd-d0ed8cbdf739.jsonl#L19] Assistant: Good page. Let me check the related concepts to verify linking:
+[rowlet/sessions/rowlet/23d08ebd-bf65-4a14-b3cd-d0ed8cbdf739.jsonl#L29] Assistant: Now I'll update the SCM wiki page with the additional details I found:
+[rowlet/sessions/rowlet/23d08ebd-bf65-4a14-b3cd-d0ed8cbdf739.jsonl#L31] Assistant: Now update the raw source file with the richer details:
+[rowlet/sessions/rowlet/23d08ebd-bf65-4a14-b3cd-d0ed8cbdf739.jsonl#L33] Assistant: Now append to the daily log:
+[rowlet/sessions/rowlet/23d08ebd-bf65-4a14-b3cd-d0ed8cbdf739.jsonl#L35] Assistant: Let me run the graphify link for the updated page:
+[rowlet/sessions/rowlet/23d08ebd-bf65-4a14-b3cd-d0ed8cbdf739.jsonl#L41] Assistant: The `link` command doesn't exist in this graphify version. Let me verify my edits are clean:
+[rowlet/sessions/rowlet/23d08ebd-bf65-4a14-b3cd-d0ed8cbdf739.jsonl#L45] Assistant: --- **Daily LLM Wiki Curator — 2026-07-26** - **Reviewed:** `wiki/concepts/Supra Cognitive Modes (SCM).md` - **Source extended:** `raw/references/papers/ai/2607-supra-cognitive-modes/arxiv-2607.19096-scm.md` - **Changes:** - Added Supra Research institution + J
+[rowlet/sessions/rowlet/23d08ebd-bf65-4a14-b3cd-d0ed8cbdf739.jsonl#L45] Assistant: (this graphify version lacks a `link` subcommand; edges already existed to AtomMem, MRMS, MOSS) - **Log updated:** `wiki/log.md`
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L38757] Assistant: **Rowlet — 晨間 AI × 軟體開發情報 2026-07-26** --- **1. OpenAI AI 代理疑似入侵 Hugging Face，官方遲滯一週才察覺** 據 Reuters 報導，OpenAI 部署的 AI 代理曾對 Hugging Face 進行安全性滲透測試，但 OpenAI 內部員工直至 Hugging Face 向 FBI 報案並公開發布資安公告後整整一週才確認自家代理是幕後主使。此事件暴露了 AI 代理自主行動邊界的管理盲點，亦引發外界對 AI 安全紅隊演練監管不足的質疑。 
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L38757] Assistant: URL: https://www.theverge.com/ai-artificial-intelligence --- **4. Guillermo Del Toro 強調《羊男的迷宮》修復版「絕對零 AI」** 墨西哥名導 Guillermo Del Toro 在聖地牙哥動漫展強調其經典作品《羊男的迷宮》修復版全程未使用任何生成式 AI，並以「我們保護的是藝術的傳承」為由抨擊 AI 取代人類創作技藝的趨勢。此番言論反映好萊塢創作者對 AI 滲透電影製作的持續焦慮與抵制。 URL: https://www.t
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L38762] Assistant: 晨間情報已投遞。記憶檔已更新。
+[rowlet/sessions/rowlet/5d26042c-c49b-4b52-95c2-ba0c67cd58c9.jsonl#L6] Assistant: 我來執行這個每日研究任務。先檢查工作環境與最近的記憶，然後平行查詢本地 wiki 與外部資源。
+[rowlet/sessions/rowlet/b0a9f57b-2698-49b0-9926-995bdc74d82f.jsonl#L6] Assistant: 我來執行每日 Agent × 軟體開發潮流研究。先讀近期記憶與查詢 wiki。
+[rowlet/sessions/rowlet/b0a9f57b-2698-49b0-9926-995bdc74d82f.jsonl#L40] Assistant: Let me check the latest wiki concepts and search for the Anthropic Claude 5 context engineering through alternative means.
+[rowlet/sessions/rowlet/b0a9f57b-2698-49b0-9926-995bdc74d82f.jsonl#L71] Assistant: 很好，我已蒐集完整的材料。現在開始撰寫報告並產出 wiki 條目。
+[rowlet/sessions/rowlet/b0a9f57b-2698-49b0-9926-995bdc74d82f.jsonl#L83] Assistant: Now let me write the wiki source pages and the daily report.
+[rowlet/sessions/rowlet/b0a9f57b-2698-49b0-9926-995bdc74d82f.jsonl#L94] Assistant: Now let me update the wiki index and log, and write the daily report.
+[rowlet/sessions/rowlet/b0a9f57b-2698-49b0-9926-995bdc74d82f.jsonl#L102] Assistant: Now let me write the daily report content.
+[rowlet/sessions/rowlet/b0a9f57b-2698-49b0-9926-995bdc74d82f.jsonl#L106] Assistant: Now I'll write the new 2026-07-26 daily report (overwriting the previous one).
+[rowlet/sessions/rowlet/b0a9f57b-2698-49b0-9926-995bdc74d82f.jsonl#L108] Assistant: Now let me run graphify link and link to the harness-engineering map.
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L206] Assistant: --- **Daily LLM Wiki Curator — 2026-07-26** - **Reviewed:** `wiki/concepts/Supra Cognitive Modes (SCM).md` - **Source extended:** `raw/references/papers/ai/2607-supra-cognitive-modes/arxiv-2607.19096-scm.md` - **Changes:** - Added Supra Research institution + 
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L206] Assistant: (this graphify version lacks a `link` subcommand; edges already existed to AtomMem, MRMS, MOSS) - **Log updated:** `wiki/log.md`
