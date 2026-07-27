@@ -20,3 +20,20 @@
 [rowlet/sessions/rowlet/b0a9f57b-2698-49b0-9926-995bdc74d82f.jsonl#L108] Assistant: Now let me run graphify link and link to the harness-engineering map.
 [rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L206] Assistant: --- **Daily LLM Wiki Curator — 2026-07-26** - **Reviewed:** `wiki/concepts/Supra Cognitive Modes (SCM).md` - **Source extended:** `raw/references/papers/ai/2607-supra-cognitive-modes/arxiv-2607.19096-scm.md` - **Changes:** - Added Supra Research institution + 
 [rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L206] Assistant: (this graphify version lacks a `link` subcommand; edges already existed to AtomMem, MRMS, MOSS) - **Log updated:** `wiki/log.md`
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L38805] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L38829] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L38837] Assistant: [assistant turn failed before producing content]
+[rowlet/sessions/rowlet/66d70b47-1c9e-4653-b6c5-8875c6b41e20.jsonl#L48] Assistant: Found it! **arXiv:2607.06595** — "When Agents Remember Too Much: Memory Poisoning Attacks on Large Language Model Agents". Let me download and process it.
+[rowlet/sessions/rowlet/66d70b47-1c9e-4653-b6c5-8875c6b41e20.jsonl#L53] Assistant: PDF downloaded. Now let me create metadata, source entry, and check the wiki map.
+[rowlet/sessions/rowlet/66d70b47-1c9e-4653-b6c5-8875c6b41e20.jsonl#L59] Assistant: Now let me create the source entry and update the map:
+[rowlet/sessions/rowlet/66d70b47-1c9e-4653-b6c5-8875c6b41e20.jsonl#L71] Assistant: Now let me update today's memory and write a brief discussion summary:
+[rowlet/sessions/rowlet/66d70b47-1c9e-4653-b6c5-8875c6b41e20.jsonl#L73] Assistant: --- 🌿🦉 **每日論文討論完成** ## 📄 讀了哪篇 **When Agents Remember Too Much: Memory Poisoning Attacks on Large Language Model Agents** - arXiv:2607.06595v1 | Torres, Shrestha, Misra (Arizona State U.) - PDF: `raw/references/papers/ai/2026-07/2607-when-agents-remember-too-
+[rowlet/sessions/rowlet/66d70b47-1c9e-4653-b6c5-8875c6b41e20.jsonl#L73] Assistant: sessions 的認知和行為。這和 SQL injection 或 XSS 不同——它影響的是 agent 的「記憶」而非個別回應。 ### 3. 現有 memory 系統集體缺乏 security governance MemGPT、A-MEM、AtomMem、MemoryOS——這條 hierarchical/organic memory 路線從未被放在 security 威脅模型下審視。沒有任何一個系統對寫入 content 做 provenance checking 或 integrity validati
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L207] User: https://youtu.be/FrAAxWbxSyE?si=9mVtcq6TcQfHtUuj
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L208] Assistant: 收到！執行標準 YouTube 入庫流程：
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L210] Assistant: 標題：**Context Engineering的全新規則：Claude 5 時代，Claude Code 刪掉了 80% 系統提示詞** 開始轉換音頻 + 轉錄：
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L213] Assistant: 8分鐘影片，1566 views。開始轉錄：
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L218] Assistant: 轉錄完成。寫入 wiki：
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L225] Assistant: 整理完成！ --- ## 影片重點：Context Engineering新規則 **核心事件**：Anthropic 為 Claude 5 刪掉 Claude Code 80% 系統提示詞，評測完全沒下降。 ### 六組新規則 | 過去 | 現在 | |------|------| | 怕出錯 → 給死規矩 | → 給判斷力空間 | | 給範例步驟 | → 打磨介面設計，讓工具自己說明用法 | | 全塞系統提示詞 | → 漸進式披露，拆成獨立的 skills | | 重複提醒 | → 刪重，工具描述裡一次寫清楚 
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L226] Assistant: --- 🌿🦉 **每日論文討論完成** ## 📄 讀了哪篇 **When Agents Remember Too Much: Memory Poisoning Attacks on Large Language Model Agents** - arXiv:2607.06595v1 | Torres, Shrestha, Misra (Arizona State U.) - PDF: `raw/references/papers/ai/2026-07/2607-when-agents-remember-too
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L226] Assistant: sessions 的認知和行為。這和 SQL injection 或 XSS 不同——它影響的是 agent 的「記憶」而非個別回應。 ### 3. 現有 memory 系統集體缺乏 security governance MemGPT、A-MEM、AtomMem、MemoryOS——這條 hierarchical/organic memory 路線從未被放在 security 威脅模型下審視。沒有任何一個系統對寫入 content 做 provenance checking 或 integrity validat

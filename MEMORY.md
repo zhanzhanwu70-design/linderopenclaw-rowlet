@@ -318,25 +318,25 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-26)
+## Promoted From Short-Term Memory (2026-07-27)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:10:13 -->
-- 晨間情報 / Daily Architecture Research (02:03 UTC): Martin Fowler DSLs + Archaeologist Copilot — 證據驅動 + DSL 約束為 LLM harness; 對 OpenClaw 3 條啟發：升級 Skills API 成 first-class、建立 archaeologist/dsl-author skill、permission 解析器多 dialect + 自我終止。; 9 個值得追蹤 repo/paper/article 已列。; 3 條下一步：寫 wiki/sources/agent-framework-1-11、archaeologist skill pilot、permission-audit heartbeat。 [score=0.836 recalls=0 avg=0.620 source=memory/2026-07-20.md:10-13]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:26:29 -->
-- 系統: 02:03 UTC cron 觸發; graphifyy query 200 個 node 命中（community 1 主要為 AI / Agent 相關；其他社群混雜歷史/政治）; workspace-rowlet memory 目錄健全; 報告覆寫昨日 architecture-daily-report.md，無下游依賴 [score=0.836 recalls=0 avg=0.620 source=memory/2026-07-20.md:26-29]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:4:4 -->
-- 晨間情報 / Daily Architecture Research (02:03 UTC): 已完成 2026-07-20 每日 Agent × 軟體開發情報研究，產出 `architecture-daily-report.md`。 [score=0.836 recalls=0 avg=0.620 source=memory/2026-07-20.md:4-4]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:12:14 -->
-- System Events: Gateway restart occurred during LLM request (timeout); Session recovered normally after restart; All heartbeat polls responsive (HEARTBEAT_OK) [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:12-14]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:17:19 -->
-- Pending: MetaCogAgent paper download (long-standing gap); CEO silent since 2026-06-29晨間情報; ELLE_WS Phase 3 blocker unchanged [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:17-19]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:21:21 -->
-- Pending: video-ingest:empMprbZsSo completed and written to llm-wiki: wiki/sources/hr-jasmin-liberal-arts-semiconductor-executive-empMprbZsSo.md [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:21-21]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:23:23 -->
-- Pending: video-ingest:h-7pmcDloco completed and written to llm-wiki: wiki/sources/我开了家公司-员工全是-ai-只有我一个人类-h-7pmcDloco.md [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:23-23]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:4:7 -->
-- 晨間情報 (2026-07-19): Delivered 5 news items to roaringmoon via sessions_send:; GPT-5.6 CDC proof (30-year math gap); Moonshine AI 500kb TTS/ASR; Netflix $600M Ben Affleck AI startup acquisition [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:4-7]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-19.md:8:9 -->
-- 晨間情報 (2026-07-19): Apple removing AI "nudify" apps; SpaceX pursuing DoD cloud contracts [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-19.md:8-9]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-20.md:6:9 -->
-- 晨間情報 / Daily Architecture Research (02:03 UTC): MS Agent Framework 1.11.0 — Skills API stable + progressive MCP disclosure + message injection middleware; AlphaEvolve GA on Gemini Enterprise — client-side evaluator，進化式代碼最佳化（Klarna 2x、JetBrains -15~20%、FM Logistic -10.4%）; Netflix GenPage — 單一 generative model，prompt 強化 > 模型放大（6.9% vs 1.3%）; Claude Code v2.1.214/215 — permission 硬化 + EndConversation + OTel/message.uuid [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-20.md:6-9]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-22.md:12:13 -->
+- 晨間情報 / Daily Architecture Research (02:06 UTC 主報告): 10 個值得追蹤 repo/paper/article 已列; 3 條下一步：`harness-engineering` wiki map + AEVAL skill smoke test + egress contract audit [score=0.831 recalls=0 avg=0.620 source=memory/2026-07-22.md:12-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-22.md:16:19 -->
+- 增量研究 (02:27 UTC): cron 二次觸發，距主報告 21 分鐘; 抓 HN #2：**Kimi K3 + Fable 5 路由實驗**（Fireworks AI, 2026-07-22, 315 points / 178 comments / 3h ago）; ~1,030 real agentic tasks, 5 families (SWE 460 / Terminal 89 / Algorithmic 100 / Multi-Lang 225 / Legal 120); SWE-bench: K3 92.4% vs Fable 92.6%（dead even） [score=0.831 recalls=0 avg=0.620 source=memory/2026-07-22.md:16-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-22.md:20:23 -->
+- 增量研究 (02:27 UTC): Oracle routing accuracy: 93%; Long agentic loop 成本可降 50×; K3 在 symbolic math + dev tooling + terminal / security / crypto / legal 領先; Fable 在 web / data viz / multi-language 略勝 [score=0.831 recalls=0 avg=0.620 source=memory/2026-07-22.md:20-23]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-22.md:24:27 -->
+- 增量研究 (02:27 UTC): Oracle 視角下 K3 拿下 72-96% tasks; 校正昨日時序：HF security-incident blog 是 2026-07-16 貼的，OpenAI 對應回應是 2026-07-21（5 天落差）; 已 append `architecture-daily-report.md` 增量更新段; 已新增 wiki source + raw snapshot + raw notes [score=0.831 recalls=0 avg=0.620 source=memory/2026-07-22.md:24-27]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-22.md:4:7 -->
+- 晨間情報 / Daily Architecture Research (02:06 UTC 主報告): 已完成 2026-07-22 每日 Agent × 軟體開發情報研究，產出 `architecture-daily-report.md`。; 5 個重點（昨日「長任務 agent 自己找漏洞」→ 今日 Hugging Face production 真實案例）：; OpenAI × Hugging Face 公開 2026-07 「AI-driven intrusion」事件 — 17,000 actions / zero-day / AI defender; AEVAL（arXiv 2607.16345 v2）— ICML Workshop 收，executor/grader 分離 + first-attempt grading [score=0.831 recalls=0 avg=0.620 source=memory/2026-07-22.md:4-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-22.md:8:11 -->
+- 晨間情報 / Daily Architecture Research (02:06 UTC 主報告): Martin Fowler + Thoughtworks — 5 條 headline finding，「harness engineering」vendor-level 命名; Augment Code 六模式 — coordinator/specialist/verifier + git worktree + sequential merges; OpenBench + OrcaBot Desktop + Memsprout — agent tooling layer 三個訊號; 對 OpenClaw 3 條啟發：zero-trust egress + AEVAL grading 進 skill 流程 + Augment 雛形抄到 OpenClaw [score=0.831 recalls=0 avg=0.620 source=memory/2026-07-22.md:8-11]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-21.md:10:13 -->
+- 晨間情報 / Daily Architecture Research (02:05 UTC): Pragmatic Engineer Grok CLI + Show HN Juggler — CLI coding agent 兩極：信任破口 vs CRDT session; 對 OpenClaw 3 條啟發：長任務 first-class threat model + 寫 `porting-copilot` skill + `permission-audit` heartbeat 搭 supervisor contract; 10 個值得追蹤 repo/paper/article 已列; 3 條下一步：`safety/long-horizon` skill + Wiki 開兩個 source + supervisor contract observability [score=0.829 recalls=0 avg=0.620 source=memory/2026-07-21.md:10-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-21.md:16:19 -->
+- Wiki 入庫: 新增 `wiki/concepts/long-horizon-threat-model.md`（trajectory-level intent evaluation 威脅模型）; 新增 `wiki/sources/multi-agent-authority-benchmark-arxiv-2607-15434.md`; 新增 `wiki/sources/openclaw-2026-7-2-supervisor-mode.md`; `wiki/log.md` 已更新今日條目 [score=0.829 recalls=0 avg=0.620 source=memory/2026-07-21.md:16-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-21.md:20:20 -->
+- Wiki 入庫: 圖譜連結：使用 `related` frontmatter 機制（graphifyy link command 不存在；先前 log 也是這樣記錄） [score=0.829 recalls=0 avg=0.620 source=memory/2026-07-21.md:20-20]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-21.md:23:26 -->
+- Raw snapshot: `raw/openclaw/2026.7.2-beta.3/RELEASE-NOTES.md`（手動整理）; `raw/openclaw/2026.7.2-beta.3/github_com_openclaw_openclaw_releases_tag_v2026_7_2-beta_3.md`（graphify add 抓）; `raw/research/multi-agent-authority-benchmark-arxiv-2607-15434/raw-notes.md`（手動整理）; `raw/research/multi-agent-authority-benchmark-arxiv-2607-15434/arxiv_2607_15434.md`（graphify add 抓） [score=0.829 recalls=0 avg=0.620 source=memory/2026-07-21.md:23-26]
