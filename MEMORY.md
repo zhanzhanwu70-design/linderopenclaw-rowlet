@@ -318,25 +318,25 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-28)
+## Promoted From Short-Term Memory (2026-07-29)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-21.md:4:4 -->
-- 晨間情報 / Daily Architecture Research (02:05 UTC): 已完成 2026-07-21 每日 Agent × 軟體開發情報研究，產出 `architecture-daily-report.md`。 [score=0.856 recalls=0 avg=0.620 source=memory/2026-07-21.md:4-4]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-21.md:6:9 -->
-- 晨間情報 / Daily Architecture Research (02:05 UTC): OpenClaw 2026.7.2-beta.3 — Skills Workshop 預設放行 + 外部 supervisor mode + channel safety; OpenAI long-horizon safety + GPT-Red — per-action approval 對長任務不足；GPT-5.6 prompt-injection 6x; arXiv 2607.15434 — Multi-Agent Authority Benchmark：9 階壓力梯 + LLM 自我標註 + authority-as-IV; Terry Tao + Pragmatic Engineer (Dex Horthy) — context engineering 從術語變工程實務；unread code is technical debt [score=0.856 recalls=0 avg=0.620 source=memory/2026-07-21.md:6-9]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-23.md:11:12 -->
-- 晨間情報 / Daily Architecture Research (02:03 UTC 主報告): **Cohere North Mini Code + LeRobot v0.6.0 + 昨日 OpenBench** — agent tooling layer 成熟期; 對 OpenClaw / Linder 3 條啟發：self-hosted open-weight fallback 寫進 model-router skill policy + 抓緊 OpenClaw 2026-08.x turn-level routing 路線圖 + daily-architecture-research 包成 Claw POC [score=0.849 recalls=0 avg=0.620 source=memory/2026-07-23.md:11-12]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-23.md:15:18 -->
-- Wiki 入庫（今日累計）: `wiki/sources/huggingface-open-model-cyber-defense-2026-07.md`（新增）; `wiki/sources/ibm-research-model-routing-is-simple-until-it-isnt.md`（新增）; `wiki/sources/openclaw-claw-manifest-pr-111391.md`（新增）; `wiki/sources/openclaw-agents-refactor-112805.md`（新增） [score=0.849 recalls=0 avg=0.620 source=memory/2026-07-23.md:15-18]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-23.md:19:22 -->
-- Wiki 入庫（今日累計）: `wiki/sources/cohere-north-mini-code-2026-07.md`（新增）; `wiki/sources/lerobot-v060-imagine-evaluate-2026-07.md`（新增）; `wiki/maps/harness-engineering-news-2026-07.md` — append 「2026-07-23 增量」6 條 + 月度主軸更新「agent tooling layer 成熟期」; `wiki/log.md` — append 今日條目（1384 → 1436 行） [score=0.849 recalls=0 avg=0.620 source=memory/2026-07-23.md:19-22]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-23.md:25:28 -->
-- Raw snapshots（今日累計）: `raw/research/huggingface-open-model-cyber-defense-2026-07/page.html` + raw-notes.md; `raw/research/ibm-research-model-routing-reality-check-2026-07/page.html` + raw-notes.md; `raw/research/openclaw-claw-manifest-pr-111391/commit.json` + claws.md + raw-notes.md; `raw/research/openclaw-agents-refactor-112805/commit.json` + raw-notes.md [score=0.849 recalls=0 avg=0.620 source=memory/2026-07-23.md:25-28]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-23.md:4:5 -->
-- 晨間情報 / Daily Architecture Research (02:03 UTC 主報告): cron a72cb46b 主觸發，已完成 2026-07-23 每日 Agent × 軟體開發情報研究; 產出：`~/workspace-rowlet/architecture-daily-report.md`（5 重點 + 3 啟發 + 8 repo/paper/article + 3 下一步 + 查過但未採用） [score=0.849 recalls=0 avg=0.620 source=memory/2026-07-23.md:4-5]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-23.md:7:10 -->
-- 晨間情報 / Daily Architecture Research (02:03 UTC 主報告): **HF 「Be Ready Before the Attack」**（jeffboudier, 2026-07-22 估）— 公開承認 forensic analysis 時 frontier API block 了 incident responder、因此改用 **GLM 5.2 (智譜 open-weight, MIT)** 自架完成 17,000-event timeline 重建; **IBM Research 「Model Routing Is Simple. Until It Isn't.」**（HF blog cross-post, 2026-07-15）— AppWorld 417 tasks × CodeAct agent 上 Sonnet $79 vs GPT-4.1 $155（cache-read pricing 翻盤）; **OpenClaw CLAW.md manifest (PR #111391, merged 2026-07-23T01:37)** — 自家 agent package manifest 標準 schema v1，10 條安全防護每條對應一個 threat surface; **OpenClaw refactor(agents): absorb model helper fragments (PR... [score=0.849 recalls=0 avg=0.620 source=memory/2026-07-23.md:7-10]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:11:11 -->
-- Conversation Summary: **AgenticROS Skills Marketplace** 是一個專為 ROS2 機器人設計的 skills 交易所。 [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:11-11]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:19:20 -->
-- Conversation Summary: | **感知** | find（YOLOv8）、detect-humans、followme、follow-me-ros | | **地圖** | start-slam、surroundings-scan | [score=0.819 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:19-20]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:31:33 -->
+- Archive as Virtual Memory——Handle 是地址空間: Archived block 用 ~0.1K token handle 代表，實際 payload 在 hidden trajectory; 類似 OS virtual memory：handle = pointer，retrieve = page fault + restore; **討論點**：這種架構的 bottleneck 在哪？Hidden trajectory 本身也會持續增長嗎？ [score=0.891 recalls=0 avg=0.620 source=memory/2026-07-24.md:31-33]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:15:18 -->
+- Conversation Summary: | 類別 | Skills | |------|--------| | **導航** | navigate-to、navigate-through-poses、dock-to-charger | | **操作** | moveit-pick | [score=0.888 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:15-18]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:9:9 -->
+- Conversation Summary: assistant: 已存 raw 並寫好 wiki！ [score=0.872 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:9-9]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:13:13 -->
+- Conversation Summary: 共收錄 **10 個 skills**： [score=0.846 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:13-13]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:3:5 -->
+- Session: 2026-07-24 06:13:28 UTC: **Session Key**: agent:rowlet:discord:channel:1482363974119854234; **Session ID**: 6768cc41-a144-4dc1-b253-392b60b0f42d; **Source**: discord [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:3-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:16:16 -->
+- 論文在說什麼: 長期 tool agents 的 context 會不斷增長直到塞滿 window。現有方法要不是 system-controlled paging（agent 看不見），要不是 lossy compression（會丟證據）。VISTA 說：**模型本身就有 context 管理能力，只是缺少一個讓它「感受到」自己狀態的介面**。 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:16-16]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:21:23 -->
+- Lossy Compression 在長 context 必敗——資訊理論下界: **命題**：任何 non-recovering lossy 方法，在 context block 數 N→∞ 時，精確引用成功率趨於 0; **證明**：Fano's Lemma（list form）; **討論點**：壓縮派（MemGPT-style recursive summarization）vs. VISTA 派的 lossless archive+retrieve——前者是無奈之舉還是策略選擇？ [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:21-23]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:26:28 -->
+- Dashboard 即 Proprioception——給模型「內視」自己的能力: Agent 可以看到每個 block 的 token 使用量、recency、access count; 實驗：移除 dashboard 後準確率從 50.7% 降到 37.3%（-13.4pp）; **討論點**：這是 interface 設計的勝利，還是 dashboard 本身增加了 reasoning 所需的「思考空間」？ [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:26-28]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:6:6 -->
+- 論文: **VISTA: LLM Agents Are Latent Context Managers** (Xu, Li, Zhang — arXiv:2606.30005v3) [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:6-6]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:7:9 -->
+- 論文: PDF: `raw/references/papers/ai/2606-vista-2026-xu.pdf`; Wiki: `wiki/sources/2606-vista-latent-context-managers.md`; 狀態：**已完整攝取**（2026-07-20 已處理） [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:7-9]
