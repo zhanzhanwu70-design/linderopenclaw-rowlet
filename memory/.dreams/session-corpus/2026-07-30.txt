@@ -1,0 +1,12 @@
+[rowlet/sessions/rowlet/2fc739fa-339c-43e0-9513-ba367644052e.jsonl#L63] Assistant: I have enough research. Let me now download the relevant arxiv page and update the wiki.
+[rowlet/sessions/rowlet/2fc739fa-339c-43e0-9513-ba367644052e.jsonl#L65] Assistant: Now let me update the concept page with the follow-up research:
+[rowlet/sessions/rowlet/2fc739fa-339c-43e0-9513-ba367644052e.jsonl#L69] Assistant: Now create a new source entry for the follow-up papers:
+[rowlet/sessions/rowlet/2fc739fa-339c-43e0-9513-ba367644052e.jsonl#L71] Assistant: Now create the graph edges:
+[rowlet/sessions/rowlet/2fc739fa-339c-43e0-9513-ba367644052e.jsonl#L77] Assistant: The wiki links in my new source page use `[[...]]` notation, which graphify will auto-extract on the next run. Now let me append the log entry:
+[rowlet/sessions/rowlet/2fc739fa-339c-43e0-9513-ba367644052e.jsonl#L81] Assistant: 巡讀完成。以下是今日摘要： --- **🌿 LLM Wiki 每日巡讀 — 2026-07-30** - **Entry reviewed:** `StreamingLLM` (concept + source) - 原始論文：StreamingLLM (Xiao et al., ICLR 2024, arXiv:2309.17453) — Attention Sinks 現象 - **研究延伸：** 發現 2025–2026 兩篇後續論文： 1. **"Attention Sinks and Compressio
+[rowlet/sessions/rowlet/2fc739fa-339c-43e0-9513-ba367644052e.jsonl#L81] Assistant: 連結（→ StreamingLLM 概念頁、相關來源頁），下次 graphify 執行時自動萃取
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L39318] Assistant: **Rowlet — 晨間 AI × 軟體開發情報 2026-07-30** --- **1. Hugging Face 發布 2026 年 7 月入侵事件完整技術時間線** Hugging Face 在官方部落格發布「前線實驗室代理入侵事件解剖：2026 年 7 月事件時間線」，詳述 OpenAI 代理入侵事件從偵測、通報到 FBI 介入的完整經過。該文為理解 AI 代理安全事件提供了第一手技術資料，亦成為近期 AI 安全領域最受關注的技術文檔之一。 URL: https://huggingface.co/b
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L39318] Assistant: https://github.com/drumih/turbo-fieldfare --- **4. Waymo 攜手 Gemini：車內 AI 語音助理時代來臨** Waymo 宣布將 Gemini AI 整合至旗下 Ojai 車型的車內系統，乘客可透過車載螢幕以語音方式操作車內溫度、獲取餐廳推薦等在地生活資訊。目前此功能仍處於 Beta 階段，Waymo 強調 Gemini 在車內的運行「完全獨立」於車輛行駛控制系統，以確保行車安全。 URL: https://waymo.com/blog/2026/07/
+[rowlet/sessions/rowlet/4b58b9ef-e238-4d8d-a8d2-569fda8cfd3a.jsonl#L39325] Assistant: 晨間情報（7/29、7/30）已投遞，記憶檔已更新。
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L233] Assistant: 巡讀完成。以下是今日摘要： --- **🌿 LLM Wiki 每日巡讀 — 2026-07-30** - **Entry reviewed:** `StreamingLLM` (concept + source) - 原始論文：StreamingLLM (Xiao et al., ICLR 2024, arXiv:2309.17453) — Attention Sinks 現象 - **研究延伸：** 發現 2025–2026 兩篇後續論文： 1. **"Attention Sinks and Compressi
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L233] Assistant: 連結（→ StreamingLLM 概念頁、相關來源頁），下次 graphify 執行時自動萃取

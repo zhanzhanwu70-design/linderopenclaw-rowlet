@@ -318,25 +318,11 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
-## Promoted From Short-Term Memory (2026-07-29)
+## Promoted From Short-Term Memory (2026-07-30)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:31:33 -->
-- Archive as Virtual Memory——Handle 是地址空間: Archived block 用 ~0.1K token handle 代表，實際 payload 在 hidden trajectory; 類似 OS virtual memory：handle = pointer，retrieve = page fault + restore; **討論點**：這種架構的 bottleneck 在哪？Hidden trajectory 本身也會持續增長嗎？ [score=0.891 recalls=0 avg=0.620 source=memory/2026-07-24.md:31-33]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:15:18 -->
-- Conversation Summary: | 類別 | Skills | |------|--------| | **導航** | navigate-to、navigate-through-poses、dock-to-charger | | **操作** | moveit-pick | [score=0.888 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:15-18]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:9:9 -->
-- Conversation Summary: assistant: 已存 raw 並寫好 wiki！ [score=0.872 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:9-9]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:13:13 -->
-- Conversation Summary: 共收錄 **10 個 skills**： [score=0.846 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:13-13]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24-0613.md:3:5 -->
-- Session: 2026-07-24 06:13:28 UTC: **Session Key**: agent:rowlet:discord:channel:1482363974119854234; **Session ID**: 6768cc41-a144-4dc1-b253-392b60b0f42d; **Source**: discord [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24-0613.md:3-5]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:16:16 -->
-- 論文在說什麼: 長期 tool agents 的 context 會不斷增長直到塞滿 window。現有方法要不是 system-controlled paging（agent 看不見），要不是 lossy compression（會丟證據）。VISTA 說：**模型本身就有 context 管理能力，只是缺少一個讓它「感受到」自己狀態的介面**。 [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:16-16]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:21:23 -->
-- Lossy Compression 在長 context 必敗——資訊理論下界: **命題**：任何 non-recovering lossy 方法，在 context block 數 N→∞ 時，精確引用成功率趨於 0; **證明**：Fano's Lemma（list form）; **討論點**：壓縮派（MemGPT-style recursive summarization）vs. VISTA 派的 lossless archive+retrieve——前者是無奈之舉還是策略選擇？ [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:21-23]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:26:28 -->
-- Dashboard 即 Proprioception——給模型「內視」自己的能力: Agent 可以看到每個 block 的 token 使用量、recency、access count; 實驗：移除 dashboard 後準確率從 50.7% 降到 37.3%（-13.4pp）; **討論點**：這是 interface 設計的勝利，還是 dashboard 本身增加了 reasoning 所需的「思考空間」？ [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:26-28]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:6:6 -->
-- 論文: **VISTA: LLM Agents Are Latent Context Managers** (Xu, Li, Zhang — arXiv:2606.30005v3) [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:6-6]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-24.md:7:9 -->
-- 論文: PDF: `raw/references/papers/ai/2606-vista-2026-xu.pdf`; Wiki: `wiki/sources/2606-vista-latent-context-managers.md`; 狀態：**已完整攝取**（2026-07-20 已處理） [score=0.840 recalls=0 avg=0.620 source=memory/2026-07-24.md:7-9]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-25.md:4:7 -->
+- YouTube 入庫：MattPocock vs Superpowers（2026-07-25）: **影片**：模型越强，Superpowers 和 MattPocock-Skills 应该删除谁？; **URL**：https://youtu.be/JPGo_5fczaA; **核心結論**：; 強模型（GPT-5.6/Kimi K3）→ 用 MattSkills（目標導向 PRD） [score=0.900 recalls=0 avg=0.620 source=memory/2026-07-25.md:4-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-25.md:8:11 -->
+- YouTube 入庫：MattPocock vs Superpowers（2026-07-25）: 弱模型或需 Code Review → 用 Superpowers（詳細過程約束有幫助）; **關鍵洞察**：Superpowers 的 Writing Prince 寫的計畫含具體代碼/介面 → 強模型下是冗餘約束; 影片說「建議刪除 Superpowers」對強模型是對的; **已存**：wiki/sources/mattpocock-vs-superpowers-2026-07-25.md [score=0.900 recalls=0 avg=0.620 source=memory/2026-07-25.md:8-11]
+<!-- openclaw-memory-promotion:memory:memory/2026-07-26.md:21:23 -->
+- 其他發現: VISTA 已被完整記錄（code-agent.md 已有多條 context proprioception 條目）; REAL 也已記錄; 嘗試找 "Your Agent's Memories Are Not Its Own" 論文的 arXiv ID，但未完成（另一個 memory attack 論文，同日 submitted） [score=0.825 recalls=0 avg=0.620 source=memory/2026-07-26.md:21-23]
