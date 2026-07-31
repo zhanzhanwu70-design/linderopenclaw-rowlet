@@ -318,6 +318,16 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
+## CompactionRL 入庫 (2026-06-20)
+- roaringmoon 交辨：arXiv:2607.05378, Li et al., KDD 2026
+- PDF + metadata → `raw/references/papers/ai/2607-compactionrl/`
+- Wiki source → `wiki/sources/compactionrl-2026-li.md`（含 reading notes）
+- Graph: 27 nodes, 26 edges 已 merge（9448 nodes 總計）
+- **Core insight**: summarization = learnable RL action, token-level PPO advantage（比 GRPO 更精細）
+- **對 OpenClaw 的意義**: heartbeat = RL step，token-level advantage 可追蹤哪些 action 真正減少下次觸發的 context length
+- **graphify query**: 51 nodes found，Community 0(core mechanism)/1(optimization)/2(related systems)
+- Graph 有 node count bug（cluster-only 報 8648 vs 9448），暫不處理
+
 ## Promoted From Short-Term Memory (2026-07-30)
 
 <!-- openclaw-memory-promotion:memory:memory/2026-07-25.md:4:7 -->

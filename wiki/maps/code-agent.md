@@ -3,7 +3,7 @@ title: "Code-Agent Map"
 category: map
 type: knowledge-map
 created: 2026-06-11
-modified: 2026-06-19
+modified: 2026-07-30
 ---
 
 # Code-Agent Map
@@ -123,6 +123,19 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 SelfMem 與其他方法的根本差異：**所有現有方法（MemGPT、ACE、HORMA、OnePred）都是「給 agent 魚」——定義好 memory schema、retrieval rule、或 compression strategy，讓 agent 按照既定方式執行。SelfMem 是「教 agent 釣魚」——不給固定策略，只提供 memory tools + feedback signals，讓 agent 自己 discover better memory behavior。**
 
 SelfMem 的 feedback 是可觀察的 tool outputs（非 gold answer / scalar reward），agent 在 language 層面 reason about quality–cost trade-offs。這與 Memory-R2 用 RL 解決 credit assignment 形成互補：SelfMem 不需要 training，是 inference-time optimization；Memory-R2 是 training-time learning。
+
+### CompactionRL 補充：RL 訓練中第一個把 summarization 變成 learnable action 的方法
+
+現有十篇 + CompactionRL 形成十一篇互補堆疊：
+
+10. **CompactionRL (Li et al., 2026)**：將 context compaction 整合進 RL training pipeline 的第一個方法。核心突破：**PPO over group-relative methods** — compaction 讓單一 rollout 變成可變數量、可變長度的 segments，GRPO 的 group normalization 無法處理，PPO 的 critic-based token-level advantage 才是正確框架。**Summarization as learnable action** — 任務執行動作和摘要動作在同一个 task-level reward 下聯合優化，壓縮策略不再是工程師設計的 heuristic，而是模型從 outcome feedback 學到的技能。
+
+CompactionRL 與其他 training-time 方法的差異：
+- vs **Memory-R2**：Memory-R2 訓練的是「何時更新記憶」，CompactionRL 訓練的是「如何生成摘要」。Memory-R2 解決的是 memory 使環境 non-stationary 的 credit assignment；CompactionRL 解決的是 compression policy 的 quality。
+- vs **SelfMem**：SelfMem 是 inference-time optimization（不需要 training），CompactionRL 是 training-time learning（從 outcome feedback 端到端訓練）。
+- vs **MemGPT**：MemGPT 是 system-level memory paging（固定 policy），CompactionRL 是 learnable compaction policy（模型自己學）。
+
+**對 OpenClaw 的直接啟發**：Rowlet 的 heartbeat 本身就像一個 compaction trigger —— 每次 heartbeat 都做一個「壓縮 + 繼續」的動作，但目前的實作是 heuristic 的（固定的總訊息長度閾值）。CompactionRL 的啟示是：**如果我們能收集足夠的 heartbeat outcome data，就可以訓練模型自己學何時壓縮、怎麼壓縮**，而不只是靠固定規則。這需要 (1) 定義 task-level reward for heartbeat outcomes，(2) PPO-style 訓練框架。
 
 ### 對我們自己的工程提醒
 
