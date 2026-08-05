@@ -1,0 +1,210 @@
+
+ACE: Pluggable Adaptive Context Elasticizer across Agents
+ // Restore the saved color scheme preference, or
+ // enact the browser preference if "automatic", 
+ // without expecting DOM load to have completed.
+ //
+ // Also restore any saved readingmode and ToC display preferences.
+ function initializeReadingPreferences() {
+ let saved_theme = localStorage.getItem("ar5iv_theme") || "automatic";
+ if (saved_theme === "automatic") {
+ if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+ saved_theme = "dark";
+ }
+ }
+ if (saved_theme == "dark") {
+ document.documentElement.setAttribute("data-theme", "dark");
+ } else {
+ document.documentElement.setAttribute("data-theme", "light");
+ }
+ const tocDisplay = localStorage.getItem('arxiv_html_paper_toc_display');
+ if (tocDisplay) {
+ document.documentElement.setAttribute("data-toc-display", tocDisplay);
+ }
+ const readingMode = localStorage.getItem('arxiv_html_paper_reading_mode');
+ if (readingMode) {
+ document.documentElement.setAttribute("data-reading-mode", readingMode);
+ }
+ // Pre-apply spinout-banner dismissal here, before the banner paints, so it
+ // never flashes in only to be hidden later by the deferred arxiv-header.js.
+ // Key matches arxiv-header.js: "arxiv-banner-dismissed:" + data-banner-name.
+ if (localStorage.getItem('arxiv-banner-dismissed:spinout-nonprofit')) {
+ document.documentElement.setAttribute("data-banner-dismissed", "");
+ }
+ }
+ // Run as soon as JS starts, to minimize repainting
+ initializeReadingPreferences();
+<link rel="apple-touch-icon" sizes="180x180"
+ href="/static/browse/0.3.4/images/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32"
+ href="/static/browse/0.3.4/images/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16"
+ href="/static/browse/0.3.4/images/icons/favicon-16x16.png">
+<link rel="stylesheet" type="text/css" media="screen"
+ href="/static/base/1.0.1/css/arxiv-header-footer.css?v=20260626">
+ /* Banner pre-dismissal (set above before paint -> no flash-then-hide) and
+ reading-mode chrome hiding. */
+ html[data-banner-dismissed] .ds-announcement { display: none; }
+ html[data-reading-mode="enabled"] .ds-announcement,
+ html[data-reading-mode="enabled"] .ds-site-footer { display: none; }
+ /* Keep the announcement text dark on the Open-Blue band in both colour themes
+ (otherwise it inherits the paper's warm-wash text in dark mode and washes out). */
+ .ds-announcement-text { color: var(--arxiv-ink, #1c1a17); }
+ 
+ 
+ Report GitHub Issue
+ ×
+ 
+ 
+ Title:
+ 
+ Content selection saved. Describe the issue below:
+ Description:
+ <textarea class="form-control" id="description" name="description" required maxlength="500"
+ placeholder="500 characters maximum">
+ 
+ 
+ Submit without GitHub
+ Submit in GitHub
+ 
+ 
+<div class="ds-announcement" id="announcement-banner" role="region" aria-label="Announcement"
+ data-banner-name="spinout-nonprofit">
+ 
+ arXiv is now an independent nonprofit!
+ Learn more
+ &times;
+ 
+ 
+ <img alt="arXiv logo" class="logo desktop-only" width="100"
+ src="/static/base/1.0.1/images/arxiv-logo-primary-light.svg">
+ Back to arXiv
+ 
+ 
+ 
+ 
+ <a class="header-button hover-effect desktop-only" href="https://info.arxiv.org/about/accessible_HTML.html"
+ target="_blank">Why HTML?
+ <a class="header-button" title="Report an Issue" href="#" title="Report an issue"
+ onclick="event.preventDefault(); showModalForm();">
+ <svg role="presentation" class="mobile-only toggle-icon" aria-hidden="true" height="1.25rem"
+ viewBox="0 0 640 640">
+ <path
+ d="M224 160C224 107 267 64 320 64C373 64 416 107 416 160L416 163.6C416 179.3 403.3 192 387.6 192L252.5 192C236.8 192 224.1 179.3 224.1 163.6L224.1 160zM569.6 172.8C580.2 186.9 577.3 207 563.2 217.6L465.4 290.9C470.7 299.8 474.7 309.6 477.2 320L576 320C593.7 320 608 334.3 608 352C608 369.7 593.7 384 576 384L480 384L480 416C480 418.6 479.9 421.3 479.8 423.9L563.2 486.4C577.3 497 580.2 517.1 569.6 531.2C559 545.3 538.9 548.2 524.8 537.6L461.7 490.3C438.5 534.5 395.2 566.5 344 574.2L344 344C344 330.7 333.3 320 320 320C306.7 320 296 330.7 296 344L296 574.2C244.8 566.5 201.5 534.5 178.3 490.3L115.2 537.6C101.1 548.2 81 545.3 70.4 531.2C59.8 517.1 62.7 497 76.8 486.4L160.2 423.9C160.1 421.3 160 418.7 160 416L160 384L64 384C46.3 384 32 369.7 32 352C32 334.3 46.3 320 64 320L162.8 320C165.3 309.6 169.3 299.8 174.6 290.9L76.8 217.6C62.7 207 59.8 186.9 70.4 172.8C81 158.7 101.1 155.8 115.2 166.4L224 248C236.3 242.9 249.8 240 264 240L376 240C390.2 240 403.7 242.8 416 248L524.8 166.4C538.9 155.8 559 158.7 569.6 172.8z" />
+ 
+ Report Issue
+ 
+ <a class="header-button" title="Back to abstract page" aria-label="Back to abstract page"
+ href="/abs/2606.31564v1">
+ <svg class="mobile-only toggle-icon" role="presentation" height="1.25rem" viewBox="0 0 512 512" fill="#ffffff"
+ aria-hidden="true">
+ <path
+ d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z">
+ 
+ 
+ Back to Abstract
+ 
+ 
+ <a class="header-button" title="Download PDF" href="/pdf/2606.31564v1"
+ target="_blank">
+ 
+ <path
+ d="M208 48L96 48c-8.8 0-16 7.2-16 16l0 384c0 8.8 7.2 16 16 16l80 0 0 48-80 0c-35.3 0-64-28.7-64-64L32 64C32 28.7 60.7 0 96 0L229.5 0c17 0 33.3 6.7 45.3 18.7L397.3 141.3c12 12 18.7 28.3 18.7 45.3l0 149.5-48 0 0-128-88 0c-39.8 0-72-32.2-72-72l0-88zM348.1 160L256 67.9 256 136c0 13.3 10.7 24 24 24l68.1 0zM240 380l32 0c33.1 0 60 26.9 60 60s-26.9 60-60 60l-12 0 0 28c0 11-9 20-20 20s-20-9-20-20l0-128c0-11 9-20 20-20zm32 80c11 0 20-9 20-20s-9-20-20-20l-12 0 0 40 12 0zm96-80l32 0c28.7 0 52 23.3 52 52l0 64c0 28.7-23.3 52-52 52l-32 0c-11 0-20-9-20-20l0-128c0-11 9-20 20-20zm32 128c6.6 0 12-5.4 12-12l0-64c0-6.6-5.4-12-12-12l-12 0 0 88 12 0zm76-108c0-11 9-20 20-20l48 0c11 0 20 9 20 20s-9 20-20 20l-28 0 0 24 28 0c11 0 20 9 20 20s-9 20-20 20l-28 0 0 44c0 11-9 20-20 20s-20-9-20-20l0-128z" />
+ 
+ Download PDF
+ 
+ <a class="header-button toggle-icon" href="javascript:toggleNavTOC();" title="Toggle navigation"
+ aria-label="Toggle navigation">
+ 
+ <path
+ d="M40 48C26.7 48 16 58.7 16 72v48c0 13.3 10.7 24 24 24H88c13.3 0 24-10.7 24-24V72c0-13.3-10.7-24-24-24H40zM192 64c-17.7 0-32 14.3-32 32s14.3 32 32 32H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H192zm0 160c-17.7 0-32 14.3-32 32s14.3 32 32 32H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H192zm0 160c-17.7 0-32 14.3-32 32s14.3 32 32 32H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H192zM16 232v48c0 13.3 10.7 24 24 24H88c13.3 0 24-10.7 24-24V232c0-13.3-10.7-24-24-24H40c-13.3 0-24 10.7-24 24zM40 368c-13.3 0-24 10.7-24 24v48c0 13.3 10.7 24 24 24H88c13.3 0 24-10.7 24-24V392c0-13.3-10.7-24-24-24H40z">
+ 
+ 
+ 
+ 
+ <a class="header-button toggle-icon" href="javascript:toggleReadingMode();"
+ title="Disable reading mode, show header and footer">
+ <svg role="presentation" height="1.25rem"
+ viewBox="0 0 448 512">
+ <path
+ d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32S0 334.3 0 352l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z" />
+ 
+ 
+ 
+ 
+ 
+ 
+ <path
+ d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9h-1.9M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69m-9.15 3.96h2.3L12 9l-1.15 3.65Z">
+ 
+ 
+ 
+ 
+ 
+ <path
+ d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z">
+ 
+ 
+ 
+ 
+ 
+ <path
+ d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z">
+ 
+ 
+ 
+ 
+ 
+Abstract
+1 Introduction
+2 Related Work
+2.1 Agentic Context Management
+2.2 Agentic Foundation Models
+3 Method
+3.1 Decoupling Actual Context from Raw Messages
+3.2 Per-step Elastic Context Orchestration
+3.3 Training-free Plug-and-Play Integration
+4 Experiments
+4.1 Experimental Setup
+4.2 Comparison with Context Management Baselines
+4.3 Adapting ACE as a Plug-in to Multiple Agents
+4.4 Analysis on the Per-Step Input Token Length
+4.5 Analysis on the Elastic Type Evolution of Historical Steps
+4.6 Ablation Study on the Composition of Elastic Types
+4.7 Ablation Study on the Elastic Type of Last Step
+5 Conclusions
+References
+ 
+ License: arXiv.org perpetual non-exclusive license
+ 
+ 
+arXiv:2606.31564v1 [cs.AI] 30 Jun 2026
+ACE: Pluggable Adaptive Context Elasticizer across Agents
+Ning Liao1∗, Zihao Long1,2∗, Xiaoxing Wang2, Xue Yang2, Yaoming Wang1, Ziyuan Zhuang1,
+Xunliang Cai1, Rongxiang Weng1†, Junchi Yan2† 
+1 Meituan, 2 Shanghai Jiao Tong University 
+∗ Equal Contributions, † Corresponding Authors 
+Abstract
+The increasing complexity of agentic tasks has led to rapidly growing trajectory lengths, which poses significant challenges for large language model (LLM) based agents with fixed context windows. Existing context management techniques, such as truncation and summarization, suffer from inherent inflexibility and irreversibility: once information is discarded or compressed, it cannot be recovered even when it becomes critically relevant in later decision steps. To address these limitations, we propose the Adaptive Context Elasticizer (ACE), a plug‑and‑play module that elastically orchestrates historical step information into the agent’s context at each decision step. ACE maintains a lossless message maintenance layer that stores both raw messages and compressed abstractions for each historical step, while a context orchestration layer adaptively assigns each step an elastic type as raw, abstract, or drop, at every decision step based on the current task state. This reversible design ensures that the main LLM always receives a compact yet information‑rich context. We adapt ACE to four diverse agent frameworks, including ReAct, DeepAgent, WebThinker, and MiroFlow, without training or architectural modifications. Experiments show that ACE consistently outperforms truncation and summarization baselines, and brings consistent performance gains across all four agent frameworks.
+1 Introduction
+The practical success of large language models (LLMs) (Team et al., 2025b; Zeng et al., 2026; Team et al., 2025a; Chen et al., 2026) in real-world scenarios has been largely enabled by agents (Yao et al., 2023; Shinn et al., 2023; Wang et al., 2024, 2026). In the classic ReAct (Yao et al., 2023) paradigm, LLMs usually act as the central brain that repeatedly reasons about the current task state, calls external tools, and integrates tool responses. The generated information at each step is appended verbatim to the trajectory. As task complexity grows, trajectory length increases linearly (Schick et al., 2023; Nakano et al., 2021; Jin et al., ; Li et al., 2025). This poses major challenges for models with a fixed window size, leading to information density dropping, attention dispersing, and reasoning quality degrading. Therefore, agentic context management has become indispensable for solving complex and long-horizon tasks.
+A range of techniques(Zhang et al., 2025b; Hu et al., 2025; Du, 2026) has been proposed to address the long-context bottleneck. The simplest, truncation (Liu et al., 2025; Liang et al., 2026; Team et al., 2026), retains the most recent content while discarding the more distant historical context using a sliding window. This achieves zero computational cost at the expense of semantic integrity. Unlike truncation, compression does not discard content blindly but rather rewrites raw history into shorter forms. Existing work in this vein adopts three distinct designs. Threshold-triggered compression rewrites the history when a length budget is exceeded or a subtask is completed (Kang et al., 2025; Wu et al., 2025b; Sun et al., 2025; Qian et al., 2026). Recurrent compression maintains a fixed-size memory state that is updated via learned mechanisms at every timestep (Zhou et al., ; Chen et al., 2025a; Yu et al., 2025). Agent-controlled compression places the compression decision in the hands of the LLM itself, exposing context management operations as actions or tools it can invoke (Zhang et al., 2025a; Ye et al., 2025; Yao et al., 2026).
+These methods suffer from common flaws: inflexibility and irreversibility. In agent workflows, the relevance of a given historical step to the current decision evolves flexibly over time. Some steps are critical, offering unique details required at the present moment. Others are redundant, as their content is fully contained or overwritten by later steps. The remainder are simply dispensable. However, truncation and compression treat each historical step equally, ignoring the varying importance of different information, and foreclose the possibility of adaptation. Once content is dropped by truncation or abstracted by compression, the original information cannot be recovered. This becomes problematic when a previously discarded message turns out to be critical, or when a compressed summary fails to preserve a necessary detail.
+The above analysis highlights a key requirement: at each decision step, the main LLM that acts as the agent’s primary reasoning module should receive high information density, achieved by adaptively rendering each historical message in its optimal form. Accordingly, we propose the Adaptive Context Elasticizer (ACE).
+As shown in Fig. 1, ACE distinguishes two layers: a message maintenance layer, which maintains the raw messages and compressed abstraction of each historical step, and a context orchestration layer, which produces the context that the main LLM actually receives. Before each step, ACE inspects the current task state and assigns one of three decisions, i.e., raw, abstract, or drop, to messages at each step in the message maintenance layer. These states collectively determine the composition of the context orchestration layer at the current step, ensuring the main LLM of the agents receives the most informative view of the trajectory for the decision at hand. Moreover, the presentation format of information from all historical steps is not fixed and can be adjusted on demand in any subsequent step. Given that the message maintenance layer remains immutable, an abstraction that is chosen for use in one step can be reversibly expanded to the full original information in another step. Similarly, information that is dropped in one step can be reversibly reassembled into the context in any subsequent step upon demand. This elastic context orchestration adapts synchronously with the agent’s evolving focus of attention as the task progresses.
+By this design, the inflexibility issue could be resolved as ACE is elastic, with the context orchestration layer rebuilt freshly based on the re-evaluated set of states at each step; and the irreversibility issue could be addressed as ACE is lossless, with the message maintenance layer never overwritten by any state assignment. To facilitate simple and flexible integration of ACE into various agent frameworks without substantially altering their native action spaces or message flow, we cast ACE as an external wrapper that encloses the reasoning loop of the original agent framework, thereby providing a more informative context at each step.
+Experimentally, based on the classic ReAct agent framework (Yao et al., 2023), we compare the proposed ACE against truncation and compression methods, showing that ACE can manage the context more effectively than the baseline methods. Moreover, as a training‑free, plug‑and‑play module, ACE is adapted to three other distinct agent frameworks: DeepAgent (Li et al., 2026a), WebThinker (Li et al., 2026b), and MiroFlow (Su et al., 2026). Across various benchmark evaluations, ACE consistently improves the performance over the original frameworks.
+We summarize the contributions as follows:
+1. 
+Decoupling Actual Context from Raw Messages. We devise a maintenance layer for raw messages and compressed abstractions, and an orchestration layer for actual context. This lossless design enables reversible expansion of abstracts and recovery of dropped messages in later steps.
+2. 
+Per-step Elastic Context Orchestration. We reorganize every historical message into Raw, Abstract, or Drop based on the current task state at each step, then rebuild the context orchestration layer to minimize redundancy and maximize information density without altering storage.
+3. 
+Training-free Plug-and-Play Integration. We implement ACE as an external wrapper around an existing agent’s reasoning loop without modifying action space, message flow, or training, and adapt it to four diverse frameworks: ReAct, WebThinker, DeepAgent, and MiroFlow.
+4. 
+Empirical Analysis and Ablation. ACE outperforms truncation and compression on ReAct, and improves performance over the original frameworks when adapted to WebThinker, DeepAgent, and MiroFlow. Further ablation studies confirm the efficacy of the mechanism in the proposed ACE.
+2 Related Work
+2.1 Agentic Context Management
+Existing approaches to agentic context management follow four broad designs. Truncation (Liu et al., 2025; Liang et al., 2026; Team et al., 2026) methods discard trajectory content by position or length, which is entirely content‑agnostic. Threshold‑triggered compression methods, such as ACON (Kang et al., 2025) and ReSum (Wu et al., 2025b), invoke a compression LLM to summarize the accumulated history when the context length surpasses a budget. The resulting summary then replaces the original trajectory. Recurrent compression methods, exemplified by MEM1 (Zhou et al., ), MemAgent (Yu et al., 2025), and IterResearch (Chen et al., 2025a), train the primary reasoning LLM end‑to‑end to emit a fixed‑size summary state at each step. Agent‑controlled compression methods expose context management to the main LLM as explicit actions or tools. For example, AgentFold (Ye et al., 2025) introduces a fold action that retrospectively condenses individual steps or consolidates multi‑step sub‑tasks, whereas Memory‑as‑Action (Zhang et al., 2025a) formulates precise compression operations as actions governed by a trained policy. Across all four families, every compression decision is final and cannot be revised in later steps. Moreover, recurrent and agent‑controlled methods modify the underlying framework, extend the action space or tool set, and require additional training. These two limitations motivate ACE, which retains the full trajectory in a separate storage layer so that every assignment remains revisable and flexible, and operates as an external wrapper so that no change to the original agent frameworks or any further training is needed.
+2.2 Agentic Foundation Models
+To elevate agent performance, a complementary line of work is to enhance the intrinsic agentic abilities of foundation models (Team et al., 2025b; Zeng et al., 2026; Team et al., 2025a; Chen et al., 2026). The key design axis is context scaling, which extends the maximum context length that the model can ingest, for instance via sparse or recurrent attention (Beltagy et al., 2020; Zaheer et al., 2020; Yuan et al., 2025; Liu et al., 2025) or via positional interpolation (Chen et al., 2023; Peng et al., 2024). These advances increase the maximum trajectory length an agent can handle before h
