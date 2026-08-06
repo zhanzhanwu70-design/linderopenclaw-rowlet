@@ -102,6 +102,22 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 - RL-based context selection：未來可探索的方向。
 - **Position engineering**：把 critical instructions 重複出現在 prompt 兩端（duplicate-the-edges）是抵禦 U-shaped curve 的便宜手段，值得實驗。
 
+### TrajWiki 補充：Source-Grounded Memory Trajectories（2026-08-05 深讀）
+
+**最新論文（2608.00967, 2026-08-01）**，專攻 long-horizon dialogue agent 的 memory 追蹤與可解釋性。
+
+**核心貢獻**：
+1. **Memory Trajectory Model** — 將每段記憶視為一條 source-grounded evolution trajectory，透過 immutable episodic snapshots + claim-level operations（ADD/REVISE/DEPRECATE）維護。解決了 overwriting 導致的資訊丟失問題。
+2. **Memory Wiki 中間層** — 持續把對話歷史增量編譯成結構化 wiki pages（entities、events、quantities、topics、conflicts），wiki page 之間互相連結形成知識圖譜。
+3. **Hierarchical query routing** — 查詢時：wiki page → linked memory trajectories → snapshots → source messages for evidence-grounded answer synthesis。
+
+**與其他方法的根本差異**：
+- vs **MemGPT**：MemGPT 是 paging-based memory（把不常用的 context 移到外部），TrajWiki 是結構化的 evolution trajectory，強調版本演化與 provenance
+- vs **SelfMem**：SelfMem 是 inference-time self-reflection，TrajWiki 是 persistent structured wiki + explicit revision operations
+- vs **CompactionRL**：CompactionRL 把 summarization 變成可學習的 action，TrajWiki 把 memory revision 變成 explicit operations（ADD/REVISE/DEPRECATE）
+
+**對 OpenClaw 的直接啟發**：Rowlet 目前的三層記憶（SOUL.md / daily memory / MEMORY.md）本質上還是 append-only 和 static retrieval 的混合。TrajWiki 的 operation model 提示我們：可以在 `MEMORY.md` 或 `SOUL.md` 的更新邏輯中加入 explicit revision types（修訂 vs 廢棄），而不只是覆蓋式寫入。這會讓記憶的演化可追蹤、可診斷。
+
 ## 新論文補充：意圖鏈視角
 
 現有七篇 + OnePred + ACE 形成九篇互補堆疊：
