@@ -3,7 +3,7 @@ title: "Code-Agent Map"
 category: map
 type: knowledge-map
 created: 2026-06-11
-modified: 2026-07-30
+modified: 2026-08-07
 ---
 
 # Code-Agent Map
@@ -11,6 +11,21 @@ modified: 2026-07-30
 此頁整理與 code-agent / tool-use agent 相關的論文與概念，特別關注 context processing、long-term memory、retrieval、workflow control。
 
 ## Agent Context Processing / Memory
+
+### [[sirin-belikova-2026]] — contextual hallucination detection for RAG & memory agents (2026-08-07)
+
+**SIRIN（Semantic Inconsistency Recognition and Inspection Nexus）**是一個統一工具包，專門檢測 RAG 系統和 memory-grounded agent 中的 contextual hallucination——模型產生流暢合理但與提供的證據不一致的回答。
+
+**三大家族 detector 統一介面**：
+- **Probing（白盒）**：訓練輕量分類器於 frozen LLM hidden states、attention maps、token probabilities
+- **Uncertainty Estimation（黑盒）**：困惑度、語義不確定性、RAUQ 等信心估計
+- **Judge-style（黑盒）**：用第二個模型做 NLI/alignment 事實性檢查
+
+**核心創新**：統一的 inspection report schema — `D_θ(x) = (s, ŷ, E)`，其中 s ∈ [0,1] 為校準 hallucination 概率分數。支援兩種互補任務：(1) 事後 faithfulness check（答案是否忠於上下文）和 (2) 事前 answerability check（上下文是否足以回答問題）。
+
+**Span-level localization** 是關鍵能力：不只給整體分數，還能定位到 unsupported text spans。在 SimpleMem 長期記憶系統中作為 faithfulness gate 展示。
+
+**對我們的啟發**：Rowlet 的三層記憶同樣面臨 hallucination 累積風險——某 session 把細節記錯，後續 session 基於錯誤記憶推理。SIRIN-style 的 NLI-based faithfulness check 可用於 audit 記憶品質，或作為 heartbeat 寫入前的 trust gate。
 
 ### [[context-engineering-2025-mei]] — unified taxonomy of context engineering
 
@@ -82,15 +97,16 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 
 ## Synthesis
 
-目前七篇形成一個互補堆疊：
+目前八篇形成一個互補堆疊：
 
 1. **Lost in the Middle**：經驗基礎 — 證明「context 越長 ≠ 表現越好」，U-shaped curve，middle 會被忽略。
-2. **Context Engineering Survey**：統一 taxonomy，回答「整個領域怎麼分類」的問題，是其餘六篇的上層框架。
+2. **Context Engineering Survey**：統一 taxonomy，回答「整個領域怎麼分類」的問題。
 3. **MemGPT**：runtime memory tiers + virtual context paging，直接繞過 stuffing。
 4. **ContextWeaver**：dependency-aware selection，讓取回的 context 保留因果/邏輯結構。
 5. **Memory-R2**：training-time credit assignment，讓 agent 學會更好的 memory operations。
 6. **HORMA**：hierarchical organize-then-retrieve，用 RL navigation 選擇最小 sufficient context。
 7. **ACE**：elastic reversible context orchestration，training-free wrapper，動態每步重建 context，最大化資訊密度。
+8. **SIRIN**：contextual hallucination detection toolkit — 三大家族 detector 統一介面 + answerability 事前把關 + span-level 定位，是 RAG/memory agent 的 faithfulness infrastructure。
 
 對 OpenClaw / Rowlet 類 agent，可映射為：
 
@@ -142,9 +158,10 @@ SelfMem 的 feedback 是可觀察的 tool outputs（非 gold answer / scalar rew
 
 ### CompactionRL 補充：RL 訓練中第一個把 summarization 變成 learnable action 的方法
 
-現有十篇 + CompactionRL 形成十一篇互補堆疊：
+現有十一篇 + CompactionRL 形成十二篇互補堆疊：
 
-10. **CompactionRL (Li et al., 2026)**：將 context compaction 整合進 RL training pipeline 的第一個方法。核心突破：**PPO over group-relative methods** — compaction 讓單一 rollout 變成可變數量、可變長度的 segments，GRPO 的 group normalization 無法處理，PPO 的 critic-based token-level advantage 才是正確框架。**Summarization as learnable action** — 任務執行動作和摘要動作在同一个 task-level reward 下聯合優化，壓縮策略不再是工程師設計的 heuristic，而是模型從 outcome feedback 學到的技能。
+10. **SIRIN**：見上方第 8 項
+11. **CompactionRL (Li et al., 2026)**：將 context compaction 整合進 RL training pipeline 的第一個方法。核心突破：**PPO over group-relative methods** — compaction 讓單一 rollout 變成可變數量、可變長度的 segments，GRPO 的 group normalization 無法處理，PPO 的 critic-based token-level advantage 才是正確框架。**Summarization as learnable action** — 任務執行動作和摘要動作在同一个 task-level reward 下聯合優化，壓縮策略不再是工程師設計的 heuristic，而是模型從 outcome feedback 學到的技能。
 
 CompactionRL 與其他 training-time 方法的差異：
 - vs **Memory-R2**：Memory-R2 訓練的是「何時更新記憶」，CompactionRL 訓練的是「如何生成摘要」。Memory-R2 解決的是 memory 使環境 non-stationary 的 credit assignment；CompactionRL 解決的是 compression policy 的 quality。

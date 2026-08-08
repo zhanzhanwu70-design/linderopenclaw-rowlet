@@ -1,106 +1,131 @@
-# 每日 Agent × 軟體開發情報 — 2026-08-07
+# 每日 Agent × 軟體開發情報 — 2026-08-08
 
-> 產出者：木木鴞（rowlet）｜時區：UTC｜主查詢時間：2026-08-07 02:02 UTC
+> 產出者：木木鴞（rowlet）｜時區：UTC｜主查詢時間：2026-08-08 02:08 UTC
 > 範圍：近 7-14 天；三類來源：研究 / 開發潮流 / 工具與框架 release。
-> 本日調性：**昨天（08-06）「harness 為 98% 系統」頂點；今天 24 小時內，「**agent platform / state kernel / 三層架構**」三件事同步冒出 — Cloudflare OS 把 agent 推到組織級別、LangChain 明確切出 Runtime × Framework × Harness、LoopX 把 loop state 從 runtime 外部化。今天的訊號不再是「harness 競爭」，而是「**agent 平台正在標準化為三層可組合架構 + 每層都有 OSS 參考實作**」**。OpenClaw 目前**模糊跨在 framework + harness**，缺 runtime 明確抽象。
+> 本日調性：昨天（08-06/07）「**harness 是 98% 系統** + **三層架構 vendor 級共識**」轉入「**agent era stabilization**」 — 5 個 agent framework 同日 GitHub trending、學術界把 harness 變成可量化 benchmark（HarnessOpt-Bench）、Claude Code 推出跨 session 訊息 + skill archive plugin。OpenClaw 進入「**workflow primitive + state kernel + evidence log + skill provenance**」收斂期。
 
-## 對位前一輪報告（07-31 / 08-02 / 08-05 / 08-06）
+## 對位前一輪報告（08-06 / 08-07）
 
-| 昨日（08-06）訊號 | 今日（08-07）驗證 / 翻面 / 新切角 |
+| 昨日（08-07）訊號 | 今日（08-08）驗證 / 翻面 / 新切角 |
 | --- | --- |
-| MBZUAI 量化「harness 是 98%」 | ✅ **Cloudflare OS（08-06, HN #5 647 點）** 把這件事推到**組織級別** — 「harness 不是個人工具，是 platform」 |
-| Microsoft Agent Framework Harness GA | ✅ **LangChain 2026-08-06 同步明確分層**：LangGraph=Runtime、LangChain=Framework、Deep Agents v0.7=Harness；**三層可組合** — vendor 級共識成形 |
-| Meta Muse Code bundled skills (`/plan /grill /goal`) | ✅ **Deep Agents v0.7 skills = first-class + cross-harness portable**；OpenClaw skill system 還在 design-time 注入 |
-| Prime Agent Continual Harness CRUD | ⚠️ 今天沒有新對位，但 **Cloudflare OS shared skill library** 是「跨員工、跨 function」的同類進化 |
-| 「code ↔ conversation 雙向追溯」（Zed DeltaDB） | ✅ **LoopX evidence log + typed handoff + quota auto-wake** 是 agent-runtime 級的對位，**比 VCS 級的 DeltaDB 更早一步**（runtime state 而非 file state） |
-| Ponytail benchmark 治理（80-94% → 54%） | ⚠️ 今天沒有新對位，但 **Castform/Neon** 展示另一種 benchmark 治理：「100x cheaper 也能贏 frontier，靠 RL post-training 不是 bigger model」 |
-| OpenClaw `task-manager` fire-and-forget | ⚠️ **LoopX 出現**：peer claims / leases / evidence log / human gate — 我們 `task-manager` 明顯是「無 state kernel 的 queue」 |
-| Karpathy LLM Wiki Ecosystem（graphify） | ⚠️ 今天沒有新對位，但 **code-review-graph（MCP-native, tree-sitter）** 展示「code graph as MCP service」的標準模式 — graphify 還沒 MCP 化 |
-| DeepMind 組織大改組 | ⚠️ 昨天已收錄，無新 |
+| LangChain Runtime × Framework × Harness 三層架構 | ✅ **Claude Code v2.1.224**（08-07）推出跨 session `SendMessage` + `ListAgents` — 工具層 multi-agent 原生化 |
+| Microsoft Harness GA / Prime Agent / Meta Muse bundled skills | ✅ **Prime Agent RLM + Continual Harness**（08-08 Trending #1）— `/refine` agent 自改進 harness state（immutable base prompt） |
+| Cloudflare OS shared skill library | ⚠️ 對位 **addyosmani/agent-skills 24 slash commands**（08-08 Trending #2）— slash command 跨 70+ agent 部署 = cross-harness portable workflow primitive |
+| MBZUAI「harness 是 98%」 | ✅ **arXiv 2608.06301 HarnessOpt-Bench** — 第一個 academic benchmark for harness optimization，**harness engineering 從 vendor PR 進入學術可量化領域** |
+| MCP Observation Leakage（Cloudflare OS） | ✅ **Oracle OpenJDK ban AI-generated code**（HN 393 點）— 開源基礎設施正式 ban AI code，provenance 成組織風險 |
+| Ponytail benchmark 治理反思 | ✅ **unclebob/swarm-forge**（08-08 Trending）— disciplined tmux-based orchestration，specifier/coder/cleaner/architect/hardender/QA 角色拆分 = **「**TDD/QA/hardening 作為獨立 agent 角色**」** |
+| `task-manager` fire-and-forget | ✅ **Claude Code `SendMessage` + bypass-permissions hold** = 「**explicit approval for cross-session risky message**」標準化 — 我們 `sessions_send` 缺這個 |
+| DeepSeek V4 Flash 0731（ARC-AGI） | ⚠️ 昨天已收錄，今天續熱（HN 472 點 284 留言） |
+| OpenAI Astra「Critical」cyber capability | ⚠️ 昨天已收錄，今天續熱（HN 155 點 167 留言） |
+| Cloudflare Computer preview | ✅ **今天繼續 Trending**（+872 stars/day），preview 狀態未變 |
 
 ## 今日 5 個重點
 
-1. **Cloudflare OS 開源（08-06, HN #5 647 點 318 留言）— 把 agent 從「個人 coding tool」推到「整個組織的 platform」，並**首次明確命名 MCP 觀察洩漏（observation leakage）為 platform-level 安全問題**。**
-   - 發生什麼：Cloudflare 開源 Cloudflare OS（<https://blog.cloudflare.com/cloudflare-os/>）— browser conversation grounded in **curated organization context + shared skill library**，第一版 2026-05 內部上線（Cloudflare 全公司 thousands of users across every function），第二版 2026-08-06 開源（<https://os.cloudflare.app/>）。Companion repo **cloudflare/computer**（preview only，08-06 單日 +2,802 stars）：**Durable Object + SQLite 為 authoritative state**，三個 pluggable execution backend — **Container**（FUSE mount sandbox）/ **Isolate shell**（跑 Vercel just-bash in Dynamic Worker）/ **Isolate JavaScript**（ECMAScript module in Dynamic Worker），單一 entry point `workspace.runtime.exec(source, { backend })`。
-   - 為什麼重要：**Cloudflare 是第一個 vendor 把「MCP 觀察洩漏 ≠ MCP 工具呼叫」做成 platform-level 安全問題**。原文：「Access to an MCP server told us which tools an agent could call, but not which underlying resources the agent had observed. Once people began sharing workspaces, apps, and outputs, we needed to ensure that collaboration could not expose information someone was not permitted to see.」這句話**直接打臉 MCP 當前設計** — MCP 管 tool-call ACL，不管 resource-observation ACL。對 Linder：（a）**OpenClaw 沒明確區分 tool ACL vs resource ACL** — specialist agents 共享 `~/.openclaw/`，可能含 secret 觀察洩漏；（b）**「shared skill library across organization」** 是 Ponytail + obra/superpowers + Meta Muse Code 的組織級進化 — OpenClaw skill system 還在 design-time 個人注入；（c）**Cloudflare Computer 三個 pluggable backend** 對位 OpenClaw `exec` 是 universal — 我們要不要也支援 pluggable backend（Container / shell / JS）？
-   - 來源：<https://blog.cloudflare.com/cloudflare-os/>、<https://news.ycombinator.com/item?id=49182996>、<https://github.com/cloudflare/computer>。
+1. **GitHub Trending 5 個 agent framework 同日上榜（08-08）— 「disciplined / spec-first / methodology」為共同關鍵字。**
+   - 發生什麼：**PrimeIntellect-ai/prime-agent**（+2,293 stars/day #1）+ **addyosmani/agent-skills**（+1,131 stars/day #2）+ **cloudflare/computer**（+872 stars/day #3）+ **obra/superpowers** + **mattpocock/skills** + **unclebob/swarm-forge**（+81 stars/day）— 24h 內 6 個 agent 框架同時進入 Trending。共同設計原則：
+     - **Prime Agent**：RLM（persistent REPL）+ Continual Harness（`/refine` agent 自改進補充 prompt / memory / skills / sub-agent spec，**永不覆寫 immutable base prompt**）+ daemon-backed agents + agents 互傳訊息。
+     - **addyosmani/agent-skills**：24 slash commands（`/spec /plan /build /test /review /webperf /code-simplify /ship`）= workflow primitive + 70+ agent 部署（Claude Code / Cursor / Codex / Copilot / Cline）。設計哲學：**spec before code / tests are proof / clarity over cleverness / faster is safer**。Skills 自動 activate by context（API 設計 → `api-and-interface-design`）。
+     - **cloudflare/computer**：Workspace = Durable Object + SQLite authoritative state + 三個 pluggable execution backend（Container / Isolate shell / Isolate JavaScript），統一 entry `workspace.runtime.exec(source, { backend })`。
+     - **unclebob/swarm-forge**：tmux-based disciplined orchestration，三種 workflow — **two-pack**（coder → cleaner）/ **four-pack**（specifier → coder → refactorer → architect）/ **six-pack**（specifier → coder → cleaner → architect → hardender → QA）。每個 role 有 specific responsibility（spec Gherkin / TDD / CRAP/DRY / mutation hardening / handoff consistency）。
+   - 為什麼重要：**進入「agent 平台化穩定期」** — 昨天（08-06/07）5 vendor 同週推 harness + 1 VCS 重新發明 = **vendor 級標準化**；今天 6 framework 同日 trending + 「disciplined / spec-first / methodology」共同關鍵字 = **「**vibe coding 反動 + 平台收斂期**」** 正式成形。
+   - 對 Linder / OpenClaw：
+     - **slash command = workflow primitive 比 skill 更高階的封裝** — OpenClaw 應正式化 `/spec /plan /build /test /review /ship` 並 cross-agent deploy。
+     - **Context-aware skill loader** — OpenClaw skill 目前 user-explicit，落後 addyosmani 自動 activate 模式。
+     - **Pluggable execution backend** — OpenClaw `exec` universal 但沒 pluggable backend（container / shell / JS）。
+     - **TDD/QA/hardening 作為獨立 agent role** — 我們 `mattpocock-teach` 還沒拆到 unclebob/swarm-forge 這種粒度。
+   - 來源：<https://github.com/trending?since=daily>。
 
-2. **LangChain 2026-08-06 明確「Runtime × Framework × Harness 三層可組合架構」— Deep Agents v0.7 + Sydney Runkle 新文，frontier vendor 級共識成形。**
-   - 發生什麼：Sydney Runkle「Deep Agents vs LangChain vs LangGraph」（<https://blog.langchain.com/deep-agents-vs-langchain-vs-langgraph/>，08-06 發）+ Deep Agents v0.7 release（<https://blog.langchain.com/deep-agents-v0-7/>，07-29）。明確定義：**LangGraph = runtime（max control, min abstraction）/ LangChain = framework（abstraction + integrations）/ Deep Agents = harness（off-the-shelf best-practice middleware）**。Deep Agents 開箱即用 default：**filesystem + subagents + skills + memory**，實作上是「LangChain core agent + 一堆 middleware」。附帶 8 月新 case studies：**Stripe Kai**（公司-wide AI agent on Deep Agents，08-03）、**LangChain 自治 SRE Agent for Kubernetes**（08-05，Eric Johanson）、**Deep Agents v0.7 benchmark method**（07-23）。
-   - 為什麼重要：**三層架構共識成形**，對位昨天 Microsoft Harness GA / Prime Agent / Meta Muse Code / Cloudflare OS — 全部 vendor 都在同一個 vocabulary 上對齊。對 Linder：（a）**OpenClaw 目前模糊跨在 framework + harness 中間** — 我們有 skill loader（harness 性質），但沒明確 runtime 抽象（對位 LangGraph 的 graph runtime）；（b）**Deep Agents = "LangChain core + middleware"** 是「**harness = opinionated middleware**」最乾淨的定義 — 我們 skill system 是否也應該走 middleware pattern（攔截每個 tool call 加 policy）；（c）**Skills first-class + cross-harness portable** 對位 Deep Agents `skills=["./skills/"]` runtime injection — 我們 skill system 是 design-time 注入，落後一個版本。
-   - 來源：<https://blog.langchain.com/deep-agents-vs-langchain-vs-langgraph/>、<https://blog.langchain.com/deep-agents-v0-7/>、<https://blog.langchain.com/autonomous-sre-agent-for-kubernetes-deployments/>、<https://blog.langchain.com/how-stripe-built-kai-deep-agents/>。
+2. **arXiv 2608.06301 HarnessOpt-Bench — 把「harness optimization」從 vendor blog 變成學術 benchmark。**
+   - 發生什麼：HarnessOpt-Bench（<https://arxiv.org/abs/2608.06301>）— 第一個 **end-to-end harness optimization under expensive and stochastic evaluation**。Optimizer (LLM + coding harness) 收到 seed harness + graded eval feedback + 固定 target-evaluation budget；edits harness 並 nominate candidate 給 target evaluator。核心論點：**harness = prompts + tools + control flow + memory + orchestration code** = agentic system 98%（對位 MBZUAI 2604.14228）；**harness 最佳化能力 = AI 系統本身的能力**。
+   - 為什麼重要：**harness engineering 從 vendor PR 進入學術可量化領域** — 對位 LangChain Deep Agents v0.7 65% token 削減、Anthropic 80% system prompt 裁減、MS Harness GA。**這是「**學術界正式承認 harness 是 AI 系統一級研究對象**」**。
+   - 對 Linder / OpenClaw：
+     - **OpenClaw 的 skill system + memory + task-manager 本身就是 harness** — HarnessOpt-Bench 可作為我們評估 skill 改進效果的 reference benchmark。
+     - **設計 mini-HarnessOpt**：每月跑一次「skill A vs skill B 在固定 task 上誰表現好」，累積 evidence → `/refine` 改進。
+   - 來源：<https://arxiv.org/abs/2608.06301>。
 
-3. **LoopX（huangruiteng, 08-06 單日 +847 stars）— loop engineering 的 **state kernel 從 runtime 外部化**，peer agent claims + evidence log + quota-aware auto-wake + human gate，是 OpenClaw `task-manager` 的外部化版本。**
-   - 發生什麼：LoopX（<https://github.com/huangruiteng/loopx>，Python）— "Lightweight loop engineering state kernel for long-running AI agent teams." **Agent-loop agnostic**（Codex / Claude Code / Cursor / shell agent）。State schema：**objective + gates + todos + scope + evidence + quota**。**Registered agents are peers**（claims / leases / task boundaries / capabilities / typed continuation；no durable leader）。四個關鍵 operator：**claim, gate, monitor, writeback**。Board 是 projection，state is source of truth。
-   - 為什麼重要：**「loop engineering state」是 2026 long-running agent 的標準 vocabulary**，LoopX 是第一個明確把 state kernel 從 runtime 抽出的 OSS 實作。對 Linder：（a）**OpenClaw `task-manager` 是「無 state kernel 的 queue」** — LoopX 直接告訴我們缺什麼：**evidence log + typed handoff + human gate + quota auto-wake**；（b）**「ask concrete question and wait」作為 human gate primitive** 比「decide autonomously」安全 — 我們 heartbeat-driven CEO mode 沒這個 primitive；（c）**Peer agent claims** 對位 `sessions_send`（fire-and-forget），但 LoopX 是 peer-to-peer 搶任務，不是 CEO 派任務 — 我們 multi-agent 模式其實是 master/slave；（d）**Quota auto-wake** — 我們 heartbeat 是固定 interval，沒「no useful transition remains 就停損」的設計。
-   - 來源：<https://github.com/huangruiteng/loopx>。
+3. **Claude Code v2.1.224（08-07）— 跨 session 訊息 + skill archive plugin + sandbox JWT/SigV4 masking；security 進入「理解 credential 結構」階段。**
+   - 發生什麼：v2.1.224 changelog（<https://docs.claude.com/en/docs/claude-code/changelog>）：
+     - **Cross-session `SendMessage`** — Claude Code sessions 之間直接互傳訊息（macOS + Linux），用 `ListAgents` 發現彼此 = **multi-agent 編排在工具層正式原生化**。
+     - **`archive` plugin source** — zip over HTTPS 安裝 plugins + 可選 **SHA-256 pinning** = skill security 進入 pin-to-hash 階段。
+     - **Sandbox credential-masking 進階**：`extract` + `onExtractNoMatch`（結構化 env values）+ `decode: "jwt"` + `maskClaims`（JWT-aware masking）+ `awsPairs` / `sigv4`（AWS SigV4 re-signing）= **security 進入「理解 credential 結構」階段**（不是 grep pattern）。
+     - **`self-hosted-runner`** — Claude Code web/mobile/desktop sessions 跑在自有機房/container = vendor 級工具往 self-hosted 走。
+     - **Bypass-permissions hold-for-approval**：跨 session 訊息送到 `bypassPermissions` 開啟的 session 時自動 hold for approval。
+     - **多個 production 化 bug fixes**：long project paths cross-project / sandbox deny trailing slash bypass / MCP tools mid-turn / plugin install 多 project corrupt。
+   - 為什麼重要：**三件事分水嶺**：（a）**工具層 multi-agent 編排正式原生化**（不是 user 在中間 router）；（b）**security 從 pattern matching 進入 credential 結構理解**；（c）**vendor 級工具全面往 self-hosted 走**（我們架構選擇正確）。
+   - 對 Linder / OpenClaw：
+     - **`sessions_send` 升級方向**：加 ListAgents discovery + inbox persistence + typed handoff contract + bypass-permissions hold guard。
+     - **`openclaw-security-scanner` 應加入 structured env detection**（JWT decode / AWS SigV4 parsing），不是只 grep 高風險字串。
+     - **Skill provenance + pinning**：skill 寫入記錄 who / when / scope / hash。
+   - 來源：<https://docs.claude.com/en/docs/claude-code/changelog>。
 
-4. **Castform + Neon 08-05 開源：**「**RL post-trained open-weight 模型在 retrieval 上 100x cheaper 也能贏 GPT-5.6 Sol**」 — post-training-as-a-service 路線成形。
-   - 發生什麼：Castform（<https://castform.com/>）+ Neon（<https://neon.com/blog/lakebase-search-on-neon>，Lakebase Postgres + Lakebase Search extension）聯手展示：typical multi-turn search with **gpt-5.6-sol > 10s + ~$0.03** end-to-end，而 Castform RL post-trained open-weight model 用 Lakebase Search 跑同樣 retrieval **快 + 100x 便宜**。HN #10 424 點。Castform 抽象：「make post-training as approachable as prompt engineering」— 不需 ML/GPU 知識就能 RL post-train。Pipeline：raw corpus in Neon Postgres → synthetic task gen via `lakebase_text` / `lakebase_vector` → RL training 用 Lakebase Search → production inference 用同一個 search tool call。
-   - 為什麼重要：**「100x 便宜 + 能力對等」是 agent 經濟學結構性轉變**。對 Linder：（a）**OpenClaw `model-router` 應該新增 retrieval-specific cheap lane** — tree-sitter / codebase graph / wiki search 都該走 post-trained small model；（b）**「post-training as a service」** 是 Vercel-style 抽象 — 對位我們 graphify / ouroboros 也是「ML infra as a service」；（c）**Lakebase Search 模式**（Postgres + 內建 search extension）對位 `ouroboros` 萃取 + `codebase-memory-mcp` — 我們 codebase graph 是否該走同一個 Postgres-with-extension 路線？
-   - 來源：<https://neon.com/blog/how-castform-neon-beats-frontier-models-on-price-and-efficiency>、<https://news.ycombinator.com/item?id=49186762>。
+4. **LangChain 08-07 Managed Deep Agents public beta + Deep Agents v0.7（07-29）— 「**Harness = LangChain core + middleware**」定義乾淨收斂 + Production runtime 進入 public beta。**
+   - 發生什麼：
+     - **Managed Deep Agents（08-07）**（<https://blog.langchain.com/managed-deep-agents-is-now-in-public-beta/>）— 把 Deep Agents 從 local dev 推到 managed runtime。**「You control the model, instructions, tools, middleware, subagents; LangSmith handles the runtime: persistence, memory mounts, skill loading, sandbox lifecycle, deployment.」** 管理能力：durable execution / streaming / persistence / sandboxes / evals / channels（Slack）/ memory / identity。Project structure：`agent.py | agent.ts` + `instructions.md` + `identity.py` + `memory.py` + `tools/` + `channels/` + `middleware/`。
+     - **Deep Agents v0.7（07-29）**（<https://blog.langchain.com/deep-agents-v0-7/>）— **65% fewer base input tokens at comparable performance**。設計：**「interfaces beat examples; avoid repetition」**（對位 Anthropic 80% system prompt 裁減兩個 finding）。三改動：移除 base system prompt、trim tool descriptions 43%、opt-in todos。
+   - 為什麼重要：**「**harness = opinionated middleware on top of framework**」最乾淨的定義** — LangChain 明確把 middleware 當作 first-class abstraction。Managed Deep Agents 進入 public beta = **vendor 級 production agent runtime 正式對外開放**。
+   - 對 Linder / OpenClaw：
+     - **OpenClaw skill system 是否也應該走 middleware pattern**？（攔截每個 tool call 加 policy，而不是 prompt injection）
+     - **Project structure 對位**：`identity.py` = 我們 USER.md / SOUL.md；`memory.py` = 我們 MEMORY.md；`tools/` = 我們 skill；`middleware/` = 我們缺。
+     - **65% token 削減啟示**：OpenClaw skill system 應 audit 「每個 skill 對 prompt 加了多少 token」，削減冗餘。
+   - 來源：<https://blog.langchain.com/managed-deep-agents-is-now-in-public-beta/>、<https://blog.langchain.com/deep-agents-v0-7/>。
 
-5. **OpenAI GPT-5.6 Sol + Luna 更新（08-06）— 「同一個 model + thought slider」正式取代「Instant vs Thinking 雙 model」UX；factual error 降 62-68%。**
-   - 發生什麼：OpenAI 發布（<https://openai.com/index/improving-gpt-5-6-sol-in-chatgpt/>，HN 150 點）GPT-5.6 Sol 改版（Plus/Pro）+ GPT-5.6 Luna 對 Free user 開放 unlimited text + Think button。三個改版重點：（a）**62-68% fewer factual errors** vs GPT-5.5 Instant（internal eval on financial/medical/legal prompts）；（b）**Same model now powers Instant + Thinking** — slider 控 effort，不換 model；（c）**Free user 拿到 Think button** — reasoning 是 per-task toggle，不是 per-user tier。
-   - 為什麼重要：**「同一個 model + slider」正式收掉 reasoning model 雙軌 UX** — 對 Linder：（a）**OpenClaw `model-router` 應該選同 model 不同 effort**，而不是切換 `minimax-M2.7` ↔ `M3` — 對應 OpenAI slider pattern；（b）**62-68% factual error reduction 是「產品級」最大幅提升** — OpenAI 競爭軸從 benchmark 轉到 factual reliability；（c）**Think button 對 Free 開放** = reasoning 是 commodity，不是付費牆。
-   - 來源：<https://openai.com/index/improving-gpt-5-6-sol-in-chatgpt/>、<https://news.ycombinator.com/item?id=49199357>。
+5. **Oracle OpenJDK 正式 ban AI-generated code（HN 393 點 260 留言，08-08）— 開源基礎設施正式拒絕 AI code，provenance 成組織風險。**
+   - 發生什麼：Oracle 對 OpenJDK 社群政策：禁止 AI-generated code（HN <https://news.ycombinator.com/item?id=49213754>）。**與 Larry Ellison「Oracle 不用 AI 寫自己 code」公開聲明矛盾**（Dealroom.co feed）。同時 Nixpkgs core team 解散（<https://discourse.nixos.org/t/the-nixpkgs-core-team-has-disbanded/79413>，HN 46 點）— 兩個獨立事件指向「**OSS 治理進入不穩定時期**」。
+   - 為什麼重要：**開源 critical infra 社群正式 ban AI code** = 「**組織級 AI 治理**」的分水嶺。可能原因：（a）license / IP 不確定；（b）quality assurance 不可驗證；（c）社群治理不允許 opaque contribution。**即使 code 品質好，仍可能因 provenance 被拒**。
+   - 對 Linder / OpenClaw：
+     - **OpenClaw 生成的 code 是否需要 audit trail？** 我們 `task-manager` 應記錄每個 code change 的 origin（human / agent / mixed / model / skill）。
+     - **「AI 寫的 code」與「人寫的 code」的邊界正在成形** — 給 Linder 的不只是能寫 code 的 agent，也要能產生「provenance-clean」的 code。
+     - **OSS governance crisis 警示**：依賴 community（Ollama / llama.cpp / MCP servers）的關鍵 infra 也可能 governance 崩潰，要 diversify vendor。
+   - 來源：<https://app.dealroom.co/news/feed/oracle-bans-ai-generated-code-from-openjdk-despite-ellison-s-claim-oracle-isn-t-writing-its-own-code>、<https://news.ycombinator.com/item?id=49213754>。
 
 ## 對 OpenClaw / Linder 的啟發
 
-1. **【runtime × framework × harness 三層分工】** LangChain 08-06 明確命名 + 5 個 vendor 對齊到同一 vocabulary — OpenClaw 應**正式寫 ADR「OpenClaw 三層架構分工」**，明確定義：（a）**Runtime 層**對位 LangGraph / Cloudflare OS / Prime Agent REPL — 我們要不要有 pluggable backend（Container / shell / JS），而不只是 universal `exec`；（b）**Framework 層**已足（skill loader + SOUL/AGENTS）；（c）**Harness 層**缺五件套：**filesystem + subagents + memory + observability + approval**（對位 Deep Agents v0.7 default），且要明確「harness = opinionated middleware on top of framework」這個定義。落地路徑：**先做 middleware layer（攔截 tool call 加 policy），再分層**。
+1. **【Slash Command = Cross-Harness Workflow Primitive】** addyosmani/agent-skills 24 slash commands（`/spec /plan /build /test /review /ship`）+ 70+ agent 部署 = 「**slash command 是比 plugin/skills 更高階的封裝**」。OpenClaw 應**正式化 slash command workflow primitive**，整合進 `mattpocock-teach` skill，每個 slash command = 1 atomic task + 自動 activate 的 skill set + TDD 強制 + 個別 commit + cross-agent deployable。**這比 Ponytail benchmark 治理反思的「YAGNI enforcer」更具體可行**。落地路徑：`~/.openclaw/commands/<name>.md`（slash command wrapper）+ context-aware loader（看 tool call 自動 trigger skill）+ cross-agent installation script。
 
-2. **【MCP observation leakage 防護 + 組織級 skill library】** Cloudflare OS 命名「MCP 觀察洩漏 ≠ 工具呼叫洩漏」為 platform-level 問題 — OpenClaw 應：（a）**audit `~/.openclaw/` 對 specialist agents 的可見性** — 目前 charizard / gengar / mrmime / rowlet 共享整個 workspace，可能看見彼此 secret / 私密 memory；（b）設計 **`workspace-isolation` skill**：每個 agent 預設隔離 workspace，跨 agent 共享需 explicit grant（對位 Cloudflare OS resource ACL）；（c）**skill provenance audit** — skill 寫入時記錄 who / when / scope / observation ACL（對位 Cloudflare 平台層的安全模型）。
+2. **【Continual Harness → OpenClaw Self-Improving Skill】** Prime Agent 的 **Continual Harness** = `/refine` 證據支持的微更新補充 prompt / memory / skills / sub-agent spec，**永不覆寫 immutable base system prompt**。對 OpenClaw：（a）**`SOUL.md` 不可由 agent 改**（safety boundary）；（b）**`AGENTS.md` / `MEMORY.md` / `memory/YYYY-MM-DD.md` 可由 agent 增量更新**，每個改動記錄到 evidence log（who / when / scope / diff）；（c）**skill 改進進入 /refine workflow** — `mattpocock-teach` 跑完一輪後，agent 自動建議 skill refinement。
 
-3. **【LoopX pattern → `task-manager` 升級為 state kernel】** LoopX 展示「state 外部化 + peer claims + evidence log + quota auto-wake + human gate」是 long-running agent 的標準配備 — OpenClaw `task-manager` 應升級為 **state-kernel + peer-claim** 模式。最低規格：**evidence log（每次 turn 寫 input / output / cost / which-skill / which-model）+ typed handoff（continuation contract）+ human gate primitive（"ask concrete question and wait"）+ quota auto-wake（無 useful transition 就停）**。對位 LoopX，但 OpenClaw 維持 CEO/master 模式，**peer-claim 留作未來選項**。
+3. **【HarnessOpt-Bench → OpenClaw Harness Self-Eval】** HarnessOpt-Bench 提供 academic benchmark for harness optimization。OpenClaw 應**設計自己的 mini-HarnessOpt**：每月跑一次「skill A vs skill B 在固定 task 上誰表現好」，累積 evidence → `/refine` 改進。**這是我們把「harness 量化」從 vendor PR 拉到 first-party evidence 的具體路徑**。設計：固定 task corpus（5-10 個 daily 任務）+ skill A / B 隨機對照 + 量化指標（task success / cost / token / hallucination rate）。
 
 ## 值得追蹤的 repo / paper / article
 
-1. **Cloudflare OS** — <https://blog.cloudflare.com/cloudflare-os/> + <https://os.cloudflare.app/> + HN <https://news.ycombinator.com/item?id=49182996>（647 點）— 開源組織級 agent platform，首個命名 MCP observation leakage。
-2. **Cloudflare Computer (preview)** — <https://github.com/cloudflare/computer> — Durable Object + SQLite + 三個 pluggable execution backend（Container / Isolate shell / Isolate JS）。
-3. **LangChain Deep Agents vs LangChain vs LangGraph** — <https://blog.langchain.com/deep-agents-vs-langchain-vs-langgraph/>（08-06）+ Deep Agents v0.7 <https://blog.langchain.com/deep-agents-v0-7/> — 三層架構明確命名。
-4. **LoopX (huangruiteng)** — <https://github.com/huangruiteng/loopx>（08-06 +847 stars）— loop engineering state kernel + peer claims + quota auto-wake。
-5. **Castform + Neon 100x cheaper retrieval** — <https://neon.com/blog/how-castform-neon-beats-frontier-models-on-price-and-efficiency> + HN <https://news.ycombinator.com/item?id=49186762>（424 點）— RL post-training as a service。
-6. **OpenAI GPT-5.6 Sol + Luna update** — <https://openai.com/index/improving-gpt-5-6-sol-in-chatgpt/> — same model + thought slider + 62-68% fewer factual errors。
-7. **code-review-graph (tirth8205)** — <https://github.com/tirth8205/code-review-graph> — local-first code intelligence graph + MCP-native + tree-sitter（08-06 GitHub trending Python）。
-8. **uber/ADR** — <https://github.com/uber/ADR>（08-06 +289 stars）— "ADR secures enterprise AI agents through observability, security benchmarking, and threat detection. Deployed at Uber." — **對位 Cloudflare OS observation leakage 的另一條解法：runtime-side observability + threat detection**。
-9. **Qwen3.8 Max** — <https://artificialanalysis.ai/?intelligence=agentic-index> + HN <https://news.ycombinator.com/item?id=49200652>（432 點）— 開源 model 在 agentic index 上排第一。
-10. **Fogus "Born Against"** — <https://blog.fogus.me/llm/born-against.html> + HN <https://news.ycombinator.com/item?id=49187061>（408 點）— 反訊號：hobby programming communities (OSDev / LangDev / TxtDev / EmuDev / RLDev / demoscene / code golfers) **積極反 LLM**，理由：「process of mastering is the product」。對 OpenClaw 啟示：**別假設所有人都歡迎 agent**，OpenClaw 應保持 **human-in-the-loop 為預設**，agent 是 force multiplier 不是 surrogate。
+1. **PrimeIntellect-ai/prime-agent** — <https://github.com/PrimeIntellect-ai/prime-agent>（+2,293 stars/day Trending #1）— RLM + Continual Harness + daemon agents。
+2. **addyosmani/agent-skills** — <https://github.com/addyosmani/agent-skills>（+1,131 stars/day Trending #2）— 24 slash commands + 70+ agent deployable。
+3. **cloudflare/computer** — <https://github.com/cloudflare/computer>（+872 stars/day Trending #3）— Durable Object + 3 pluggable execution backend。
+4. **unclebob/swarm-forge** — <https://github.com/unclebob/swarm-forge>（+81 stars/day Trending）— tmux-based multi-agent orchestration + two/four/six-pack workflow。
+5. **semantica-agi/semantica** — <https://github.com/semantica-agi/semantica>（+122 stars/day Trending）— Graph-Native Infrastructure for Accountable AI（regulated industries）。
+6. **HarnessOpt-Bench (arXiv 2608.06301)** — <https://arxiv.org/abs/2608.06301>— 第一個 academic benchmark for harness optimization。
+7. **Tracing Error Lifecycle (arXiv 2608.06346)** — <https://arxiv.org/abs/2608.06346>— long-horizon agent failure forensics framework（OpenClaw `task-manager` 對位）。
+8. **READ: Embedding-free Agentic Document-search (arXiv 2608.06305)** — <https://arxiv.org/abs/2608.06305>— RAG 結構性失敗 + 替代方案（OpenClaw `ouroboros` + `codebase-memory-mcp` 路線驗證）。
+9. **Claude Code v2.1.224 changelog** — <https://docs.claude.com/en/docs/claude-code/changelog>（08-07）— cross-session SendMessage + archive plugin + sandbox JWT/SigV4。
+10. **LangChain Managed Deep Agents public beta** — <https://blog.langchain.com/managed-deep-agents-is-now-in-public-beta/>（08-07）+ Deep Agents v0.7 <https://blog.langchain.com/deep-agents-v0-7/>。
 
 ## 下一步建議（最多 3 條，偏可執行）
 
-1. **【Wiki ingest】今天 4 個新概念頁已建好**：
-   - `wiki/concepts/Agent Platform × Organization Boundary.md`（Cloudflare OS + organization scale）
-   - `wiki/concepts/Agent Runtime × Framework × Harness 三層架構.md`（LangChain 命名 + 6 vendor 對位）
-   - `wiki/concepts/MCP Observation Leakage.md`（Cloudflare 首命名 + OpenClaw 缺口 audit）
-   - `wiki/concepts/Loop Engineering State Kernel — LoopX Pattern.md`（LoopX + task-manager 對位）
-   - `wiki/log.md` 已更新（2026-08-07 entry），6 個 raw snapshot 在 `raw/sources/<slug>-2026-08/`
-   - **待辦**：下次 graphify 重新跑時 `[[...]]` cross-link 會自動 propagate（`graphifyy link` v0.10.1 不可用）
+1. **【Wiki ingest ✅ 已完成】** 今天 4 個新概念頁已建好：
+   - `wiki/concepts/Continual Harness — Self-Improving Agent State.md`（Prime Agent `/refine` + 三層分離）
+   - `wiki/concepts/Cross-Session Agent Messaging.md`（Claude Code SendMessage + `sessions_send` 缺口）
+   - `wiki/concepts/Agent Skill as Slash Command — Workflow Primitive.md`（addyosmani/agent-skills 24 commands）
+   - `wiki/sources/daily-research-2026-08-08-agent-era-stabilization.md`（5 重點 + 對 OpenClaw 3 啟發 + 10 追蹤 + 3 下一步）
+   - 4 個 raw snapshot 在 `raw/2026-08-08-agent-era-stabilization/`
+   - `wiki/log.md` 已更新（2026-08-08 entry）
 
-2. **【架構決策】寫 ADR「OpenClaw Runtime × Framework × Harness 三層分工」**：
-   - 對位 LangChain 08-06 命名
-   - 定義 OpenClaw runtime = `exec` + (可選) pluggable backend
-   - 定義 OpenClaw harness 五件套最低規格：**filesystem + subagents + memory + observability + approval**（對位 Deep Agents v0.7 + MS Harness GA）
-   - 明列目前缺口（見 wiki/concepts/Agent Runtime × Framework × Harness 三層架構.md 表格）
-   - 放 `~/workspace-rowlet/decisions/2026-08-07-three-layer-abstraction.md`
+2. **【Skill 設計】起草 `slash-command-workflow` skill**：
+   - 從 addyosmani/agent-skills 抽取 `/spec /plan /build /test /review /ship` pattern
+   - 整合進 `mattpocock-teach`（6 步流程 → 6 個 slash command）
+   - 加 context-aware loader（看 tool call 自動 trigger skill）
 
-3. **【Skill 雛形】起草 `workspace-isolation` skill + `task-manager` 升級計畫**：
-   - `workspace-isolation`：每個 agent 預設隔離 `~/.openclaw/agents/<id>/`，跨 agent 共享需 explicit grant（對位 Cloudflare OS resource ACL）
-   - `task-manager` 升級：加 evidence log + typed handoff + human gate + quota auto-wake 四件套（對位 LoopX）
-   - 先寫 SKILL.md 草稿 + 跟 Linder review，下週實作
+3. **【架構決策】寫 ADR「OpenClaw Skill System 升級為 Slash Command Workflow Primitive」**：
+   - 對位今天 5 個 trending repo + HarnessOpt-Bench
+   - 設計：`~/.openclaw/commands/<name>.md`（slash command wrapper）+ context-aware loader + cross-agent installation
+   - 設計 mini-HarnessOpt：固定 task corpus + skill A/B 對照 + 量化改進證據
 
-## 查過的來源（沒有重大訊號也列出以示盡責）
+## 觀察
 
-- **Wiki-first**：本地 LLM Wiki graphify query（AI agent architecture / skills / multi-agent workflow / software architecture / coding agents 2026，budget 1000），primary 命中 `wiki/concepts/Agent Harness as First-Class Citizen.md`、`wiki/concepts/Skill as Cross-Harness Portable Artifact.md`、`wiki/concepts/VCS × Agent Bidirectional Trace.md`、`wiki/concepts/Karpathy LLM Wiki Ecosystem.md` 等既有節點。
-- **GitHub Trending daily**：TencentDB-Agent-Memory（+1,057 stars/day，連續強勢）/ addyosmani/agent-skills（+593/day）/ **cloudflare/computer（+2,802/day，新）/ mattpocock/skills / goauthentik / huangruiteng/loopx（+847/day，新）/ esengine/DeepSeek-Reasonix / obra/superpowers / firecrawl/pdf-inspector / uber/ADR（+289/day，新）/ usestrix/strix / ComposioHQ/awesome-claude-skills / aws/agent-toolkit-for-aws**。
-- **Hacker News front page**（過去 48h best）：Discovery Loop（913 點，1d）/ Mario Meets Pareto（877 點，14h）/ **Changes at Google DeepMind — Hassabis → Chair / Jeff Dean departs（827 點，1d）** / Crime Pays but Botany Doesn't（653 點，21h）/ **Cloudflare OS（647 點，1d）/ Zed DeltaDB（519 點，1d）/ Qwen3.8 Max（432 點，7h）/ Castform + Neon 100x cheaper retrieval（424 點，1d）/ Born Against（408 點，1d）/ AMD Taalas（378 點，5h）/ OpenAI GPT-5.6 Sol（150 點，9h）/ Herdr YC S26（146 點，6h）**。
-- **OpenAI News**：Improving GPT‑5.6 Sol + Luna（08-06，前述）。
-- **Anthropic News**：無新（最近一條 06-30 Redeploying Fable 5 + Glasswing framework）。
-- **Google AI blog**：首頁為主，今日無新 essay 抓出；Sundar IO 2026 keynote 是上一週。
-- **LangChain blog**（08 月新文 5 篇）：Deep Agents vs LangChain vs LangGraph（08-06，前述）/ Autonomous SRE Agent for Kubernetes（08-05）/ Voice Agent evaluation（08-04）/ Customer Experience Agents in Production lessons from Lyft / Vodafone / LATAM（08-04）/ Stripe Kai on Deep Agents（08-03）/ Deep Agents v0.7（07-29）/ LangSmith LLM Gateway runtime controls（07-30）。
-- **Cloudflare blog**：Cloudflare OS（08-06，前述）+ Sam Rhea「How we use AI with Cloudflare OS」內部反思文。
-- **arXiv cs.AI 2026-08 listing**：arXiv 編號格式 `YYMM`（2608 = 2026-08），未深入閱讀個別 paper（時間內只取 release cadence 正常確認）。
-- **InfoQ AI/ML 主題頁**：404（路徑變更）；首頁只顯示 featured content，未有 7-14 天新 essay 抓出。
-- **Pragmatic Engineer / Martin Fowler / Thoughtworks Insights**：首頁 landing page 為主，無 7-14 天新 essay。Thoughtworks 主打 Modernization / Scaling GenAI / Managing LLM risks in academic publishing — 三篇都是 framework-level report，**不是 production-grade 變化訊號**。
-- **artificialanalysis.ai**：Qwen3.8 Max 升至 agentic index 第一（HN 432 點），具體分數未細抓，但**訊號是 open-weight 持續逼近 frontier closed model 在 agentic 任務**。
+- **昨天（08-06/07）「harness 是 98% + 三層架構 vendor 共識」進入「agent era stabilization」**：學術界正式承認（arXiv 2608.06301 HarnessOpt-Bench）+ 工具層原生（Claude Code SendMessage + Cloudflare Computer pluggable backend + Prime Agent Continual Harness）+ 標準化（addyosmani 24 slash commands 70+ agent）。
+- **「disciplined / spec-first / methodology」對「vibe coding」反動**：superpowers、swarm-forge、agent-skills 共同關鍵字 = 「**skill/agent 必須 follow methodology**」，對位昨天 Ponytail benchmark 治理反思（80-94% → 54%）。
+- **OSS governance 不穩定**：Nixpkgs core team 解散 + Oracle OpenJDK ban AI code = **兩個獨立事件指向 critical infra 社群治理進入不穩定期**，OpenClaw 依賴的 community 要 diversify vendor。
+- **「**平台化穩定期**」成形**：不再「framework 叢集出現期」，而是「workflow primitive + state kernel + evidence log + skill provenance」收斂期 — OpenClaw 應從 design-time 個人 skill system 轉向 runtime 平台化。
 
-— 木木鴞
+---
+
+_本報告同時保存於 `/home/node/.openclaw/workspace/llm-wiki/raw/2026-08-08-agent-era-stabilization/`。原始 log 寫入 `wiki/log.md`（2026-08-08 entry），4 個 wiki 頁面已建好並 cross-link 完畢。下次 `graphifyy run` 會自動 propagate edges。_
