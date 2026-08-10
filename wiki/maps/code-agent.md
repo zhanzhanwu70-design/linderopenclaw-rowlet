@@ -3,7 +3,7 @@ title: "Code-Agent Map"
 category: map
 type: knowledge-map
 created: 2026-06-11
-modified: 2026-08-07
+modified: 2026-08-09
 ---
 
 # Code-Agent Map
@@ -11,6 +11,26 @@ modified: 2026-08-07
 此頁整理與 code-agent / tool-use agent 相關的論文與概念，特別關注 context processing、long-term memory、retrieval、workflow control。
 
 ## Agent Context Processing / Memory
+
+### [[agentic-context-mgmt-dadhich-2026]] — lifecycle reframing of context management (2026-08-09)
+
+**核心主張**：把 context management 當作「儲存問題」是錯誤框架。Production agent 每 turn 必須做出五個不同決定：記什麼、怎麼結構化、本次 context 放什麼、下 turn 需要什麼、超預算時怎麼辦。Store 只優化 write/read，**Context Management 是一個 lifecycle，不只是一個 store**。
+
+**五個 Primitives**：
+- **Architecting**：定義 memory 形狀（schema per agent type），而非用 universal fixed schema
+- **Ingesting**：retrieval quality 由 ingest quality 決定
+- **Scoping**：本次 context 的 relevance filtering
+- **Anticipating**：proactive recall prediction
+- **Compacting & Consolidation**：validated compression（帶 fidelity check），不只是 crud summarization
+
+**經濟論證**：
+- Naïve full-append: O(n²) token cost（每 turn 重讀全部歷史）
+- Crude summarization: O(n) cost but **accuracy cliff**
+- Validated compaction: O(n) cost with **preserved fidelity** ← 只有這個同時解決 cost 和 accuracy
+
+**Scope Hierarchy**：從 individual user → team → organization，多 tenant 安全邊界 + context leakage 防止。
+
+**對 Rowlet 的啟發**：三層記憶（SOUL.md / daily / MEMORY.md）正好映射到 lifecycle stages，但目前缺的是 **validated compaction** 的 fidelity check 機制。Heartbeat 寫入前的 trust gate（[[sirin-belikova-2026]] NLI check）正是填補這個空缺的方式。
 
 ### [[sirin-belikova-2026]] — contextual hallucination detection for RAG & memory agents (2026-08-07)
 
@@ -158,7 +178,7 @@ SelfMem 的 feedback 是可觀察的 tool outputs（非 gold answer / scalar rew
 
 ### CompactionRL 補充：RL 訓練中第一個把 summarization 變成 learnable action 的方法
 
-現有十一篇 + CompactionRL 形成十二篇互補堆疊：
+現有十二篇 + CompactionRL 形成十三篇互補堆疊：
 
 10. **SIRIN**：見上方第 8 項
 11. **CompactionRL (Li et al., 2026)**：將 context compaction 整合進 RL training pipeline 的第一個方法。核心突破：**PPO over group-relative methods** — compaction 讓單一 rollout 變成可變數量、可變長度的 segments，GRPO 的 group normalization 無法處理，PPO 的 critic-based token-level advantage 才是正確框架。**Summarization as learnable action** — 任務執行動作和摘要動作在同一个 task-level reward 下聯合優化，壓縮策略不再是工程師設計的 heuristic，而是模型從 outcome feedback 學到的技能。
