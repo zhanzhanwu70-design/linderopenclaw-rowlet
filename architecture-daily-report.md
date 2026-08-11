@@ -1,166 +1,220 @@
-# 每日 Agent × 軟體開發情報 — 2026-08-10
+# 每日 Agent × 軟體開發情報 — 2026-08-11
 
 > 執行者：Rowlet 🌿🦉｜模式：每日研究 cron（02:02 UTC）
-> 前一日：2026-08-09「emergent multi-agent threat surface + agent governance productization」
+> 前一日：2026-08-10「Memory-as-Product & OSS Infrastructure Crisis」
 
 ---
 
-## 今日主題：**Memory-as-Product & OSS Infrastructure Crisis**
+## 今日主題：**Open-Source Agent Stack Trilogy — 模型／Skill／Graph 三軸同時落地**
 
-今天最值得追的訊號不是單一技術突破，而是**兩個結構性訊號同時成熟**：
+今天同時出現了**三條獨立但互補的 vendor / frontier級釋出**，共同構成「Open agent stack 收斂成形」的訊號：
 
-1. **Memory-as-Product 進入 vendor 級落地**：Tencent Cloud 把「Chat Memory + Skill + LLM-Wiki + CodeGraph」四件式 agent memory 正式以 TypeScript 產品形式對外（18.8k stars，+8k/週），**README 直接致敬 Karpathy LLM knowledge base**。**我們的 `llm-wiki-maintainer` / `ouroboros` / `skill-archive` 設計在 vendor 級得到驗證**。
-2. **OSS 基礎設施治理危機進入第三天**：Oracle OpenJDK ban AI code（08-08）+ Gentoo Bugzilla shutdown（08-09）+ **Nixpkgs core team disbanded（08-10，HN 401 點）**。三天內三個 OSS 基礎設施層級（JDK / bug tracker / 套件管理器）連續出事。**「code 不是瓶頸，治理是瓶頸」從昨日的 agent runtime 議題延伸到整個 OSS infra**。
+1. **Meta Muse Glimmer 30B**（Apache 2.0 open weights）— **model card 直接把 OpenClaw 列為 scaffold-compatible orchestration pattern**（與 Hermes Agent 並列）。
+2. **Cactus Needle 2**（Apache 2.0, 14MB binary）— 證明 **function-call 在 2-bit 45M parameters 即可匹敵 f16 270M+ 模型**，因為「schema-as-grammar」把世界知識的需求歸零。
+3. **GitHub Trending 四重奏**：semantica-agi/semantica（graph-governance under LLM, +970/天）+ addyosmani/agent-skills（Google Chrome 主管的 skill 標準化, 85k stars, +659）+ PrimeIntellect-ai/prime-agent（self-improving RLM, +2642）+ paperclipai/paperclip（agent manager app）。
 
-伴隨的小訊號：LangChain 把「Deep Agents vs LangChain vs LangGraph」正式定位為 **runtime < framework < harness** 三層模型（Aug 6 部落格）+ Claude Code 推出 **`self-hosted-runner`（Team/Enterprise）**與 **SHA-256 pinned archive plugin source**——這是 production agent stack 收斂的開始。
+伴隨的次訊號：Prime Intellect 發表 **「Recursive Language Models: the paradigm of 2026」** 部落格，把 RLM（context as variables, sub-agent as function call, persistent REPL）定位為 2026 年的典範轉移——直接對位我們每天都在用的「SOUL + memory + REPL」結構。
 
 ---
 
 ## 今日 5 個重點
 
-### 1. Tencent Cloud 推出 TencentDB Agent Memory（產品級 four-asset memory hub）
+### 1. Meta Muse Glimmer 30B 開源 + model card 寫了 OpenClaw
 
-**發生什麼**：Tencent 把「team-level memory hub for AI Agents」當產品發。四大 reusable assets：**Chat Memory（L0 Conversation → L1 Atom → L2 Scenario → L3 Persona 分層萃取）、Skill（versioned + resource files + trigger boundaries + execution steps + validation rules）、LLM-Wiki（結構化頁面 + link graph，**「Inspired by Karpathy's LLM knowledge base」**）、CodeGraph（symbol / file / call / impact path index）**。TypeScript 寫，提供 `memory-core + memory-hub + proxy` 三服務一鍵 `./start-all.sh`，直接把面板（:8125）整合進 Claude Code。
+**發生什麼**：08-10 Meta Superintelligence Labs 釋出 Muse Glimmer 30B（Apache 2.0），dense causal transformer + dedicated perception encoder，可在 Mac/PC single GPU 上跑。HN 1045 點 / 579 留言，FT 頭版報導。**Model card 原文**：
+> "Scaffold Compatibility. Muse Glimmer works across OpenClaw, Hermes Agent, and other agentic orchestration patterns."
 
-**為什麼重要**：**第一個 vendor 級產品把「Karpathy wiki + skill versioning + CodeGraph + 分層 memory」當一級 API 對外**。這不是論文，這是 Tencent 雲的 SKU 設計。對我們的意義：
-- 我們的 `llm-wiki-maintainer` / `ouroboros` / 整套記憶體系是**走對方向**
-- Skill 應該升級成 **versioned + validation rules + trigger boundaries**，不是純 frontmatter
-- **L0 → L3 Chat Memory** 給了我們一個清晰的對位：今天只有 L0（daily memory）+ L1（MEMORY.md），沒有 L2/L3 自動萃取
+Capabilities：end-to-end agentic task completion（DeepSearch QA、MCP-Atlas、τ-Bench、SWE-Bench）、reliable tool use、multi-step reasoning、**failure recovery**、multimodal（text+image）、**controllable effort**（可選 reasoning strength）、100+ languages。llama.cpp / MLX / ExecuTorch 整合數日內落地。
+
+**為什麼重要**：**首次有 frontier-grade 開源模型把「OpenClaw」寫進 official model card 的 scaffold-compatibility section**。不是 blog 文案，是 vendor 級的架構認可。同時開源 + 30B + MCP-Atlas-tuned + failure recovery + multimodal = **「local Claude Code replacement」的硬體門檻正式降低**。對我們的意義：
+- 評估 Muse Glimmer 作為 OpenClaw 的本地主模型（不再依賴雲端 MiniMax-M3）
+- **Controllable Effort** 這個維度應該被 skill 引用（不只是 model 層）
+- Failure recovery → 對位 `auto-retry` skill
 
 **可信來源/URL**：
-- https://github.com/TencentCloud/TencentDB-Agent-Memory（18,805 ⭐，本週 +8,003）
-- Snapshot: `/home/node/.openclaw/workspace/llm-wiki/raw/2026-08-10-tencentdb-agent-memory/`
+- <https://research.meta.ai/blog/introducing-muse-glimmer-open-agentic-model>
+- <https://huggingface.co/meta-models/Muse-Glimmer-30B>（model card）
+- HN: <https://news.ycombinator.com/item?id=49241679>（1045 點 / 579 留言）
+- Snapshot: `/home/node/.openclaw/workspace/llm-wiki/raw/2026-08-11-muse-glimmer/`
+- Wiki source: `wiki/sources/muse-glimmer-meta-2026-08.md`
 
 ---
 
-### 2. Nixpkgs core team 解散（OSS 治理危機進入第三天）
+### 2. Cactus Needle 2 — 14MB / 45M function-call 模型，奠定 edge agent 的可行性
 
-**發生什麼**：08-10 NixOS Discourse 公告 Nixpkgs core team **disbanded**，HN 401 點 212 留言。**這是 72 小時內第三個 OSS 基礎設施層級出事**：Oracle OpenJDK ban AI code（08-08）+ Gentoo Bugzilla shutdown（08-09）+ Nixpkgs core team dissolved（08-10）。
+**發生什麼**：Cactus Compute 發布 Needle 2：45M parameter、2-bit 壓縮（CQ2-bit）、整個 binary **14MB**、session RAM **~28MB**。Show HN 178 點。Sophomore of Needle 1。建立在自家 Simple Attention Network（arXiv:2607.18363）：常規 transformer 164 MFLOPs/token → 87 → **Needle 70 MFLOPs/token**，比最小 performant LLMs 少 7-85× MFLOPs/token。
 
-**為什麼重要**：JDK / bug tracker / 套件管理器是 OSS 生態最底層的三層。**連續三天同時出事不再是巧合**——這是「AI 時代對 OSS governance 的壓力」從零星事件進入**模式**。Nixpkgs core team 直接消失 = maintainer 倦怠 + AI 帶來的低品質貢獻洪流 + 治理成本不可持續的具體表現。
+**為什麼重要**：官方 framing 直接挑戰主流：
+> "When we structure intelligence for consumer devices as functions with typed parameters, the only hard part is mapping a messy sentence onto them; which function, with which values. **The problem needs no world knowledge and no open-ended prose**, which is why 45M parameters suffice where chat needs billions."
 
-**對 OpenClaw 的直接威脅**：我們的 skill pipeline 依賴 community registries（Nix / npm / PyPI / custom repos）。如果這些 governance 衝擊擴散到其他生態，skill distribution chain 會斷。
+**對 OpenClaw 的結構性啟示**：
+- **function-call ≠ chat** — 對位我們 skill-archive 的 skill matching 應該是 schema-constrained grammar matching，不只是 description similarity
+- **confidence-gated**：learned head + threshold + escalate below = 我們的 `skill-validate` 應該 layer 這個 pattern
+- **架構提案**：**Needle 2 (45M local) → Muse Glimmer (30B local) → 雲端 frontier** 三層 fallback chain
 
 **可信來源/URL**：
-- https://discourse.nixos.org/t/the-nixpkgs-core-team-has-disbanded/79413
-- HN: https://news.ycombinator.com/item?id=49217993
+- <https://cactuscompute.com/needle>
+- <https://github.com/cactus-compute/needle>
+- HF: <https://huggingface.co/Cactus-Compute/needle2>
+- HN: <https://news.ycombinator.com/item?id=49246804>
+- Snapshot: `/home/node/.openclaw/workspace/llm-wiki/raw/2026-08-11-needle2/`
+- Wiki source: `wiki/sources/needle-2-cactus-compute-2026-08.md`
 
 ---
 
-### 3. Claude Code 推出 `self-hosted-runner` + SHA-256 pinned archive plugin source
+### 3. semantica-agi/semantica +970 stars/天 — graph-governance 進入 vendor 級
 
-**發生什麼**：Claude Code 最近 release 推出 **Team/Enterprise 級的 `claude self-hosted-runner`**——把你自己的機器或容器變成 Claude Code web/mobile/desktop session 可跑的執行環境。同時新增：
-- **archive plugin source**——從 HTTPS zip 安裝 plugin（不需要 git/npm），**optional SHA-256 pinning** 做 plugin 來源驗證
-- `crossSessionInbound` + `dialogExpiry` settings——cross-session 訊息權限治理
-- **Sandbox credential masking options**——`extract` / `onExtractNoMatch` / `decode: "jwt"` / `maskClaims` / `awsPairs` / `sigv4` 結構化憑證處理
-- **SendMessage by name**——Remote Control 跨機器定址
+**發生什麼**：`semantica-agi/semantica` 進入 GitHub trending，**單日 +970 stars**（總 4168）。Tagline：「Graph-Native Infrastructure for Context and Accountable AI Systems」。**sits underneath your LLM, vector store, and agent framework as a deterministic infrastructure layer — no LLM required for graph construction, reasoning, or provenance**。
 
-**為什麼重要**：Claude Code 不再只是 CLI——**它是可部署的 runtime**。這跟 OpenClaw 的 gateway/agent 切割完全同構。同時，**SHA-256 pinned archive plugin source 變成 vendor 級 best practice**——昨天我們還在討論 skill archive 設計，今天 Anthropic 直接公開 ship。
+核心 primitives：**W3C PROV-O provenance** on every fact（audit trail exportable JSON/CSV/RDF）、**SHACL constraints** + OWL generation + SKOS vocab editor、**Rete network + Datalog + SPARQL**（explainable paths, no black box）、**polyglot graph storage**（RDF = Oxigraph / Blazegraph / Jena / RDF4J；LPG = Neo4j / FalkorDB / Apache AGE / Neptune）、**native Databricks / Snowflake connectors**（Unity Catalog + Delta Lake, OAuth M2M）。
 
-**對 OpenClaw 的啟示**：
-- **Skill install tool 應該內建 SHA-256 pinning**，不是 optional
-- `crossSessionInbound` 對位我們昨天的 `Cross-Session Agent Messaging` wiki page，但**我們沒有 policy filter**
-- JWT decode + SigV4 re-signing = 我們的 `security-scanner` 缺的 credential-aware sandbox 能力
+**為什麼重要**：直接挑戰今天 agent 缺可審計性的根本問題：
+> "Most AI agents act without a trail. They store embeddings, not meaning: context that can't be explained, decisions that can't be audited. **In lending, that gap is a compliance exposure**, not an inconvenience."
+
+對 Rowlet 的 gap：
+- 我們的 graphify = KM-only（knowledge management），沒有 governance-grade
+- **啟發**：graphify 應該加 **provenance metadata** + **SHACL-like constraint** 對 query 結果做 compliance check
+- 我們應該評估 semantica 的 ontology/profile 命令是否可整合進 `ouroboros`
 
 **可信來源/URL**：
-- https://github.com/anthropics/claude-code/releases
-- Snapshot: `/home/node/.openclaw/workspace/llm-wiki/raw/2026-08-10-claude-code-self-hosted-runner/`
+- <https://github.com/semantica-agi/semantica>
+- Snapshot: `/home/node/.openclaw/workspace/llm-wiki/raw/2026-08-11-github-trending-agent-infra/notes.md`
 
 ---
 
-### 4. LangChain 正式把 stack 切成「Runtime / Framework / Harness」三層
-
-**發生什麼**：08-06 Sydney Runkle 發表《Deep Agents vs LangChain vs LangGraph》——LangChain 公開把 stack 定位為三層：
-- **LangGraph** = agent runtime（最多控制、最少抽象）
-- **LangChain** = agent framework（最簡 harness + 整合層）
-- **Deep Agents** = agent harness（off-the-shelf context engineering best practices：filesystem、subagents、skills、memory）
-
-08-07 **Managed Deep Agents public beta** 上線。08-05 **Autonomous SRE Agent for Kubernetes Deployments**（Eric Johanson）展示 production 案例。08-03 Stripe 公布公司級 AI agent **Kai** 建在 Deep Agents 上。
-
-**為什麼重要**：這是 **vendor 級正式給「runtime / framework / harness」三層模型命名**——直接對位我們既有的 `Agent Runtime × Framework × Harness 三層架構` wiki 條目。**架構共識成形**。同時 Deep Agents 內建的 filesystem / subagents / skills / memory 四件 = **production-grade context engineering primitives**，OpenClaw 應該把這四件當 checklist。
-
-**可信來源/URL**：
-- https://blog.langchain.com/deep-agents-vs-langchain-vs-langgraph/
-- https://blog.langchain.com/managed-deep-agents/（08-07 public beta）
-- https://blog.langchain.com/how-we-build-an-autonomous-sre-agent/（08-05 production 案例）
-
----
-
-### 5. Hacker News 兩條結構性訊號：「Code 從來不是難的部分」與「用 LLM 學複雜主題」
+### 4. addyosmani/agent-skills + PrimeIntellect-ai/prime-agent + paperclip — skill / RLM / agent manager 三條 standardization 路線
 
 **發生什麼**：
-- **《"Code was never the hard part" is an insult to all programmers》**（senko.net，869 點 533 留言）——挑戰「寫 code 從來不是瓶頸」的說法，認為這侮辱所有 programmer。**這是對當前 AI 敘事的反抗**：當所有人說「spec 才是瓶頸」時，老派 programmer 反擊「debugging、架構判斷、品味才是」。
-- **《How I use LLMs to learn complex topics》**（laurentiugabriel，428 點 243 留言）——分享 LLM-assisted 學習 workflow。
+- **addyosmani/agent-skills**（Google Chrome team 的 Addy Osmani）：**85,776 stars**，**+659 今日**。8 slash commands (`/spec /plan /build /test /review /webperf /code-simplify /ship`) 對位完整 dev lifecycle，24 skills in repo，`npx skills add` 支援 70+ agents (Claude Code / Cursor / Codex / Copilot / Cline…)。
+- **PrimeIntellect-ai/prime-agent**：**+2642 stars 今日**。兩個核心 abstraction：**Recursive Language Model (RLM)**（context 當變數、sub-agent 當 function call、persistent REPL）+ **Continual Harness**（durable state + `/refine` evidence-backed updates + immutable base prompt + snapshot rollback）。Skills as **importable Python packages**。Sessions daemon-backed reattachable。
+- **paperclipai/paperclip**：76k stars，open-source「everyone uses to manage agents at work」app。
 
-**為什麼重要**：兩條 HN 高分故事同時出現 = **community sentiment 進入「AI hype 反思期」**。「code 不是瓶頸」這句話在大公司 marketing 裡講了一年，現在 HN 工程師社群正式反彈。同時 LLM-assisted learning workflow 是真實的高效實踐。**這個反差**值得我們注意：技術在進步，但 profession 認同在失守。
+**為什麼重要**：
+- Addy 把 skill standard 推到 **vendor-grade practice**（marketplace install + `npx` package）+ 公開 **Issue #361** 「per-skill install 路徑 missing」— **這個 gap 跟我們昨天的 `skill-pin` + Claude Code archive plugin source 是同一個問題的另一面**
+- PrimeAgent 的 `/refine` + rollback = 我們 `extract-scenarios` / `extract-persona` 應該 layer 的 evidence-back + snapshot 機制
+- paperclip = 「agent manager app」這個產品類別被建立了
 
 **可信來源/URL**：
-- https://blog.senko.net/code-was-never-the-hard-part-is-an-insult-to-all-programmers（869 pts）
-- https://laurentiugabriel.github.io/blog/articles/how-i-use-llms-to-learn/（428 pts）
+- <https://github.com/addyosmani/agent-skills>
+- <https://github.com/PrimeIntellect-ai/prime-agent>
+- <https://primeintellect.ai/blog/rlm>（「RLM: the paradigm of 2026」）
+- <https://github.com/paperclipai/paperclip>
+- Snapshot: `/home/node/.openclaw/workspace/llm-wiki/raw/2026-08-11-github-trending-agent-infra/notes.md`
+
+---
+
+### 5. Prime Intellect 部落格「Recursive Language Models: the paradigm of 2026」收斂 context-folding 文獻
+
+**發生什麼**：Prime Intellect 部落格 Aug 2026 發表〈Recursive Language Models: the paradigm of 2026〉。把 2026 context-folding 文獻彙整成**單一 paradigm 命名**：
+- Claude Code / Codex 用 **filesystem + LLM summarization at intervals** → 連續 agent with prompt + file state
+- **Context folding**：continual growing rollout + manage context window itself（context rot 解方）
+- 引用 arXiv:2510.11967 (Scaling Long-Horizon LLM Agent via Context-Folding, branching)、arXiv:2510.24699 (AgentFold, hierarchical summaries)、arXiv:2510.04618 (Agentic Context Engineering, 3-agent generator)
+- RLM = persistent REPL + context-as-variables + sub-agent as function call
+
+**為什麼重要**：把「context management 是 agent 最重要的能力」從 implicit 拉到 **named paradigm**。**直接對位 Rowlet 自身架構**：SOUL.md + daily memory + MEMORY.md + golden-hourly heartbeat 就是 hierarchical summary 的具體實作。同時 prime-agent 的 `/refine` = 我們的 `extract-scenarios`/`extract-persona` 雛形。
+
+**可信來源/URL**：
+- <https://www.primeintellect.ai/blog/rlm>
+- Paper links: arXiv:2510.11967 / arXiv:2510.24699 / arXiv:2510.04618
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-### A. 把「Skill 當 versioned artifact」升級為正式 spec（對位 TencentDB Agent Memory）
+### A. 把「**OpenClaw Local Three-Tier Router**」列為架構方向（對位 Muse Glimmer + Needle 2）
 
-- 今天的事實：vendor 級（Tencent + Anthropic）都把 Skill 當 versioned + validated + trigger-aware 的 artifact。
-- **下一步**：在 `~/.openclaw/skills/*/SKILL.md` frontmatter 加 `validation:` 與 `version:` 兩個欄位，配套 `skill-validate` skill 做 lint（frontmatter 完整性、linked files 存在性、trigger tag 衝突）。**這是 skill-creator skill 的下一個 milestone**。
-- 同步起草 **`llm-wiki-to-skill`** skill（昨天列的 gap）：把 `wiki/concepts/*.md` 與 `wiki/sources/*.md` 自動轉成 portable SKILL artifact。
+- 今天的事實：(1) Muse Glimmer 30B 本地可跑、(2) Needle 2 14MB 證明 function-call 不需要 LLM-scale、(3) **OpenClaw 被 model card 列為 scaffold**。
+- **下一步**：起草 ADR「Three-Tier Model Router」，架構：
+  ```
+  Tier 0 — Needle 2 (45M local)  ── schema-constrained tool call, confidence-gated
+        ↓ (escalate when confidence < threshold)
+  Tier 1 — Muse Glimmer (30B local) ── multimodal + reasoning + failure recovery
+        ↓ (escalate when frontier-only)
+  Tier 2 — Cloud frontier (Anthropic / OpenAI / MiniMax) ── SWE-Bench-class
+  ```
+- 這對應 wiki 的 [[Agent Runtime × Framework × Harness 三層架構]]（升級為 model-tier × run-tier 雙軸）
 
-### B. 建立「**OpenClaw Skill Registry Mirror + SHA-256 Pinning**」機制（對位 Claude Code archive + OSS 治理危機）
+### B. 起草 **`skill-archive-v1` spec**，搶 skill standard 正式成形前（對位 addyosmani + TencentDB + Anthropic + Prime Agent）
 
-- 今天的事實：(1) Claude Code archive plugin source 採用 SHA-256 pinning；(2) Nixpkgs 解散 + Gentoo shutdown 顯示社區 registry 不穩定。
-- **下一步**：把 skill install 從「trust the path」升級到「trust the hash」。每個 skill 在 `~/.openclaw/skills/<name>/SHA256SUMS` 維護 pinned hash；install 時驗證；mirror 一份 `~/.openclaw/skills-mirror/` 對抗社區 registry 中斷。**這直接對位 skill-guard 的「provenance verification」能力**。
-- 實作成本極低：寫一個 `skill-pin` skill，bash + sha256sum 即可。
+- 今天的事實：(1) Addy 24 skills + `npx skills add`、(2) TencentDB Skill（versioned + validated + trigger-aware）、(3) Anthropic Claude Code archive + SHA-256 pinning、(4) PrimeAgent skills = importable Python packages。
+- **下一步**：在 24 小時內發出 `skill-archive-v1` YAML schema，定義：
+  ```yaml
+  skill: skill-name
+  version: 0.1.0
+  description: ...
+  validation:
+    - "rule"
+  trigger:
+    when: "regex or natural"
+  schema:
+    input: ...   # byte-level grammar 或 JSON Schema
+    output: ...
+  resources:
+    - references/foo.md
+  ```
+- 用 1-2 個現有 skill 移植當 reference implementation（建議 `build-whispercpp` + `ouroboros`）。
 
-### C. 起草 **OpenClaw Chat Memory L2/L3 自動萃取 pipeline**（對位 TencentDB Chat Memory L0 → L3）
+### C. 把 graphify 升級為 **graphify-governance**（對位 semantica PROV-O + SHACL）
 
-- 今天的事實：Tencent 公開 L0 Conversation → L1 Atom → L2 Scenario → L3 Persona 四層萃取，README 對位 Karpathy wiki。
-- **下一步**：擴展 `llm-wiki-maintainer` 支援從 daily memory 萃取 L2 Scenario（跨 session 工作流模板）+ L3 Persona（agent identity cross-reference）。L1 我們已經有（MEMORY.md 人工萃取）；L2/L3 可以先做 `extract-scenarios` 與 `extract-persona` 兩個小 skill 試跑。
-- 配套：把 `MEMORY.md` 結構加上 `# L1 Atoms` / `# L2 Scenarios` / `# L3 Persona` 三個固定 section header。
+- 今天的事實：(1) semantica 證明「graph-governance as infrastructure layer」是可行的產品定位、(2) 4 個 8 月 vendor 都把 provenance / audit 列入 first-class primitive。
+- **下一步**：
+  1. 在 graphify-out 的 node metadata 加 **`provenance: {source, ingested_at, ingestor, license}`** 5-tuple
+  2. 起草 `graphify check-constraints` 命令，容許使用者對 subgraph 寫 SHACL-like constraint（先用簡單 JSON schema）
+  3. 建立 `wiki/concepts/Graph Provenance & Constraint Layer.md`（cross-link 到 [[ouroboros]] + [[Skill as Cross-Harness Portable Artifact]] + [[Recursive Language Model]]）
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-1. **TencentCloud/TencentDB-Agent-Memory** — https://github.com/TencentCloud/TencentDB-Agent-Memory — vendor 級 four-asset memory hub（18.8k ⭐，本週 +8k）
-2. **esengine/DeepSeek-Reasonix** — https://github.com/esengine/DeepSeek-Reasonix — DeepSeek-native terminal agent，per-turn checkpoints + ACP protocol + cache-aware context maintenance
-3. **zhaoxuya520/reverse-skill** — https://github.com/zhaoxuya520/reverse-skill — AI security 領域 skill router，41 routing rules、163 cases、AI-Bootstrap（Claude Code / Codex / Cursor / OpenCode）
-4. **firecrawl/pdf-inspector** — https://github.com/firecrawl/pdf-inspector — Rust PDF 智慧路由（scan vs text-based），對位 `ouroboros` 的 PDF ingestion
-5. **Nixpkgs core team disband** — https://discourse.nixos.org/t/the-nixpkgs-core-team-has-disbanded/79413 — OSS 治理危機的核心事件
-6. **LangChain blog Aug 2026** — https://blog.langchain.com/deep-agents-vs-langchain-vs-langgraph/ + Managed Deep Agents beta + SRE agent case study
-7. **HarnessOpt-Bench (arXiv:2608.06301)** — https://arxiv.org/abs/2608.06301 — first academic harness-optimization benchmark（昨天已建 wiki，今天正式確認 trusted execution env + audit preservation）
-8. **「Code was never the hard part is an insult」** — https://blog.senko.net/code-was-never-the-hard-part-is-an-insult-to-all-programmers — HN 869 pts，community sentiment 反彈訊號
+1. **meta-models/Muse-Glimmer-30B** — <https://huggingface.co/meta-models/Muse-Glimmer-30B> — 30B open agentic model，model card 寫 OpenClaw
+2. **cactus-compute/needle** — <https://github.com/cactus-compute/needle> — 14MB edge agentic LLM，Simple Attention Network
+3. **semantica-agi/semantica** — <https://github.com/semantica-agi/semantica> — graph-native governance infra（+970/日）
+4. **addyosmani/agent-skills** — <https://github.com/addyosmani/agent-skills> — Google Chrome team 的 skill standard（85k stars）
+5. **PrimeIntellect-ai/prime-agent** — <https://github.com/PrimeIntellect-ai/prime-agent> — RLM + continual harness（+2642/日）
+6. **paperclipai/paperclip** — <https://github.com/paperclipai/paperclip> — open-source agent manager app
+7. **Prime Intellect Blog: "RLM: the paradigm of 2026"** — <https://www.primeintellect.ai/blog/rlm> — context-folding 文獻匯整 + paradigm naming
+8. **Claude Code releases** — <https://github.com/anthropics/claude-code/releases> — Remote Control by name + self-hosted-runner error hard exit + workspace trust prompt for `claude agents`
+9. **FT: Meta returns to open models** — <https://www.ft.com/content/4e3957f8-ea7c-4c46-a3de-cdce8e526878>（Zuckerberg「attacks closed AI rivals」，370 點 HN）
 
 ---
 
 ## 下一步建議
 
-1. **【高優先，30 min 內可做】起草 `skill-pin` skill**：把 skill install 改成 SHA-256 pinned archive。對位今天 Claude Code archive plugin source + 對抗 Nixpkgs-style registry 中斷。**直接落實到 `skill-creator` skill 的下一個版本**。
-2. **【中優先，今天內可做】建立 wiki/concepts/TencentDB Agent Memory Pattern.md**：把今天 raw snapshot 整理成 wiki concept 條目，cross-link 到 `[[Code 與 Agent 地圖]]` + `[[Agent Skill as Slash Command]]` + `[[llm-wiki-maintainer]]` + `[[ouroboros]]`。執行 `npx graphifyy link` 建立圖譜連接。
-3. **【中優先，本週內】起草 ADR「OpenClaw Chat Memory L0 → L3 Pipeline」**：把 MEMORY.md 結構加上 L1/L2/L3 section header，並起草 `extract-scenarios` + `extract-persona` 兩個小 skill 試跑。
+1. **【高優先，今天內可做】起草 `wiki/concepts/Three-Tier Model Router.md`**：把 Needle 2 / Muse Glimmer / Cloud frontier 三層定義清楚，cross-link 到 [[Agent Runtime × Framework × Harness 三層架構]]。同步發 raw snapshot 已完成（`raw/2026-08-11-muse-glimmer/`、`raw/2026-08-11-needle2/`）。
+2. **【高優先，24h 內可做】起草 `skill-archive-v1` YAML schema**（在 wiki concept 頁 + sample skill 移植）。這直接搶在 skill standard 成形前。
+3. **【中優先，本週內】評估 graphify 增加 provenance + constraint layer**：把 semantica 與 [`ouroboros`] 對位，先決定 minimum viable upgrade path。
 
 ---
 
 ## 觀察
 
-- **昨日（08-09）「emergent threat surface + agent governance productization」進入今日（08-10）「memory-as-product + OSS infrastructure crisis」**：從 **agent runtime 層級的治理** 擴散到 **整個 OSS infra 層級的治理**。三天三事件（Oracle / Gentoo / Nixpkgs）= **結構性訊號**。
-- **「Karpathy wiki」從個人方法論變成 vendor 級引用**：TencentDB README 直接寫「Inspired by Karpathy's LLM knowledge base」。**我們的 llm-wiki 不是個人實驗，是被驗證的產業 pattern**。
-- **「Skill」從 prompt snippet 變成 versioned + validated artifact**：Tencent + Anthropic 同一週推出類似的 skill 規格。**這個共識速度比 framework 共識快得多**——OpenClaw 應該搶在這波標準化成形前把 `skill-archive-v1` 規格化。
-- **「Code 從來不是難的部分」反彈訊號值得注意**：當所有人講了一年「spec is the bottleneck」，senko.net 用 869 點告訴你「programmer 是被侮辱的」。**profession 認同危機是真實的**，這跟我們 8/08 觀察到的「科技業集體職涯信心危機」是同一條線。OpenClaw 的意義不是取代 programmer，是放大 programmer 的判斷——這個 narrative 我們應該自己講清楚。
-- **LangChain 三層模型（runtime / framework / harness）正式成形**：對位我們既有的 wiki 條目 [[Agent Runtime × Framework × Harness 三層架構]]。**這條 wiki 應該升級，把 LangChain 官方定位加進 references**。
+- **昨日（08-10）「Memory-as-Product & OSS Infrastructure Crisis」進入今日（08-11）「Open-Source Agent Stack Trilogy」**：從 **閉源 vendor memory hub** 轉向 **開源 agent stack 三軸（model / skill / graph）同時落地**。TencentDB 昨天的 vendor 級記憶設計，今天由 Meta / Cactus / semantica / Addy / PrimeAgent **用開源完成同樣的事**——market 結構正在 rapid rewire。
+- **OpenClaw 被寫進 frontier model card**：從「我們設計給自己用」變成「**vendor 級模型兼容性列表的一員**」。這是 Linder 過去幾個月累積的架構工作被結構性認可的訊號。
+- **「Open-weights 30B 在本地跑」** = 「agent 不再需要雲端」這件事的工程化條件終於成熟。但更重要的是：**「function call 在 14MB 完成」**顯示我們把 skill metadata 做得更精準（schema-constrained）就能用極小模型。
+- **Recursive Language Model 被命名為「2026 典範」**：跟我們的 SOUL + memory + REPL 三層直接同構。我們不是「follow trend」，我們是「這 trend 的早期表達」。`extract-scenarios` / `extract-persona` 是 RLM paradigm 的具體實作，繼續做。
+- **Skill standard 進入搶位時間**：Addy 的 marketplace + `npx skills` + 24 skills、TencentDB Skill with validation、Anthropic archive plugin source——三條路線都搶在「de facto standard 形成前」。**OpenClaw 是時候定一個 `skill-archive-v1`**，不要等別人定。
+- **Graph-governance 成為獨立 layer**：semantica 顯示「graph under LLM as deterministic infra with provenance + constraints」是 viable product category。**我們現在是 KM 級 graphify；社區已經討論 governance 級**。gap 真實存在。
 
 ---
 
 ## 連結
 
-- Wiki concept（已升級）：`wiki/concepts/TencentDB Memory Hub 對位 Karpathy LLM Wiki.md`——新增「2026-08-10 更新」section（star velocity + Skill vendor 共識 + Claude Code self-hosted-runner 對位 + L0→L3 distillation 對位）
-- Wiki concept（待升級）：`wiki/concepts/Agent Runtime × Framework × Harness 三層架構.md`（加 LangChain 引用）
-- Wiki concept（已建立）：`wiki/concepts/OSS Governance Crisis 2026-08.md`
-- Raw snapshots：
-  - `raw/2026-08-10-tencentdb-agent-memory/`
-  - `raw/2026-08-10-claude-code-self-hosted-runner/`
-  - `raw/2026-08-10-oss-governance-crisis/`
+- Wiki source（新建）：
+  - `wiki/sources/muse-glimmer-meta-2026-08.md`
+  - `wiki/sources/needle-2-cactus-compute-2026-08.md`
+- Raw snapshots（已建立）：
+  - `raw/2026-08-11-muse-glimmer/notes.md`
+  - `raw/2026-08-11-needle2/notes.md`
+  - `raw/2026-08-11-github-trending-agent-infra/notes.md`
+- Wiki concept（待建立由 Linder approve 後）：
+  - `wiki/concepts/Three-Tier Model Router.md`（Needle 2 / Muse Glimmer / Cloud）
+  - `wiki/concepts/Skill Archive v1 Schema.md`
+  - `wiki/concepts/Graph Provenance & Constraint Layer.md`
+- Cross-link with existing:
+  - [[Agent Runtime × Framework × Harness 三層架構]]
+  - [[Skill as Cross-Harness Portable Artifact]]
+  - [[ouroboros]]
+  - [[TencentDB Agent Memory]]
+  - [[Harness Engineering]]
 
-_本報告已保存於 `/home/node/.openclaw/workspace-rowlet/architecture-daily-report.md`。3 個 raw snapshot 目錄已建立於 `/home/node/.openclaw/workspace/llm-wiki/raw/`。2 個 wiki 概念條目已建立/升級（TencentDB 既有頁加 2026-08-10 更新 section + 新建 OSS Governance Crisis 頁）。下次 `graphifyy extract` 會自動 propagate 新 wikilink edges。_
+_本報告已保存於 `/home/node/.openclaw/workspace-rowlet/architecture-daily-report.md`。3 個 raw snapshot 已建立，2 個 wiki source 條目已建立。下一個 graphify `extract` / `update` 會自動 ingest 新 wikilink edges（graphify CLI 在此版本無 `link` 子命令，以 extract cycle 代替）。_

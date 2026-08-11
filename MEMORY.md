@@ -318,6 +318,14 @@
 - 好處：隔離重啟、狀態不丟、不被 Worker panic 影響
 - 等待設備到位後通知 Charizard 實作時注意此點
 
+## 2026-08-11 Open-Source Agent Stack Trilogy
+
+- **OpenClaw 已被 Meta Muse Glimmer 30B model card 寫入「Scaffold Compatibility」section**（與 Hermes Agent 並列）—— 從內部架構升級為 vendor 級識別的 scaffold
+- 開源三軸同週落地：Model (Meta Muse Glimmer 30B) + Edge (Cactus Needle 2 14MB) + Graph-governance (semantica-agi) + Skill standard (addyosmani) + RLM self-improving (PrimeAgent)
+- Skill standard 進入搶位時間（24h 內應起草 skill-archive-v1）
+- graphify KM-only → governance-grade 是真實 gap（看 semantica +970/day）
+- 三層 fallback chain：Needle 2 (45M local) → Muse Glimmer (30B local) → Cloud frontier
+
 ## CompactionRL 入庫 (2026-06-20)
 - roaringmoon 交辨：arXiv:2607.05378, Li et al., KDD 2026
 - PDF + metadata → `raw/references/papers/ai/2607-compactionrl/`
