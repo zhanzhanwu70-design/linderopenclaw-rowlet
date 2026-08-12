@@ -154,6 +154,21 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 
 **對 OpenClaw 的直接啟發**：Rowlet 目前的三層記憶（SOUL.md / daily memory / MEMORY.md）本質上還是 append-only 和 static retrieval 的混合。TrajWiki 的 operation model 提示我們：可以在 `MEMORY.md` 或 `SOUL.md` 的更新邏輯中加入 explicit revision types（修訂 vs 廢棄），而不只是覆蓋式寫入。這會讓記憶的演化可追蹤、可診斷。
 
+## 新論文補充：LeanMem — 按資訊類型差異化儲存（2026-08-11 深讀）
+
+**LeanMem (Liao et al., arXiv:2608.03463, 2026-08-04)** 帶來與其他方法最根本的不同切入點：**不是設計更好的 memory schema 或 retrieval algorithm，而是證明「不同資訊類型需要不同處理策略」這一原則**。
+
+三類差異化 storage：
+- **Profile memory**：穩定用戶屬性 → 緊湊結構化，不做 evolution
+- **Event memory**：動態狀態變化 → 帶時間錨，selective evolution
+- **Record memory**：密集細節 → 輕量 index + 指標回原始對話，preserving fine-grained evidence
+
+**對 Rowlet 的直接啟發**：目前 daily memory 是 unified format，區分了日期但沒有區分內容類型。可以借鑒 LeanMem 的 insight：heartbeat 寫入時先判断「這段是 stable preference、evolving state 還是 dense detail」，然後用不同的 retention 和 evolution 策略處理。
+
+Query-conditional evidence composition 也很有價值：目前的 graphify query 是 uniform，可以根據問題類型分配不同 context budget。
+
+---
+
 ## 新論文補充：意圖鏈視角
 
 現有七篇 + OnePred + ACE 形成九篇互補堆疊：
