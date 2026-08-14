@@ -1,0 +1,26 @@
+{
+  "title": "Muscle Memory for Agents: Compile not Merely Retrieve",
+  "authors": [
+    "Pouya Ghiasnezhad Omran",
+    "Soujanya Lanka",
+    "Qin Zhang",
+    "Tanya Dixit"
+  ],
+  "institution": "Google Cloud FDE",
+  "date": "2026-08-10",
+  "arXiv": "2608.08995",
+  "subjects": ["cs.MA"],
+  "tags": [
+    "agent-memory",
+    "personalization",
+    "context-processing",
+    "compiled-memory",
+    "multi-agent",
+    "RAG-alternative"
+  ],
+  "paper_path": "raw/references/papers/ai/muscle-memory-agents-2026/paper.pdf",
+  "wiki_source": "wiki/sources/muscle-memory-agents-2608-08995.md",
+  "status": "seed",
+  "processed_by": "rowlet",
+  "processed_date": "2026-08-13"
+}

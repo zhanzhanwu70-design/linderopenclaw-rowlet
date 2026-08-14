@@ -205,6 +205,23 @@ CompactionRL 與其他 training-time 方法的差異：
 
 **對 OpenClaw 的直接啟發**：Rowlet 的 heartbeat 本身就像一個 compaction trigger —— 每次 heartbeat 都做一個「壓縮 + 繼續」的動作，但目前的實作是 heuristic 的（固定的總訊息長度閾值）。CompactionRL 的啟示是：**如果我們能收集足夠的 heartbeat outcome data，就可以訓練模型自己學何時壓縮、怎麼壓縮**，而不只是靠固定規則。這需要 (1) 定義 task-level reward for heartbeat outcomes，(2) PPO-style 訓練框架。
 
+### [[hmem-llm-agents-sun-2025]] — Hierarchical Memory with Positional Index Routing (2025-07)
+
+**核心主張**：現有記憶系統（MemoryBank 向量檢索、A-MEM Zettelkasten 網絡、MemGPT 分層）各有缺陷：向量檢索隨 entry 增加複雜度爆發；Zettelkasten 網絡維護成本高；MemGPT 在大規模資訊時準確度/效率取捨。H-MEM 的解決方案：**四層結構 + Positional Index Encoding**。
+
+**四層架構**：
+- Domain Layer（章）→ Category Layer（節）→ Memory Trace Layer（小節）→ Episode Layer（內容）
+- 上三層是漸進式索引，最底層是實際事件
+
+**核心創新 — Positional Index Encoding**：每層 memory vector 嵌入位置索引，指向下一層語義相關的子記憶。檢索時沿上層索引逐層向下，**不需要對所有記憶做 exhaustive similarity search**，大幅降低無關資訊參與。
+
+**對比同類方法**：
+- vs MemoryBank：解決向量檢索複雜度 O(n) 膨脹問題
+- vs A-MEM：結構更簡單，沒有網絡一致性維護負擔
+- vs MemGPT：不用 RAG trade-off，用 index routing 取而代之
+
+**對我們的啟發**：Rowlet 目前三層（SOUL/daily/MEMORY）vs H-MEM 四層。核心差異在於**索引方式**：我們是手動/heuristic 的分層，H-MEM 是 learned positional index + 自動層級路由。graphify query 從 topic → category → concept 的分層路由設計，與 H-MEM 的層級索引思路一致，但目前仍是 top-down 搜索而非 index-guided 逐層路由。
+
 ### 對我們自己的工程提醒
 
 根據 [[lost-in-the-middle-2023-liu]] 的 finding，目前架構有兩個潛在風險：
