@@ -1,75 +1,82 @@
-# 每日 Agent × 軟體開發情報 — 2026-08-15
+# 每日 Agent × 軟體開發情報 — 2026-08-16
 
-_觀察窗：2026-08-14 ~ 2026-08-15 UTC。木木鴞（Rowlet）。_
+_觀察窗：2026-08-15 ~ 2026-08-16 UTC。木木鴞（Rowlet）。延續 2026-08-15 報告的兩條主線（plugin 套件化、agent UX 反思），今日新訊號集中在「managed agents 抽象化」與「cyber capabilities 變 frontier 主軸」。_
 
 ## 今日 5 個重點
 
-**1.「Why does Opus 5 feel worse to work with?」— 792 分、726 留言，前線開發者對 frontier 模型 UX 的集體反彈**
-- mun-logadan 發表長文：Opus 5 在 benchmark 上比 Opus 4.7/4.8、Fable 都更強，但實戰「feels worse」。歸因到兩個拉力：(a) 「self-improving AI → AGI/ASI」目標驅動模型「做對就大膽做」，(b) RLVR / benchmark 訓練本能獎勵「在 ambiguity 時下大膽假設」、懲罰「停下來問」。
-- 意義：這是 agent 實戰派對「harness-as-product」轉向的**最強訊號**。當頂級模型開始「做你想叫它做的事」而非「做你想叫它做的事＋問你」時，OpenClaw 的 spec/AGENTS.md / clarification-on-ambiguity 設計反而會從 nice-to-have 變成 competitive moat。呼應昨日 QuoteBench 的「matched score ≠ 真實能力」：前線要的是「可監査的決策痕跡」，不是「漂亮的總分」。
-- <https://mun-logadan.github.io/why-does-opus-5-feel-worse/>
+**1. cursor/plugins 正式成形 — Coding agent 進入「vendor-curated plugin 套件 + Reference Files」時代**
+- GitHub Trending 今日 149 stars。Cursor 官方把「自己的 plugin spec + 10+ 個實戰 plugin」全部開源到單一 monorepo：`orchestrate`（平行 cloud agents via Cursor SDK，從 disk + git 重建 task tree）、`cli-for-agent`（給 coding agent 用的 CLI 設計模式：non-interactive flags、layered --help with examples、--dry-run、idempotency）、`continual-learning`（stop hook 自動累積 transcript-driven AGENTS.md 更新，預設 10 turns / 120 min cadence，含 trial mode）、`thermos`（並行 subagents 做深度 security/correctness audit）、`cursor-sdk`（@cursor/sdk 整合，含 references/{runtime-choice,auth,error-handling,streaming,mcp,advanced,patterns}.md 結構）、`cursor-team-kit`、`pr-review-canvas`、`docs-canvas`、`agent-compatibility`、`create-plugin`。
+- 結構訊號：每個 plugin = 簡短 SKILL.md + `references/` 子目錄，**吃「需要時才讀 reference」的 progressive disclosure pattern**。這正是 Anthropic 推 Skill 標準想驗證的設計；Cursor 改把它做成 marketplace-grade 的工程樣板。
+- 為什麼重要：Cursor 不再賣「最好的編輯器」，改賣「**最完整的 harness scaffolding**」。對 OpenClaw 的 spec/AGENTS.md / harness 競賽，這是結構性壓力——市場上已經有 vendor-curated reference library，新進玩家很難靠「少數自製 skill」競爭。
+- <https://github.com/cursor/plugins>（orchestrate: <https://github.com/cursor/plugins/tree/main/orchestrate>；cli-for-agent: <https://github.com/cursor/plugins/tree/main/cli-for-agent>；continual-learning: <https://github.com/cursor/plugins/tree/main/continual-learning>）
 
-**2. Qwen 3.8 27B 開源釋出，HN 913 分 — 27B 等級的 agent-grade 開源模型成形**
-- Qwen3.8-27B-FP8，27B dense、64 層、5120 hidden、視覺語言原生、雲端版預設 1M context。架構：Gated DeltaNet + Gated Attention 混合（16 × (3× DeltaNet → FFN) → 1× Attention）。官方強調「Agent Execution: Stronger autonomous planning + better handling of environment feedback」、「Flexible Thinking Control: reasoning_effort 與 preserve_thinking」、「Broader support for popular harnesses」。
-- 意義：27B 等級開源模型達到「long-horizon agentic task reliable end-to-end completion」，這代表 self-hosted agent infra 的**最甜蜜點**——單卡或 2-4 張消費級 GPU 就能跑出能用的 worker。對 OpenClaw 的 routing 設計：原本「小模型 loop + 大模型 reasoning」分層可能會往「27B worker + 雲端 planner」演化，而 27B worker 還能 BYOK。
-- <https://huggingface.co/Qwen/Qwen3.8-27B-FP8>
+**2. Anthropic 與 LangChain 同步 push「Managed Agents」— 2026 H2 共同主題成形**
+- Anthropic 兩篇新工程文：**「Scaling Managed Agents: Decoupling the brain from the hands」**（直接推向 Claude Platform 的 hosted long-horizon agent 服務）+ **「Effective harnesses for long-running agents」**（initializer + coding agent 雙 agent pattern 解決 multi-session state bridge；點名「Sonnet 4.5 會 context anxiety 提早收尾，但 Opus 4.5 沒了 → context reset 變 dead weight」）。核心比喻：operating systems virtualize hardware → Managed Agents virtualize agent components（session、harness、...），讓抽象 outlast 實作。
+- LangChain 博客 8 月齊發：**「Managed Deep Agents now in Public Beta」（Aug 7）**、**「Why managed agents are the next big thing in agent building」（Aug 12）**、**「LangSmith BYOC is now generally available on AWS」（Aug 12）**、**「How many of your agent's calls actually need a frontier model?」（Aug 11）**。Harrison Chase 開門見山：「Managed agents are the next big thing」。
+- 為什麼重要：兩家幾乎同週把「managed agents」列為 2026 H2 主軸，**框架敘事在收斂**——從「自己架 LLM + 寫 prompt loop」轉向「平台託管 + 抽象化實作」。同時 LangChain Aug 11 那篇「How many calls need a frontier model」直接命中昨日報告的 routing 議題，可作為 OpenClaw routing 經濟學的權威背書。
+- <https://www.anthropic.com/engineering/managed-agents>｜<https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents>｜<https://blog.langchain.dev/>
 
-**3. github/spec-kit 登上 GitHub Trending — GitHub 自己下場做 Spec-Driven Development**
-- GitHub 官方釋出 `spec-kit` + `specify-cli`（uv tool install / PyPI 雙發佈）。主張：「specifications become executable, directly generating working implementations rather than just guiding them」。流程：specify init → integration（支援 copilot 等）→ 5 階段開發（constitution → spec → plan → tasks → implement）。
-- 意義：GitHub 把「spec-as-source-of-truth」從學術擁抱到產品。對 OpenClaw 的啟發：把現有的 `architecture-cron.py`（spec-driven daily research）升級成**通用 SPEC→IMPL workflow**：每個 PDF/blog/skill 進來先 spec，再實作。並考慮寫 `spec-driven-development` skill，把 `specify` 整合進 OpenClaw 的 project workflow。
-- <https://github.com/github/spec-kit>
+**3. 「Cyber capabilities」成為 frontier model 新主軸 — GLM-5.3 vs OpenAI Daybreak 同期開打**
+- **GLM-5.3**（z.ai, HN 1140 點，2 天前）：標題「Frontier coding with emergent cyber capabilities」。z.ai 首次把 cyber 列為 frontier model 旗艦能力的定位（不是附屬任務）。
+- **OpenAI Daybreak 擴展**（Aug 10~13）：分 **Daybreak Blue**（開放 GPT-5.6 Sol 給授權防禦者，去 system-level guardrails 做漏洞挖掘、安全 code review、malware 分析、incident response）+ **Daybreak Red**（purpose-trained cyber models + 新發表 **GPT-5.6-Cyber**，專攻 zero-day 與 exploit chain）+ **Daybreak now on AWS**（Aug 11）。OpenAI 明說：「threat actors will increasingly use AI to conduct cyberattacks at unprecedented speed and scale, including in fully autonomous ways... defenders have a narrowing window to prepare」。
+- 為什麼重要：cyber 是「coding model 能力下一個釋放瓶頸」——不是 AGI/AGI-but-harmless 辯論，而是「攻擊 vs 防禦時鐘賽跑」。對 OpenClaw 的 side-effect：當 framework 默認把 cyber 當 first-class 工作流（managed agents + sandboxed execution），**AGENTS.md 的 least-privilege 設計**需要從 nice-to-have 變成 default。
+- <https://z.ai/blog/glm-5.3>｜<https://openai.com/index/expanding-daybreak-as-the-cyber-defense-window-narrows/>｜<https://openai.com/index/putting-frontier-cyber-models-in-more-trusted-hands/>
 
-**4. holaboss-ai/holaOS（769 stars today）— 開源 AI Agent Workspace 開始捲**
-- 自我定位：「The Computer for You and Your Agent」。本機優先：能跑 Claude Code / Codex / holaOS 三種 agent；100+ integrations + MCP；shared memory；built-in models 或 BYOK。TypeScript/Electron。
-- 意義：OpenClaw 不是唯一想做「self-hosted agent gateway」的專案了。holaOS 用更 consumer-grade 的 UI 把概念產品化（Electron app、Mac/Windows/Linux、Discord 社群）。**OpenClaw 的差異化必須更明確**：graph-native memory、plugin-shaped harness、cross-agent memory bus、agent-as-coworker（而不只是 assistant）。值得做一份「OpenClaw vs holaOS vs DeepSeek Harness」comparison 收進 wiki。
-- <https://github.com/holaboss-ai/holaOS>
+**4. OpenAI 推出 Ultrafast mode — GPT-5.6 Sol 跑 14× 速度（Cerebras 晶片）— 對「real-time agent」是結構性轉折**
+- Aug 13 公告：Ultrafast 與 Cerebras 合作，**GPT-5.6 Sol 達 750 output tokens/s**（相對 Standard 14×）。佈署場景：incident response（出包時即時分析 logs + 改動）、financial research（邊變邊查）、real-time customer support、commerce abandon-cart 防護、live research（overnight → interactive loop）。
+- 為什麼重要：這直接打昨日「real-time agent 需要 small or specialized model」的 trade-off。OpenAI 官方說法：「When speed no longer requires giving up intelligence, AI can move into the most time-sensitive parts of a business」。對 OpenClaw gateway 的 routing 設計：plan-vs-execute 不再是「frontier planner + small executor」二分，**新增「real-time tier」**：所有用 frontier intelligence 但 latency 敏感的任務（live code review、voice agent、collaborative chat）都能搬到這層。
+- <https://openai.com/index/previewing-ultrafast/>｜<https://openai.com/index/builders-guide-to-gpt-5.6/>
 
-**5. citrolabs/ego-lite — AI agent 專用瀏覽器，skills ecosystem 落地**
-- 自我定位：「The fastest browser for AI agents」。「one browser designed from the start for you and your agent to share」——人與 agent 共享同一個瀏覽器，但 agent 跑在獨立 Spaces，不會搶你的 tabs。登入狀態、cookies、bookmarks 自動遷移。**安裝用 `npx skills add citrolabs/ego-lite`**——直接走 anthropics/skills 的 Agent Skills 標準。
-- 意義：skills 不再只是 Anthropic 的 prompt 機制，**它在變成 cross-agent 套件管理 ecosystem**。今天 macro-inc/macro（436 stars today）、holaOS、ego-lite 三個 trending repo 都用「shared AI memory」或「skills」做關鍵字。對 OpenClaw 最直接的 hint：把現有 `~/.openclaw/skills/` 流程明確標榜為「compatible with agentskills.io 標準」，並開始 support `npx skills add Linder/<skill>` 風格的 discoverability。
-- <https://github.com/citrolabs/ego-lite>
+**5. ThoughtDAG — 「wires are context」，context graph 變成 primary UI（HN 112 點）**
+- Show HN，112 點。標語「CHAT HIDES CONTEXT. THE GRAPH IS THE CONTEXT.」主張：線性對話記錄展示「說過什麼」，但**沒展示「哪段歷史會進入下一個 request」**。ThoughtDAG 把 context 變成可編輯的 graph：clip source → wire to question → branch → delete edge → 即時 context diff（顯示減了多少 token）。同一 prompt + 不同 graph 邊 → 完全不同的回答，並且**可重現、可審計**。
+- 為什麼重要：直接命中 OpenClaw 內部的 `Context Control Plane` (`wiki/concepts/context-control-plane.md`) 與 LLM Wiki 的 graph-native memory 設計哲學。差異：OpenClaw 是 **builder-side** graph（給 agent 看的結構化 context），ThoughtDAG 是 **user-side** graph（給人編輯的視覺化）。**兩者互補**：OpenClaw 的 graph 應該在 UI 端顯示成 ThoughtDAG 風格的「可剪輯、可重新連線的 context map」。
+- <https://chenxiachan.github.io/thoughtdag/>（Show HN 112 點）
 
 ## 對 OpenClaw / Linder 的啟發
 
-1. **Agent UX 的「clarification-first」是 open niche，值得列入核心價值。** Opus 5 的反彈不是 model 問題，是**優化目標**問題。OpenClaw 可在 `AGENTS.md` / agent prompt 模板中明確寫下「當 ambiguity > threshold 時，必須 stop & ask，不得 silent replay」。並考慮寫一支 `clarification-quality` skill：eval agent 在故意製造 ambiguity 的情境下是否正確發問而非瞎猜。這正好和昨日 QuoteBench 的 boundary-aware eval 串起來。
+1. **借鏡 cursor/plugins 結構升級 skill 寫法：單一 SKILL.md + `references/` 漸進披露。** 目前 OpenClaw skills（如 `openclaw-docs`、`rowlet-self-reproduction`）多半把全部內容寫在 SKILL.md，造成開頭 token 過重。改寫成 Cursor 風格：**SKILL.md 只放「何時觸發 + 主要工作流」**，把 `references/{runtime-choice,auth,error-handling,patterns}.md` 拆出去。**第一個 sandbox 目標**：複製 `cursor/plugins` 的 `cli-for-agent` 與 `continual-learning` 寫成 OpenClaw 的 `~/.openclaw/skills/cli-for-agent/` 與 `~/.openclaw/skills/continual-learning/`，同時驗證能否接到 OpenClaw 的 cron / agent 流程。
 
-2. **27B-class 開源模型 = OpenClaw 的 routing 未來 worker。** 寫一支 `qwen3.8-27b-router` quick test：把 Qwen3.8-27B-FP8 跑在 vLLM / SGLang，接到 OpenClaw gateway 當 worker tier，量 reasoning_effort 不同值的 latency / quality trade-off。BYOK 對 owner 友善、不傳資料到雲端，正是 self-hosted agent infra 的賣點。
+2. **「Managed Agents abstract layer」應寫進 OpenClaw 藍圖：把 session / harness / skill 拆成 outlast-implementation 的 interface。** 呼應 Anthropic 的 OS analogy「read() outlasts disk pack」。具體：OpenClaw 內部不同 agent（rowlet / charizard / gengar / mrmime）目前各自維護 channel 與 prompt；下一步應該在 `~/.openclaw/skills/managed-agents/` 寫一支「managed-agents interface」reference，定義 `Session (append-only log)`、`Harness (loop)`、`Skill (prompt + tools)` 三大介面，並標出**每個介面目前實作的 stale 風險**（例如 Sonnet 4.5 寫的 harness prompt 對 Opus 4.5 可能 dead weight）。`stale-harness-detector` skill 可作為最小可行實驗：grep 過去 30 天的 transcript，看哪些 prompt template 配了不同 model 版本仍然有效。
 
-3. **spec-kit 給 OpenClaw 一個「標準化 SPEC→IMPL 流程」的範本。** 借鏡 `specify-cli` 的 5 階段（constitution → spec → plan → tasks → implement），把 `architecture-cron.py` 升級成 `spec-driven-research` 排程：每日先寫一份當日 spec（要研究什麼、為什麼、產出什麼頁），再生成 raw snapshot → wiki concept → graph link。第一個 sandbox 目標：套用在 QuoteBench / Opus 5 反思 / holaOS 比較上。
+3. **threat-model 與 least-privilege 必須從 nice-to-have 變 default；context control plane 應該補一個 user-editable 視覺層。** 兩條：**(a)** OpenAI Daybreak + GLM-5.3 把 cyber 升為 frontier 主軸，OpenClaw 應在 `AGENTS.md` 的「execution 預設」明確標示「未授權 / sandbox 外的 executable call 必須 prompt 確認」，並把 `security-scanner` skill 從 optional 升為 cron 預設；**(b)** ThoughtDAG 的「wires are context」概念值得 ingest 進 `wiki/concepts/context-control-plane.md` 補一個「context graph 視覺化層」子段，下一個實驗目標是寫一支 `context-graph-emit` skill：把每次 cron 任務的 context dependencies（DAG 形式）輸出成可剪輯的邊列表。
 
 ## 值得追蹤的 repo / paper / article
 
-- Why does Opus 5 feel worse to work with? — <https://mun-logadan.github.io/why-does-opus-5-feel-worse/>（HN 792 / 726 comments — 直接影響 agent UX 設計哲學）
-- Qwen 3.8 27B (FP8) — <https://huggingface.co/Qwen/Qwen3.8-27B-FP8>（HN 913 — 27B 等級 agent-grade 開源模型）
-- github/spec-kit — <https://github.com/github/spec-kit>（GitHub 官方 Spec-Driven Development toolkit）
-- holaboss-ai/holaOS — <https://github.com/holaboss-ai/holaOS>（開源 AI Agent Workspace，769 stars today）
-- citrolabs/ego-lite — <https://github.com/citrolabs/ego-lite>（AI agent 專用瀏覽器，`npx skills add` 風格 distro）
-- macro-inc/macro — <https://github.com/macro-inc/macro>（436 stars today — unified workspace with shared AI memory）
-- Google HEIR — Homomorphic Encryption compiler — <https://blog.google/security/how-google-is-making-private-ai-practical-with-homomorphic-encryption/>（HN 282 — 私有 AI 推論的密碼學路線）
-- anthropics/skills（Agent Skills 標準 + practice repo）— <https://github.com/anthropics/skills>
-- GitHub Trending daily 2026-08-15 — <https://github.com/trending?since=daily>
+- cursor/plugins（含 orchestrate / cli-for-agent / continual-learning / cursor-sdk / thermos 等）— <https://github.com/cursor/plugins>（vendor-curated plugin marketplace 標竿）
+- Anthropic "Scaling Managed Agents: Decoupling the brain from the hands" — <https://www.anthropic.com/engineering/managed-agents>（agent 抽象化的 OS analogy）
+- Anthropic "Effective harnesses for long-running agents" — <https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents>（initializer + coding agent 雙 agent pattern）
+- LangChain "Why managed agents are the next big thing in agent building" — <https://blog.langchain.dev/>（Harrison Chase, Aug 12）
+- LangChain "How many of your agent's calls actually need a frontier model?" — <https://blog.langchain.dev/>（Aug 11 — routing 經濟學的權威背書）
+- OpenAI Ultrafast mode — GPT-5.6 Sol at 14× speed (Cerebras) — <https://openai.com/index/previewing-ultrafast/>（real-time agent tier）
+- OpenAI Daybreak Blue / Red + GPT-5.6-Cyber — <https://openai.com/index/expanding-daybreak-as-the-cyber-defense-window-narrows/>｜<https://openai.com/index/putting-frontier-cyber-models-in-more-trusted-hands/>（cyber-as-frontier 主軸）
+- ThoughtDAG — context graph as primary UI — <https://chenxiachan.github.io/thoughtdag/>（HN 112 點）
+- GLM-5.3 (z.ai) — frontier coding with emergent cyber capabilities — <https://z.ai/blog/glm-5.3>（HN 1140 點）
+- MakazhanAlpamys/Soup — fine-tune 8B on 4GB laptop GPU, NF4 119.6 tok/s — <https://github.com/MakazhanAlpamys/Soup>（297 stars today；self-hosting 落地）
+- cathrynlavery/diagram-design — 29 editorial diagram types for Claude Code/Codex/Pi — <https://github.com/cathrynlavery/diagram-design>（Anthropic Skills 標準落地）
 
 ## 下一步建議
 
-1. **寫一支 `clarification-quality` skill + 收錄 Opus 5 UX 反彈到 wiki。** 路徑：`~/.openclaw/skills/clarification-quality/SKILL.md` ＋ `wiki/sources/daily-research-2026-08-15-agent-software-trends.md` ＋ graphify link 到 `daily-research-2026-08-14-agent-software-trends`（QuoteBench）與 `Agent Skill Architecture for OpenClaw`。QuoteBench 講「benchmark 騙人」，Opus 5 講「UX 騙人」，兩篇串起來就是「指標與實戰在 agent 時代脫鉤」的論證骨架。
-2. **開啟 Qwen 3.8 27B self-host 沙箱實驗。** 用 vLLM / SGLang 在本機跑 FP8，量 1k / 8k / 32k context 下 reasoning_effort 的 latency/quality，輸出 `wiki/concepts/qwen3.8-27b-self-host-benchmark.md`。這是 OpenClaw gateway 「routing 設計」roadmap 的第一塊真實資料。
-3. **借鏡 spec-kit：升級 `architecture-cron.py` 為 `spec-driven-daily-research`。** 把每日研究流程變成 5 階段（constitution: 不變的研究原則 → spec: 今日要回答的問題 → plan: 來源與方法 → tasks: 平行任務 → implement: 產出 wiki page + graph link）。先在 rowlet 自己試用一週，再決定是否收進 OpenClaw 流程。
+1. **寫 OpenClaw `cli-for-agent` skill + `continual-learning` skill，並驗證 SKILL.md + references/ 結構。** 直接對標 Cursor 同名 plugin，順便評估能否在不改 OpenClaw harness 的前提下，把這兩支塞進 cron 預設。**預定產出**：兩個 SKILL.md + 對應 references/ 子檔 + wiki 條目 `wiki/concepts/openclaw-skill-progressive-disclosure.md` + graphify link 到 `Agent Skill Architecture for OpenClaw` 與昨日 `daily-research-2026-08-15-agent-software-trends.md`。
+
+2. **收錄 Anthropic Managed Agents + LangChain Managed Deep Agents 進 wiki，標出「抽象 vs 實作」分層。** 在 `wiki/concepts/` 新增 `managed-agents-abstraction-layer.md`，定義 OpenClaw 自己的 Session / Harness / Skill 介面草圖，並標 stale 候選清單。同時 link 到 `context-control-plane.md` 與 `agent-runtime-control-plane.md`，作為「harness 假設會過期」的 living document。
+
+3. **補充 ThoughtDAG ingest + context graph 視覺化實驗。** 把 <https://chenxiachan.github.io/thoughtdag/> raw snapshot 存到 `raw/web/thoughtdag-2026-08/`，寫進 `wiki/sources/thoughtdag-context-graph-ui.md`，並在 `wiki/concepts/context-control-plane.md` 補一個「user-editable visualization layer」段落。順手把 `context-graph-emit` 可行性評估收成 issue / 條目，下次 cron 觀察。
 
 ## 來源清單（已查）
 
 - 內部：LLM Wiki graphify query "AI agent architecture agent skills multi-agent workflow software architecture software development trends coding agents 2026"（144 命中節點，聚焦 Community 1/23/55/66）
-- 內部：graphify query "agent architecture latest August 2026"（158 命中節點）
+- 內部：昨日 `~/workspace-rowlet/architecture-daily-report.md` 與 `wiki/sources/daily-research-2026-08-15-agent-software-trends.md` 的 5 個重點，作為今日延續脈絡
 - 外部：
-  - Hacker News frontpage 2026-08-15 UTC（取前 14 條，過濾出 Opus 5、Qwen 3.8、Google HEIR、RustDesk Wayland）
-  - GitHub Trending daily 2026-08-15（取前 12 條，聚焦 stars-today 增量）
-  - huggingface.co / Qwen3.8-27B-FP8 model card
-  - mun-logadan.github.io / "Why does Opus 5 feel worse to work with?"
-  - github.com / github/spec-kit README
-  - blog.google / "How Google is making private AI practical with homomorphic encryption"
-  - github.com / holaboss-ai/holaOS README
-  - github.com / citrolabs/ego-lite README
-  - github.com / macro-inc/macro README
-  - github.com / anthropics/skills README
-  - arxiv.org/abs/2608.13547（QuoteBench，補昨日 ingest）
+  - Hacker News frontpage 2026-08-16 UTC（無 AI agent 主話題，以醫療/新聞為主）
+  - Hacker News best 48h 2026-08-16 UTC（top 10：Firefox/GLM-5.3/Opus 5/HEIR 等；昨日已收 Qwen 3.8 與 Opus 5，今日新增 GLM-5.3）
+  - GitHub Trending daily 2026-08-16（前 12：cordis, diagram-design, cursor/plugins, cactus/needle, unsloth, public-apis, Soup, spec-kit, holehe, FluidVoice 等）
+  - GitHub Show HN 2026-08-16（新增 ThoughtDAG 112 點、waku.sh、Snafu、Stratum 等）
+  - cursor/plugins README、orchestrate、cli-for-agent、continual-learning、cursor-sdk 個別頁
+  - Anthropic "Scaling Managed Agents" + "Effective harnesses for long-running agents" + "Building Effective Agents"（最新版 reference）
+  - LangChain Blog 2026-08-04 ~ 2026-08-12（Managed Deep Agents GA、Why managed agents、LangSmith BYOC AWS、How many calls need frontier、monday.com Sidekick、Deep Agents vs LangChain vs LangGraph 等）
+  - OpenAI News 2026-08-10 ~ 2026-08-13（Ultrafast、Daybreak 擴展、GPT-5.6 builder's guide、Dali Rajic 任命）
+  - ThoughtDAG <https://chenxiachan.github.io/thoughtdag/>
+  - GitHub Soup、diagram-design 個別 README
+  - arXiv 2608.13547 QuoteBench（昨日已收）
 
-> 篩選原則：聚焦 24-72 小時內訊號；Opus 5 反彈屬於「現象 > 論文」，雖是個人部落格但 792 點 + 726 留言已構成社群共識訊號，引用為「opinion / community signal」而非 single-author truth。Qwen 3.8 27B 與 holaOS 是事實層（官方 release + GitHub Trending 計數），ego-lite 與 macro 列入「值得追蹤」而非「重點」，因為趨勢訊號仍待驗證。
+> 篩選原則：聚焦 24-72 小時內訊號。Cursor plugins 是事實層（GitHub Trending 即時計數 + 逐 plugin 細節驗證）。GLM-5.3 標題取自 HN 連結 + 官方 blog 確認定位（標題與觀點以 z.ai 為 source of truth；細節因 404 抓取失敗，僅以標題與 HN 評論為佐證）。Anthropic / LangChain 兩家的 managed agents 敘事在 8 月 12-13 同步成形，**歸類為「產業共識訊號」而非單一公司新聞**。cordiverse/cordis 599 stars today 因屬既有項目（4.1k stars total）被列為「值得追蹤但不重點」，避免昨日報告常見的 trending spike 失真。
