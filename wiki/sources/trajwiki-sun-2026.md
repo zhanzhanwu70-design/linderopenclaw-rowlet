@@ -78,7 +78,7 @@ Answer
 
 ## PDF Storage Path
 
-`/home/node/.openclaw/workspace-rowlet/raw/references/papers/ai/2608-trajwiki/2608.00967.pdf`
+`/home/amr/.openclaw/workspace-rowlet/raw/references/papers/ai/2608-trajwiki/2608.00967.pdf`
 
 ## Related Papers
 

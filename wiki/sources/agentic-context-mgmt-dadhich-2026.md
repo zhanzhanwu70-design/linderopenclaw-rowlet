@@ -4,7 +4,7 @@
 
 - **Title**: Agentic Context Management: Solving Agent Memory and Cost by Treating Them as Lifecycle and Architecture Problems
 - **arXiv**: [2607.21503](https://arxiv.org/abs/2607.21503)
-- **PDF**: [2607.21503.pdf](/home/node/.openclaw/workspace-rowlet/raw/references/papers/ai/2607-agentic-context-mgmt/2607.21503.pdf)
+- **PDF**: [2607.21503.pdf](/home/amr/.openclaw/workspace-rowlet/raw/references/papers/ai/2607-agentic-context-mgmt/2607.21503.pdf)
 - **Authors**: G. Dadhich (Maximem AI)
 - **Published**: 2026
 - **Eval Harness**: [github.com/maximem-ai](http://github.com/maximem-ai)

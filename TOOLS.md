@@ -43,12 +43,12 @@ Add whatever helps you do your job. This is your cheat sheet.
 
 本機轉錄已實作，不用 OpenAI Whisper API、不上傳音檔。
 
-- Source: `/home/node/.openclaw/local/whisper.cpp`
-- Model: `/home/node/.openclaw/local/whisper.cpp/models/ggml-small.bin`
-- Portable toolchain: `/home/node/.openclaw/local/toolchain`（CMake + Ninja + Zig，免 root）
-- Build/rebuild: `/home/node/.openclaw/local/bin/build-whispercpp`
-- Single/batch audio: `/home/node/.openclaw/local/bin/whispercpp-transcribe <wav-or-dir>`
-- YouTube audio + transcript: `/home/node/.openclaw/local/bin/youtube-whispercpp-transcribe <youtube-url> [output-dir]`
+- Source: `/home/amr/.openclaw/local/whisper.cpp`
+- Model: `/home/amr/.openclaw/local/whisper.cpp/models/ggml-small.bin`
+- Portable toolchain: `/home/amr/.openclaw/local/toolchain`（CMake + Ninja + Zig，免 root）
+- Build/rebuild: `/home/amr/.openclaw/local/bin/build-whispercpp`
+- Single/batch audio: `/home/amr/.openclaw/local/bin/whispercpp-transcribe <wav-or-dir>`
+- YouTube audio + transcript: `/home/amr/.openclaw/local/bin/youtube-whispercpp-transcribe <youtube-url> [output-dir]`
 
 Wrapper 預設使用 `-ng -nfa` CPU-only / no flash-attn，因為 dynamic/shared build 曾在 model load 後 `free(): invalid pointer`；目前 static build smoke test OK。
 
@@ -59,7 +59,7 @@ When you need an API key, use:
 const fs = require('fs');
 const apiKey = fs.readFileSync(process.env.OPENAI_API_KEY_DIR, 'utf8').trim();
 
-OPENAI_API_KEY_DIR = /home/node/.openclaw/secrets/openai-api-key.txt
+OPENAI_API_KEY_DIR = /home/amr/.openclaw/secrets/openai-api-key.txt
 
 ## MiniMax API (Graphify)
 
@@ -71,21 +71,21 @@ OPENAI_API_KEY_DIR = /home/node/.openclaw/secrets/openai-api-key.txt
   ```bash
   OPENAI_API_KEY=$(cat ~/.openclaw/secrets/minimax-api-key.txt) \
     OPENAI_BASE_URL="https://api.minimax.io/v1" \
-    /home/node/.local/bin/graphify extract <dir> --backend openai --model "MiniMax-M2.7"
+    /home/amr/.local/bin/graphify extract <dir> --backend openai --model "MiniMax-M2.7"
   ```
 
 ## LLM Wiki (大書庫)
 
 - **Nickname**: 大書庫
-- **Graph layer (primary)**: `/home/node/.openclaw/workspace/llm-wiki/graphify-out/`
+- **Graph layer (primary)**: `/home/amr/llm-wiki/graphify-out/`
   - `GRAPH_REPORT.md` — clustered communities + node index
   - `graph.json` — full graph for queries
-- **Wiki (secondary)**: `/home/node/.openclaw/workspace/llm-wiki/wiki/`
-- **Raw (last resort)**: `/home/node/.openclaw/workspace/llm-wiki/raw/`
+- **Wiki (secondary)**: `/home/amr/llm-wiki/wiki/`
+- **Raw (last resort)**: `/home/amr/llm-wiki/raw/`
 - **Query command** (preferred over reading wiki/):
   ```bash
   /graphify query "<question>"
   # or
-  cd /home/node/.openclaw/workspace/llm-wiki && graphify query "<question>" --budget 800
+  cd /home/amr/llm-wiki && graphify query "<question>" --budget 800
   ```
 - **Do not** preload `wiki/**/*.md` or scan `raw/` at session start. Trust the precomputed graph.

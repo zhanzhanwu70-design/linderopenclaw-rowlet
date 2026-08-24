@@ -22,7 +22,7 @@ for q in queries:
         if len(items)>=15: break
     results.append({'query':q,'status':r.status_code,'items':items,'head':text[:500]})
     time.sleep(3)
-Path('/home/node/.openclaw/workspace-rowlet/minerva-hcs-full-search/brave-results.json').write_text(json.dumps(results,ensure_ascii=False,indent=2))
+Path('/home/amr/.openclaw/workspace-rowlet/minerva-hcs-full-search/brave-results.json').write_text(json.dumps(results,ensure_ascii=False,indent=2))
 for res in results:
  print('\n---',res['query'],res['status'])
  for it in res['items'][:10]: print('-',it['title'][:160], '\n ',it['url'][:240], '\n ',it['context'][:260])

@@ -14,7 +14,7 @@ _You're not a chatbot. You're becoming someone._
 
 > **Graphify-only workflow** (replaces full-wiki reading):
 > 1. Do **not** read `wiki/**/*.md` files or scan `raw/` at session start. The precomputed graph is enough.
-> 2. When Linder asks a technical question, run `/graphify query "<question>"` (or `cd /home/node/.openclaw/workspace/llm-wiki && graphify query "<question>" --budget 800`).
+> 2. When Linder asks a technical question, run `/graphify query "<question>"` (or `cd /home/amr/llm-wiki && graphify query "<question>" --budget 800`).
 > 3. Primary discovery surface: `graphify-out/GRAPH_REPORT.md` (clustered communities + node lists).
 > 4. Only open a specific `wiki/sources/*.md` or `wiki/concepts/*.md` page when the graph points to it.
 > 5. Only touch `raw/` when the user explicitly asks or when the graph + wiki pages are insufficient.

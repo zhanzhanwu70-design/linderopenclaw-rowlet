@@ -9,10 +9,10 @@
 # 5. Append wiki log and Rowlet daily memory.
 # 6. Mark the item completed only after durable writes succeed.
 
-WIKI_DIR="/home/node/.openclaw/workspace/llm-wiki"
+WIKI_DIR="/home/amr/llm-wiki"
 VIDEO_DIR="$WIKI_DIR/raw/video"
-OPENCLAW_DIR="/home/node/.openclaw"
-ROWLET_MEMORY_DIR="/home/node/.openclaw/workspace-rowlet/memory"
+OPENCLAW_DIR="/home/amr/.openclaw"
+ROWLET_MEMORY_DIR="/home/amr/.openclaw/workspace-rowlet/memory"
 OPENCLAW_BIN="$OPENCLAW_DIR/node_modules/.bin/openclaw"
 
 announce() {

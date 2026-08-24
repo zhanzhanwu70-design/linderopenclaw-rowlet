@@ -21,7 +21,7 @@ Large language models are constrained by finite context windows, which limits lo
 
 ## PDF Storage Path
 
-`/home/node/.openclaw/workspace-rowlet/raw/references/papers/ai/memgpt-2024-packer.pdf`
+`/home/amr/.openclaw/workspace-rowlet/raw/references/papers/ai/memgpt-2024-packer.pdf`
 
 (arXiv PDF — publicly available via arXiv open access)
 

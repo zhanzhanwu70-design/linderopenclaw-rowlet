@@ -67,4 +67,4 @@ Compaction leads to variable number of rollout segments → 從 group-wise optim
 
 ## PDF Storage Path
 
-`/home/node/.openclaw/workspace-rowlet/raw/references/papers/ai/2607-compactionrl/2607.05378.pdf`
+`/home/amr/.openclaw/workspace-rowlet/raw/references/papers/ai/2607-compactionrl/2607.05378.pdf`

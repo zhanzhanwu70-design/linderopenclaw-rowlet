@@ -35,7 +35,7 @@ for q in queries:
     except Exception as e:
         results.append({'query':q,'error':repr(e)})
     time.sleep(1)
-out=Path('/home/node/.openclaw/workspace-rowlet/minerva-hcs-full-search/search-results.json')
+out=Path('/home/amr/.openclaw/workspace-rowlet/minerva-hcs-full-search/search-results.json')
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(results,ensure_ascii=False,indent=2), encoding='utf-8')
 for res in results:

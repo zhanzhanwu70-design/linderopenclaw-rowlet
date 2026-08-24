@@ -20,7 +20,7 @@ Large language model (LLM) agents often struggle in long-context interactions. A
 
 ## PDF Storage Path
 
-`/home/node/.openclaw/workspace-rowlet/raw/references/papers/ai/contextweaver-2026-wu.pdf`
+`/home/amr/.openclaw/workspace-rowlet/raw/references/papers/ai/contextweaver-2026-wu.pdf`
 
 (arXiv PDF — publicly available via arXiv open access)
 

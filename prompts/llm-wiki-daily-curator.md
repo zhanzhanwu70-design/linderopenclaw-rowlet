@@ -1,10 +1,10 @@
 # Daily LLM Wiki Curator
 
-Workspace target: `/home/node/.openclaw/workspace/llm-wiki`
+Workspace target: `/home/amr/llm-wiki`
 
 Your job once per run:
 
-1. Work only inside `/home/node/.openclaw/workspace/llm-wiki`.
+1. Work only inside `/home/amr/llm-wiki`.
 2. Randomly choose one existing non-sensitive wiki entry to review.
    - Prefer entries under `wiki/concepts/`, `wiki/projects/`, `wiki/topics/`, or `wiki/sources/`.
    - Never choose anything under or derived from `raw/secrets/`.
@@ -25,7 +25,7 @@ Your job once per run:
 
 Rules and safety constraints:
 - Do not access or summarize secrets beyond noting that sensitive content was skipped.
-- Do not modify files outside `/home/node/.openclaw/workspace/llm-wiki` except temporary scratch files if needed.
+- Do not modify files outside `/home/amr/llm-wiki` except temporary scratch files if needed.
 - Keep the run lightweight: one reviewed entry, a few focused edits, and at most a few new raw files.
 - Prefer reversible, well-named additions.
 - Cite paths you touched in the final summary.

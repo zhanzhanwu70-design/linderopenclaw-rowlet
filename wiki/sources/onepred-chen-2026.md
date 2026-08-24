@@ -104,6 +104,6 @@ R = λ · Rjudge + (1 − λ) · Rformat
 
 ## Source
 
-- Paper: `/home/node/.openclaw/workspace-rowlet/raw/references/papers/ai/onepred-2026-chen.pdf`
+- Paper: `/home/amr/.openclaw/workspace-rowlet/raw/references/papers/ai/onepred-2026-chen.pdf`
 - Code: https://github.com/ZBWpro/OnePred
 - arXiv: https://arxiv.org/abs/2605.23668

@@ -6,7 +6,7 @@
 5. 其他相關論文
 
 這次除了摘要與討論外，必須額外完成以下工作：
-- 將論文原文、可公開取得的 PDF、摘要頁、arXiv 頁、官方 technical report，或至少可合法保存的 metadata / abstract，存入 `/home/node/.openclaw/workspace/llm-wiki/raw/references/papers/ai/`。
+- 將論文原文、可公開取得的 PDF、摘要頁、arXiv 頁、官方 technical report，或至少可合法保存的 metadata / abstract，存入 `/home/amr/llm-wiki/raw/references/papers/ai/`。
 - 檔名請穩定、可讀，優先包含年份、第一作者或主題短名。
 - 若無法取得完整 PDF，至少保存一份帶有標題、作者、URL、摘要、存取限制說明的 markdown raw note。
 - 在 `llm-wiki/wiki/sources/` 建立或更新對應 source 條目，說明：論文主題、核心論點、和現有 AI / code-agent 知識圖譜的關聯、raw 路徑、以及是否為全文或摘要保存。

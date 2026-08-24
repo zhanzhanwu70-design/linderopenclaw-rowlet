@@ -23,7 +23,7 @@
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9399] Assistant: **PostgreSQL 安全影片** ✅ 轉錄完成（363 行，逐字稿末段可見「安全是非黑即白的，只有 0 和 1 兩個結果」） **System Design** 🔄 仍在轉錄中，1:49:48 影片已跑了約 8 分鐘，音訊進度約 3:35，預計還需約 **50 分鐘**。 需要我等你回來再繼續追蹤，還是繼續其他工作？
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9400] User: 你設定一個cron 每5分鐘一次 監測有沒有正在轉錄的任務 轉錄完成後繼續入庫
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9409] Assistant: Monitor 腳本測試正常。目前只有 `adOkTjIIDnk`（System Design）仍在轉錄中，PID 109771 還在跑。 現在設定 cron：
-[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9423] Assistant: ✅ Cron 已設定！ **Rowlet 轉錄監控**（ID: `537bd0dd`） - **頻率**：每 5 分鐘一次 - **目標**：隔離 session，執行 `/home/node/.openclaw/workspace-rowlet/scripts/transcription-monitor.sh` - **通知**：主動 announce 到 #木木鴞 Monitor 會自動： 1. 掃描所有 `raw/video/*/metadata.json` 2. 發現 `transcription_sta
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9423] Assistant: ✅ Cron 已設定！ **Rowlet 轉錄監控**（ID: `537bd0dd`） - **頻率**：每 5 分鐘一次 - **目標**：隔離 session，執行 `/home/amr/.openclaw/workspace-rowlet/scripts/transcription-monitor.sh` - **通知**：主動 announce 到 #木木鴞 Monitor 會自動： 1. 掃描所有 `raw/video/*/metadata.json` 2. 發現 `transcription_sta
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9424] User: 好了嗎 有在進行嗎
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9427] Assistant: 仍在進行中 🔄 目前進度： - **音訊進度**：1:32:55 / 1:49:48（约 93%，剩约 17 分鐘） - **預計完成**：約 18:00 左右 剛好談到 REST API 的章節（POST/PUT/PATCH/DELETE 方法）。
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L9428] User: 好了 竟然已經入庫 和我詳細講講 System Design 影片 內容

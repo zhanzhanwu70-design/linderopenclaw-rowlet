@@ -30,7 +30,7 @@
 [rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L40] User: [User sent media without caption]
 [rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L47] Assistant: 收到語音訊息，但無法存取音頻檔案（路徑找不到）。可以重新傳送一次，或是直接告訴我你想說什麼？
 [rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L48] User: 請問要如何讓你可以接收音頻
-[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L127] Assistant: 根據我查到的資料，音頻處理需要以下設定： ## 目前狀態 系統已有： - ✅ `ffmpeg` / `ffprobe` — 已安裝 - ✅ `whisper-cli` — 已安裝 (`/home/node/.local/bin/whisper-cli`) - ✅ 你的 `whispercpp-transcribe` wrapper — 已就緒 ## 音頻轉錄需求 OpenClaw 針對 Discord 語音訊息（voice message）的處理： 1. **自動偵測**朗讀 CLI（whisper-cli） 2.
+[rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L127] Assistant: 根據我查到的資料，音頻處理需要以下設定： ## 目前狀態 系統已有： - ✅ `ffmpeg` / `ffprobe` — 已安裝 - ✅ `whisper-cli` — 已安裝 (`/home/amr/.local/bin/whisper-cli`) - ✅ 你的 `whispercpp-transcribe` wrapper — 已就緒 ## 音頻轉錄需求 OpenClaw 針對 Discord 語音訊息（voice message）的處理： 1. **自動偵測**朗讀 CLI（whisper-cli） 2.
 [rowlet/sessions/rowlet/a2532163-f704-4ad2-839b-1d1bcd6140ae.jsonl#L129] Assistant: 收到。直接設定音頻轉錄功能。
 [rowlet/sessions/rowlet/c7304a44-bc8f-4f5c-8b0b-e3e35dfdd7b2.jsonl#L73] Assistant: Now I'll create the wiki source entry for AtomMem, which has the raw paper but no wiki source:
 [rowlet/sessions/rowlet/c7304a44-bc8f-4f5c-8b0b-e3e35dfdd7b2.jsonl#L75] Assistant: Now let me fix the link in code-agent.md - it references `sources/atomem-2026-yao` but the actual file is `2606-atommem-atomic-facts-memory`:

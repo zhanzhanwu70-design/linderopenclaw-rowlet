@@ -26,7 +26,7 @@ for q in queries:
         if len(items)>=12: break
     results.append({'query':q,'status':r.status_code,'items':items, 'raw_head': text[:500]})
     time.sleep(1)
-Path('/home/node/.openclaw/workspace-rowlet/minerva-hcs-full-search/google-results.json').write_text(json.dumps(results,ensure_ascii=False,indent=2))
+Path('/home/amr/.openclaw/workspace-rowlet/minerva-hcs-full-search/google-results.json').write_text(json.dumps(results,ensure_ascii=False,indent=2))
 for res in results:
  print('\n---',res['query'],res['status'])
  for it in res['items'][:8]: print('-',it['url'][:220], '\n ',it['context'][:300])

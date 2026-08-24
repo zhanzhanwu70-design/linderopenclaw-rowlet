@@ -17,7 +17,7 @@ SEARCH_QUERIES = [
     "subagent orchestration framework",
 ]
 
-OUTPUT_FILE = "/home/node/.openclaw/workspace-rowlet/architecture-daily-report.md"
+OUTPUT_FILE = "/home/amr/.openclaw/workspace-rowlet/architecture-daily-report.md"
 
 def run_searches():
     """執行多個搜尋任務"""
@@ -25,7 +25,7 @@ def run_searches():
     for query in SEARCH_QUERIES:
         try:
             result = subprocess.run(
-                ["cd /home/node/.openclaw/workspace/llm-wiki && npx graphifyy query \"{}\" --budget 500 2>&1".format(query)],
+                ["cd /home/amr/llm-wiki && npx graphifyy query \"{}\" --budget 500 2>&1".format(query)],
                 shell=True,
                 capture_output=True,
                 text=True,

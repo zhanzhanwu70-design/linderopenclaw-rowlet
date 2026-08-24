@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { Resvg } from '@resvg/resvg-js';
-const srcDir = '/home/node/.openclaw/workspace/llm-wiki/raw/presentations/evomap';
-const outDir = '/home/node/.openclaw/workspace/llm-wiki/raw/presentations/evomap/png';
+const srcDir = '/home/amr/llm-wiki/raw/presentations/evomap';
+const outDir = '/home/amr/llm-wiki/raw/presentations/evomap/png';
 fs.mkdirSync(outDir, { recursive: true });
 for (const name of fs.readdirSync(srcDir)) {
   if (!name.endsWith('.svg')) continue;

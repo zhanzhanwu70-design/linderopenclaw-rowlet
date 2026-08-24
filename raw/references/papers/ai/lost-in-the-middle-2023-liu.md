@@ -23,7 +23,7 @@ While recent language models have the ability to take long contexts as input, re
 
 ## PDF Storage Path
 
-`/home/node/.openclaw/workspace-rowlet/raw/references/papers/ai/lost-in-the-middle-2023-liu.pdf`
+`/home/amr/.openclaw/workspace-rowlet/raw/references/papers/ai/lost-in-the-middle-2023-liu.pdf`
 
 (arXiv PDF — publicly available via arXiv open access)
 

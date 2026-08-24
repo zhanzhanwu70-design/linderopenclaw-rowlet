@@ -1,6 +1,6 @@
 #!/bin/bash
 # Transcription Monitor - checks for completed whisper transcriptions and processes them
-# Run from: /home/node/.openclaw/workspace/llm-wiki/raw/video
+# Run from: /home/amr/llm-wiki/raw/video
 #
 # Features:
 # 1. Detect completed transcription (PID gone, status=in_progress)
@@ -10,9 +10,9 @@
 # 5. Write summary to wiki source
 # 6. Announce to Linder in Discord
 
-WIKI_DIR="/home/node/.openclaw/workspace/llm-wiki"
+WIKI_DIR="/home/amr/llm-wiki"
 VIDEO_DIR="$WIKI_DIR/raw/video"
-OPENCLAW_DIR="/home/node/.openclaw"
+OPENCLAW_DIR="/home/amr/.openclaw"
 DISCORD_CHANNEL="1482363974119854234"
 
 announce() {

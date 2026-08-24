@@ -133,16 +133,16 @@
 ## LLM Wiki Nickname: 大書庫
 - Official name: llm-wiki
 - Nickname: 大書庫（The Big Library）
-- Location: `~/.openclaw/workspace/llm-wiki/`
+- Location: `/home/amr/llm-wiki/`
 - 存放所有知識、依賴圖、原始資料
 
 ## Wiki Discovery (graphify-first, no preload)
-- **Primary** — graph layer: `~/.openclaw/workspace/llm-wiki/graphify-out/`
+- **Primary** — graph layer: `/home/amr/llm-wiki/graphify-out/`
   - `GRAPH_REPORT.md` (clustered communities) is the first thing to read
   - `graph.json` for BFS / adjacency lookups
-- **Secondary** — wiki pages (read only when graph points there): `~/.openclaw/workspace/llm-wiki/wiki/`
-- **Last resort** — raw sources: `~/.openclaw/workspace/llm-wiki/raw/{code,sources,video,documents,images}/`
-- **Query**: `/graphify query "<question>"` (or `cd ~/.openclaw/workspace/llm-wiki && graphify query "<question>" --budget 800`)
+- **Secondary** — wiki pages (read only when graph points there): `/home/amr/llm-wiki/wiki/`
+- **Last resort** — raw sources: `/home/amr/llm-wiki/raw/{code,sources,video,documents,images}/`
+- **Query**: `/graphify query "<question>"` (or `cd /home/amr/llm-wiki && graphify query "<question>" --budget 800`)
 - ⚠️ Do NOT scan `wiki/**/*.md` or `raw/**` at session start. Trust the precomputed graph.
 
 ## Self-Reproduction Skill
@@ -184,7 +184,7 @@
 
 ## Standing Rules (Linder 2026-06-25)
 - **Cron Job Data Archive Rule**: 所有 cron job 找到的資料都必須歸檔到 llm-wiki（`wiki/sources/` 或相關 concept 頁），不得停留在 session context 就消失
-- **逐字稿檢查 Rule**: 每次 agent run（session 啟動/heartbeat）檢查 `~/.openclaw/workspace/llm-wiki/raw/video/*/metadata.json`，若 `transcription_status: "in_progress"` 但 PID 不存在了，自動完成後續入庫（寫 wiki、存 MEMORY）
+- **逐字稿檢查 Rule**: 每次 agent run（session 啟動/heartbeat）檢查 `/home/amr/llm-wiki/raw/video/*/metadata.json`，若 `transcription_status: "in_progress"` 但 PID 不存在了，自動完成後續入庫（寫 wiki、存 MEMORY）
 
 ## Sakana Fugu / TRINITY / Conductor 研究（2026-06-25）
 
@@ -243,7 +243,7 @@
 - 真正的 Agent = LLM + 框架 + **行動**（非只有輸出描述）
 
 ## Standing Rules（每次 Agent Run 必做）
-- **檢查待處理逐字稿**：每次 session 啟動/heartbeat 檢查 `~/.openclaw/workspace/llm-wiki/raw/video/*/metadata.json`，若 `transcription_status: "in_progress"` 但 PID 不存在了（轉錄完成），自動完成後續入庫流程（寫 wiki、存 MEMORY）
+- **檢查待處理逐字稿**：每次 session 啟動/heartbeat 檢查 `/home/amr/llm-wiki/raw/video/*/metadata.json`，若 `transcription_status: "in_progress"` 但 PID 不存在了（轉錄完成），自動完成後續入庫流程（寫 wiki、存 MEMORY）
 
 ## Pending / Follow-ups
 - Download TopoClaw + MetaCogAgent papers to wiki
@@ -254,7 +254,7 @@
 
 ## ELLE_WS Wiki Project（2026-06-23）
 - **Task**: task_20260623_elle_04_wiki_draft（✅ 已結案，CEO 審核通過）
-- **Location**: `/home/node/.openclaw/workspace/elle_ws/`（Ouroboros Trivium v2.4 格式）
+- **Location**: `/home/amr/.openclaw/workspace/elle_ws/`（Ouroboros Trivium v2.4 格式）
 - **產出**：
   - `raw/` — 2 evidence files（mrmime 規劃 + charizard 研究）
   - `wiki/entities/` — 5 repos 各一頁（bringup/functions/hardware/simulations/tools）

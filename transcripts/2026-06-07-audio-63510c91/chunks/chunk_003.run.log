@@ -1,4 +1,4 @@
-whisper_init_from_file_with_params_no_state: loading model from '/home/node/.openclaw/local/whisper.cpp/models/ggml-small.bin'
+whisper_init_from_file_with_params_no_state: loading model from '/home/amr/.openclaw/local/whisper.cpp/models/ggml-small.bin'
 whisper_init_with_params_no_state: use gpu    = 0
 whisper_init_with_params_no_state: flash attn = 0
 whisper_init_with_params_no_state: gpu_device = 0
@@ -31,12 +31,12 @@ whisper_init_state: compute buffer (conv)   =   22.42 MB
 whisper_init_state: compute buffer (encode) =  128.02 MB
 whisper_init_state: compute buffer (cross)  =    6.20 MB
 whisper_init_state: compute buffer (decode) =   97.28 MB
-read_audio_data: reading audio data from '/home/node/.openclaw/workspace-rowlet/transcripts/2026-06-07-audio-63510c91/chunks/chunk_003.wav' ...
+read_audio_data: reading audio data from '/home/amr/.openclaw/workspace-rowlet/transcripts/2026-06-07-audio-63510c91/chunks/chunk_003.wav' ...
 read_audio_data: trying to decode with miniaudio
 
 system_info: n_threads = 4 / 4 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | REPACK = 1 | 
 
-main: processing '/home/node/.openclaw/workspace-rowlet/transcripts/2026-06-07-audio-63510c91/chunks/chunk_003.wav' (9598976 samples, 599.9 sec), 4 threads, 1 processors, 5 beams + best of 5, lang = zh, task = transcribe, timestamps = 1 ...
+main: processing '/home/amr/.openclaw/workspace-rowlet/transcripts/2026-06-07-audio-63510c91/chunks/chunk_003.wav' (9598976 samples, 599.9 sec), 4 threads, 1 processors, 5 beams + best of 5, lang = zh, task = transcribe, timestamps = 1 ...
 
 
 [00:00:00.000 --> 00:00:03.780]  對啊所以你這輩子是有錢的
@@ -412,7 +412,7 @@ main: processing '/home/node/.openclaw/workspace-rowlet/transcripts/2026-06-07-a
 [00:09:53.560 --> 00:09:55.560]  反正問都六百塊而已
 [00:09:55.560 --> 00:09:57.560]  只要不丟掉了 不要丟掉了啦
 [00:09:57.560 --> 00:09:59.900]  你給它截開嘴唇 我也不喜歡
-output_txt: saving output to '/home/node/.openclaw/workspace-rowlet/transcripts/2026-06-07-audio-63510c91/chunks/chunk_003.txt'
+output_txt: saving output to '/home/amr/.openclaw/workspace-rowlet/transcripts/2026-06-07-audio-63510c91/chunks/chunk_003.txt'
 
 whisper_print_timings:     load time =   527.79 ms
 whisper_print_timings:     fallbacks =   0 p /   0 h
@@ -423,4 +423,4 @@ whisper_print_timings:   decode time =  1033.56 ms /    49 runs (    21.09 ms pe
 whisper_print_timings:   batchd time = 304283.72 ms / 14020 runs (    21.70 ms per run)
 whisper_print_timings:   prompt time = 33176.39 ms /  4457 runs (     7.44 ms per run)
 whisper_print_timings:    total time = 521379.09 ms
-/home/node/.openclaw/workspace-rowlet/transcripts/2026-06-07-audio-63510c91/chunks/chunk_003.txt
+/home/amr/.openclaw/workspace-rowlet/transcripts/2026-06-07-audio-63510c91/chunks/chunk_003.txt

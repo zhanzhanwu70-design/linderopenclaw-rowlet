@@ -1,7 +1,7 @@
 import { Resvg } from '@resvg/resvg-js';
 import fs from 'fs';
 
-const fontPath = '/home/node/.openclaw/workspace-rowlet/.fonts/NotoSansCJKtc-Regular.otf';
+const fontPath = '/home/amr/.openclaw/workspace-rowlet/.fonts/NotoSansCJKtc-Regular.otf';
 const fontData = fs.readFileSync(fontPath);
 
 console.log('Font size:', fontData.length, 'bytes');

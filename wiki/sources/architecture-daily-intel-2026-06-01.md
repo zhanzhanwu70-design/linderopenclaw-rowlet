@@ -8,7 +8,7 @@ tags:
   - multi-agent
   - harness-engineering
   - skill-optimization
-source_path: /home/node/.openclaw/workspace-rowlet/architecture-daily-report.md
+source_path: /home/amr/.openclaw/workspace-rowlet/architecture-daily-report.md
 mirrors:
   - /home/node/workspace-rowlet/architecture-daily-report.md
 ---

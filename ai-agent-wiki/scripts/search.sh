@@ -2,7 +2,7 @@
 # Wiki Search Script
 # 用法：./search.sh <關鍵字>
 
-SEARCH_DIR="/home/node/.openclaw/workspace-rowlet/ai-agent-wiki/wiki"
+SEARCH_DIR="/home/amr/.openclaw/workspace-rowlet/ai-agent-wiki/wiki"
 
 if [ -z "$1" ]; then
     echo "用法：$0 <關鍵字>"

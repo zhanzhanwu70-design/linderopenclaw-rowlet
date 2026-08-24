@@ -49,7 +49,7 @@
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8068] Assistant: 好問題。根據我之前讀的 OpenClaw 文件： **文件說的：** - HEARTBEAT.md 會被讀進 context - 如果有東西需要關注 → 說出來 - 沒有的話 → 回 HEARTBEAT_OK **我的問題：** 我有 HEARTBEAT_OK 的內容，但收到 heartbeat 時我只是回复了 HEARTBEAT_OK，沒有真的執行檢查。 現在立刻修正。我來檢查所有待處理的轉錄：
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8070] Assistant: 目前沒有 in_progress 的轉錄。但讓我確認 2026-07-02 的 `2P5JKA6RYo8`（Google 8B 模型）轉錄進度：
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8074] Assistant: 所有轉錄都已處理完畢。 **問題根結：** 我沒有在每次 heartbeat 時真的執行 HEARTBEAT.md 的 checklist，而是把 HEARTBEAT_OK 當成一種「安靜模式」。 **正確行為應該是：** 收到 heartbeat → 執行檢查 → 如果有需要關注的（轉錄完成、任務完成）→ 說出來 → 如果真的沒事 → 才回 HEARTBEAT_OK 讓我確認 HEARTBEAT.md 內容是對的：
-[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8076] Assistant: HEARTBEAT.md 內容是對的。 **問題是我的執行：** HEARTBEAT.md 是 checklist，不是自動執行的腳本。系統把它讀進 context，但我需要自己真的去做檢查。 從現在開始，每次收到 heartbeat，我會： 1. 真的去檢查 `~/.openclaw/workspace/llm-wiki/raw/video/*/metadata.json` 2. 如果有 `in_progress` 且 PID 不在了 → 執行後續入庫 3. 如果都完成 → 回 HEARTBEAT_OK 感謝提
+[rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8076] Assistant: HEARTBEAT.md 內容是對的。 **問題是我的執行：** HEARTBEAT.md 是 checklist，不是自動執行的腳本。系統把它讀進 context，但我需要自己真的去做檢查。 從現在開始，每次收到 heartbeat，我會： 1. 真的去檢查 `/home/amr/llm-wiki/raw/video/*/metadata.json` 2. 如果有 `in_progress` 且 PID 不在了 → 執行後續入庫 3. 如果都完成 → 回 HEARTBEAT_OK 感謝提
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8077] User: 把HEARTBEAT.md裡面每次檢查的部分刪除
 [rowlet/sessions/rowlet/6768cc41-a144-4dc1-b253-392b60b0f42d.jsonl#L8080] Assistant: 已刪除。
 [rowlet/sessions/rowlet/6854cafc-0970-4c38-9c3e-d2d680fe4424.jsonl#L69] Assistant: Now let me report to Discord:

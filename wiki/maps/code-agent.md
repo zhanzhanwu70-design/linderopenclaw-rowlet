@@ -117,7 +117,7 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 
 ## Synthesis
 
-目前八篇形成一個互補堆疊：
+目前八篇形成一個互補堆疊（ACON 為第十三篇，見下）：
 
 1. **Lost in the Middle**：經驗基礎 — 證明「context 越長 ≠ 表現越好」，U-shaped curve，middle 會被忽略。
 2. **Context Engineering Survey**：統一 taxonomy，回答「整個領域怎麼分類」的問題。
@@ -193,7 +193,7 @@ SelfMem 的 feedback 是可觀察的 tool outputs（非 gold answer / scalar rew
 
 ### CompactionRL 補充：RL 訓練中第一個把 summarization 變成 learnable action 的方法
 
-現有十二篇 + CompactionRL 形成十三篇互補堆疊：
+現有十二篇 + CompactionRL 形成十三篇互補堆疊（ACON 為第十四篇，見 ACON 章節）：
 
 10. **SIRIN**：見上方第 8 項
 11. **CompactionRL (Li et al., 2026)**：將 context compaction 整合進 RL training pipeline 的第一個方法。核心突破：**PPO over group-relative methods** — compaction 讓單一 rollout 變成可變數量、可變長度的 segments，GRPO 的 group normalization 無法處理，PPO 的 critic-based token-level advantage 才是正確框架。**Summarization as learnable action** — 任務執行動作和摘要動作在同一个 task-level reward 下聯合優化，壓縮策略不再是工程師設計的 heuristic，而是模型從 outcome feedback 學到的技能。
@@ -204,6 +204,8 @@ CompactionRL 與其他 training-time 方法的差異：
 - vs **MemGPT**：MemGPT 是 system-level memory paging（固定 policy），CompactionRL 是 learnable compaction policy（模型自己學）。
 
 **對 OpenClaw 的直接啟發**：Rowlet 的 heartbeat 本身就像一個 compaction trigger —— 每次 heartbeat 都做一個「壓縮 + 繼續」的動作，但目前的實作是 heuristic 的（固定的總訊息長度閾值）。CompactionRL 的啟示是：**如果我們能收集足夠的 heartbeat outcome data，就可以訓練模型自己學何時壓縮、怎麼壓縮**，而不只是靠固定規則。這需要 (1) 定義 task-level reward for heartbeat outcomes，(2) PPO-style 訓練框架。
+
+**十四篇壓縮 / memory / retrieval 的總結補充**：ACON 進來後，這套堆疊的空白是「**如何把 compression 從工程師設計的 heuristic 升級成 learned module，且不污染 agent 本體**」。ACON 直接補上這個空白，且帶來三個前所未見的槓桿：(a) **model-agnostic**，對 API-only LM 也有效；(b) **equalizer**，小 model 受惠比大 model 多；(c) **distill-ready**，production cost 可控。
 
 ### [[hmem-llm-agents-sun-2025]] — Hierarchical Memory with Positional Index Routing (2025-07)
 
@@ -221,6 +223,33 @@ CompactionRL 與其他 training-time 方法的差異：
 - vs MemGPT：不用 RAG trade-off，用 index routing 取而代之
 
 **對我們的啟發**：Rowlet 目前三層（SOUL/daily/MEMORY）vs H-MEM 四層。核心差異在於**索引方式**：我們是手動/heuristic 的分層，H-MEM 是 learned positional index + 自動層級路由。graphify query 從 topic → category → concept 的分層路由設計，與 H-MEM 的層級索引思路一致，但目前仍是 top-down 搜索而非 index-guided 逐層路由。
+
+### [[acon-2025-kang]] — Agent Context Optimization（2026-08-24 深讀）
+
+**核心主張**：Compression 應該是一個 **learned module**，不是 agent 的一部分、也不是 heuristic。ACON 把壓縮 guideline 放在 **natural language space 優化**，**model-agnostic**，可直接套在 GPT-4.1 / Claude / Gemini 等封閉 API 上 — 完全不需 gradient access。
+
+**方法（textual gradient on prompts）**：
+1. 跑 agent **w/ 和 w/o compression** → 收集 `D_cont` = tasks where uncompressed 成功但 compressed 失敗。
+2. Optimizer LLM（o3）看 `(H, H')` pairs → natural-language feedback（"Lost variable"、"Incorrect summary"、"Missing facts"）。
+3. Aggregate feedback → 新 guideline `P^(1)`（**UT step** = utility maximization）。
+4. Optional **CO step**（compression maximization）：只看成功 compressed runs，問「哪些資訊真的被用到」→ 更短的 `P^(2)`。
+5. **Distillation**：teacher `(φ_T, P*)` 生 `(x, y)` pairs，cross-entropy（Kim-Rush）蒸進 Qwen3-14B/8B、Phi-4。保留 **≥ 95 % teacher accuracy**。
+
+**為什麼選這篇**：
+- **第一個把 compression 整個脫離 agent model 的 production-ready 方案**。ReSum、CompactionRL 都要改 agent 權重；ACON 不用。
+- **Equalizer finding**：Qwen3-14B + ACON = +32.4 %（AppWorld）、+45.6 %（8-QA EM）。小 model **受惠更多**，壓縮縮窄了與大 model 的距離。
+- **Compression as filtering**：8-QA 上 EM/F1 beats no-compression baseline → 壓縮不只是省 token，是 filter distraction。直接補 [[lost-in-the-middle-2023-liu]] 的 U-shape 谷底。
+
+**對 Rowlet 的啟發**：
+- **Textual gradient 是通用 primitive**：failure-driven prompt refine 不需 gradient access，可直接套到 Rowlet 的 cron / heartbeat workflow（例：失敗的 cron 任務 → 反思 prompt 是否讓模型在 long heartbeat log 上 lost-in-the-middle）。
+- **Per-environment guideline schema** 勝 universal prompt — 直接對應 [[agentic-context-mgmt-dadhich-2026]] 的 **Architecting** primitive。
+- **UT vs UTCO 是 deployable knob**：verbose env → UTCO；fact-critical env → UT。Heartbeat 場景 daily memory ingest 通常 verbose → 預設 UTCO；transcript lookup 偏 fact → 預設 UT。
+- **Distill 是 mandatory**：Table 4 顯示壓縮省 token 但加 latency。Compressor 必須蒸餾成小 model，否則 latency 把 agent 拖垮。
+
+**與同類方法的對位**：
+- vs **CompactionRL**：ACON 改 prompt、CompactionRL 改 agent 權重。能改權重 → CompactionRL；只能 API → ACON。
+- vs **MemGPT**：ACON 改「壓縮函式品質」，MemGPT 改「系統架構（paging）」。可疊用。
+- vs **ACE**：ACE 是 wrapper-level reversible orchestration（不壓縮，動態 type 分配）；ACON 是 module-level learned compressor。互補。
 
 ### 對我們自己的工程提醒
 

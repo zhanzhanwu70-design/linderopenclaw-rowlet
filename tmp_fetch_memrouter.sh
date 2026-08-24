@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT=/home/node/.openclaw/workspace/llm-wiki
+ROOT=/home/amr/llm-wiki
 DIR="$ROOT/raw/references/papers/ai/memrouter-memory-as-embedding-routing-2605.00356"
 mkdir -p "$DIR"
 python3 - <<'PY'
 import json, urllib.request, pathlib
-root=pathlib.Path('/home/node/.openclaw/workspace/llm-wiki/raw/references/papers/ai/memrouter-memory-as-embedding-routing-2605.00356')
+root=pathlib.Path('/home/amr/llm-wiki/raw/references/papers/ai/memrouter-memory-as-embedding-routing-2605.00356')
 meta={
   'arxiv_id':'2605.00356v1',
   'title':'MemRouter: Memory-as-Embedding Routing for Long-Term Conversational Agents',

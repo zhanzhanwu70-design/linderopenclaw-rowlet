@@ -1,9 +1,9 @@
 # agent.md — LLM Wiki 使用指南
 
 ## Wiki 位置
-- **Root**: `/home/node/.openclaw/workspace/llm-wiki`
-- **Wiki 層**: `/home/node/.openclaw/workspace/llm-wiki/wiki/`
-- **Raw 層**: `/home/node/.openclaw/workspace/llm-wiki/wiki/raw/`
+- **Root**: `/home/amr/llm-wiki`
+- **Wiki 層**: `/home/amr/llm-wiki/wiki/`
+- **Raw 層**: `/home/amr/llm-wiki/wiki/raw/`
 - **索引**: `wiki/index.md`
 - **維護日誌**: `wiki/log.md`
 
@@ -12,7 +12,7 @@
 回答任何問題前，先用 graphify 查 wiki：
 
 ```bash
-cd /home/node/.openclaw/workspace/llm-wiki && npx graphifyy query "<問題>" --budget 1500
+cd /home/amr/llm-wiki && npx graphifyy query "<問題>" --budget 1500
 ```
 
 只有當 wiki 確認沒有相關內容時，才去網路搜尋或回答。
@@ -40,7 +40,7 @@ cd /home/node/.openclaw/workspace/llm-wiki && npx graphifyy query "<問題>" --b
 
 ### 基本查詢
 ```bash
-cd /home/node/.openclaw/workspace/llm-wiki && npx graphifyy query "<問題>" --budget 1500
+cd /home/amr/llm-wiki && npx graphifyy query "<問題>" --budget 1500
 ```
 
 ### 深度查詢（追蹤特定路徑）
@@ -98,7 +98,7 @@ tags: ["tag1", "tag2"]
 
 1. **下載**：`/tmp/yt-dlp -x --audio-format wav --audio-quality 0 -o "output.webm" "URL"`
 2. **轉換**：`/tmp/ffmpeg-bin -i "input.webm" -ar 16000 -ac 1 -c:a pcm_s16le "output.wav"`
-3. **轉錄**：`/home/node/.openclaw/local/bin/whispercpp-transcribe "output.wav"`
+3. **轉錄**：`/home/amr/.openclaw/local/bin/whispercpp-transcribe "output.wav"`
 4. **存 raw**：`raw/video/youtube-YYYYMMDD/`
 5. **寫 wiki source**：建立 `wiki/sources/` 條目
 
