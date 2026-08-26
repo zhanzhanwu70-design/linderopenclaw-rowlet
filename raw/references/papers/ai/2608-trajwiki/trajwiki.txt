@@ -1,0 +1,1802 @@
+TrajWiki: Source-Grounded Memory Trajectories for
+Long-Horizon Dialogue Agents
+
+Jingyu Sun1,2 Yuyang Xue3 Mingyang Li1 Zhengtao Yao4
+Jiachen Li5 Yang Cui1 Wenhao Cai1 Haozhe Liu1
+Fangying Wang1 Magdalene Katharina Montgomery2
+Syed Murtuza Baker1 Hongpeng Zhou1,*
+1
+
+arXiv:2608.00967v1 [cs.AI] 2 Aug 2026
+
+3
+
+The University of Manchester 2 The University of Melbourne
+The University of Edinburgh 4 University of Southern California
+5
+The University of Texas at Austin
+*
+Corresponding author
+
+Abstract
+Large language model agents have shown strong capabilities in generating coherent and contextually appropriate responses, yet robust long-horizon dialogue
+remains limited by the lack of external memory that is traceable, updatable, and
+diagnostically transparent. Existing memory-augmented agents often store memories as isolated records or overwritable states, making it difficult to preserve
+how information originates, evolves, conflicts, or becomes obsolete over time.
+We propose TrajWiki, a trajectory-based memory framework for long-horizon
+conversational agents. Instead of treating memory as static entries, TrajWiki represents each memory as a source-grounded evolution trajectory, maintained through
+immutable episodic snapshots and claim-level operations such as ADD, REVISE,
+and DEPRECATE. To reduce fragmentation and retrieval cost, TrajWiki further
+introduces Memory Wiki, a persistent intermediate layer that incrementally compiles dialogue history into structured and interlinked wiki pages capturing salient
+entities, events, quantities, topics, and conflicts. At inference time, queries are
+routed hierarchically from relevant wiki pages to linked memory trajectories, then
+to corresponding snapshots and source messages for evidence-grounded answer
+synthesis. Experiments on LoCoMo and MedMT show that TrajWiki improves
+long-horizon dialogue performance across both open-source and closed-source
+LLM backbones, while providing greater interpretability and diagnostic visibility
+into memory evolution, retrieval failures, and answer generation.
+
+1
+
+Introduction
+
+Large language model (LLM) agents are systems built around large language models that autonomously plan, reason, and act by iteratively interacting with users, external tools, and environments
+to solve complex, multi-step tasks, and they have shown early success in domains such as coding,
+research assistance, and broader task automation [1–8]. These systems rely on maintaining and
+updating context across successive interaction steps to support coherent decision-making; however,
+sustaining coherent long-horizon interaction remains difficult because the underlying models are
+constrained by finite context windows [9–11]. This limitation becomes particularly acute in long-term
+dialogue, where useful responses often depend on user-specific facts, evolving preferences, prior
+commitments, temporally distant events, and evidence scattered across multiple sessions [12–17].
+Simply extending the prompt with more history is costly and brittle, and does not provide reliable
+mechanisms for updating, organizing, or diagnosing long-term memory [18–22].
+Preprint.
+
+Figure 1: Comparison of conventional agent memory and TrajWiki’s source-grounded trajectory memory and Memory Wiki. Conventional memory retains only the current belief and retrieves
+flat, isolated memories. TrajWiki preserves source-grounded update trajectories and structures them
+into a Memory Wiki, enabling reasoning over how facts evolve, conflict, and relate across longhorizon dialogue.
+Recent work addresses this limitation by equipping LLM agents with explicit external memory.
+Most memory-augmented systems follow a write/read paradigm: dialogue history is compressed
+into memory units such as notes, facts, user profiles, or event records, and relevant units are later
+retrieved to support generation [23]. Other approaches improve memory organization through
+adaptive structures, dynamic linking, or graph-based retrieval [22]. While these methods demonstrate
+the value of persistent memory, we argue that two challenges remain underexplored, as shown
+in Figure 1. First, existing systems often retain only the current memory state without explicitly
+preserving its source-grounded update history. A retrieved memory may state what the agent currently
+believes, but not how that belief was formed, which claims were revised or deprecated, or which
+source utterances justify each update. Second, as fine-grained memories accumulate, flat retrieval
+over isolated memory items becomes increasingly fragmented, especially for temporal, multi-hop, or
+update-sensitive questions. Conventional retrieval-augmented generation treats knowledge mainly as
+searchable passages [24], whereas long-horizon dialogue memory also requires modeling how facts
+evolve, conflict, and relate over time.
+In this paper, we propose TrajWiki, an interlinked, wiki-style, trajectory-based memory framework
+for long-horizon conversational agents. TrajWiki addresses the two challenges above through two
+key mechanisms. First, rather than representing memory as isolated and static records, it models each
+memory as a source-grounded evolutionary trajectory in which newly generated dialogue segments
+are stored as immutable episodic snapshots and linked to prior memory states through claim-level
+operations. Second, instead of repeatedly retrieving relevant information from fragmented raw
+chunks at query time, it reduces memory fragmentation by organizing trajectories into structured and
+interlinked wiki pages centered on entities, topics, events, and discrete factual units. At inference
+time, TrajWiki performs hierarchical retrieval: a query is first routed to relevant wiki pages, then
+to associated memory trajectories, and finally to episodic snapshots and original source messages,
+enabling evidence-grounded response generation. In summary, our contributions are fourfold:
+
+2
+
+• We propose a source-grounded memory trajectory model that records long-term memory
+evolution through immutable episodic snapshots and claim-level update operations, preserving both the current effective memory and the historical path through which it was produced
+and making memory evolution inspectable at the level of claims and supporting evidence.
+• We introduce an intermediate knowledge organization layer, Memory Wiki, that compiles
+trajectories into structured and interlinked wiki pages for more diagnosable retrieval, while
+preserving links to trajectories and source messages.
+• We further introduce a hierarchical retrieval mechanism over interlinked memory trajectories that separates semantic organization, temporal memory evolution, and fine-grained
+evidence verification, reducing repeated reasoning over raw dialogue history while retaining
+provenance for diagnosis.
+• We evaluate TrajWiki on LoCoMo and MedMT-Bench [16, 25], covering both open-domain
+very long-term conversation and domain-specific long multi-turn medical dialogue. Experiments with open-source and closed-source LLM backbones show that TrajWiki improves
+long-horizon dialogue performance over strong memory-augmented baselines and provides
+richer diagnostic visibility into memory evolution, retrieval failures, and answer generation.
+
+2
+
+Related Work
+
+2.1
+
+Agent Memory Systems
+
+External memory has become a central mechanism for LLM-based agents that operate beyond a fixed
+context window. Existing systems have explored multiple ways to store, update, and retrieve long-term
+interaction history. MemoryBank maintains user-specific memories with time- and importance-aware
+reinforcement, while MemGPT and MemoryOS frame memory management as a systems problem
+with hierarchical storage and context control [19, 20, 26]. More recent work introduces richer memory
+structures, including hierarchical memory trees, temporal knowledge graphs, dynamically linked
+memory notes, and scalable conversational memory consolidation [21, 22, 27, 28]. In long-horizon
+dialogue, timeline-based memory, reflective memory management, and graph-structured associative
+retrieval further demonstrate the value of structured memory for personalization and cross-session
+response generation [29–31]. Despite these advances, most prior systems focus primarily on what
+to store and how to retrieve it, rather than explicitly modeling how memory states evolve. Even
+when memories are updated or linked, the update process is rarely represented as a provenance-aware
+sequence of immutable snapshots with claim-level edit semantics. This makes it difficult to inspect
+which claims were added, revised, or deprecated, and which source interactions justified each change.
+2.2
+
+Retrieval-Augmented Generation
+
+Retrieval-augmented generation (RAG) grounds language generation in external non-parametric
+memory by retrieving relevant evidence and conditioning generation on the retrieved content [24].
+While standard RAG often retrieves flat top-k passages from relatively static corpora, recent methods
+improve retrieval with additional structure and multi-stage reasoning. Iter-RetGen interleaves retrieval
+and generation to refine evidence iteratively; RAPTOR organizes documents into a tree of recursive
+summaries; and GraphRAG builds graph-based indices to support global reasoning and query-focused
+summarization over large corpora [32–34]. TrajWiki shares the broader insight that retrieval benefits
+from structure, but targets a different setting. Existing RAG systems are mainly designed to query
+external document collections, whereas long-horizon dialogue agents must maintain an internal
+memory that evolves through ongoing interaction. In this setting, relevant evidence depends not only
+on semantic similarity, but also on when a memory was created, how it was revised, which earlier
+claims were superseded, and which source messages support the current state.
+
+3
+
+Methodology
+
+We propose TrajWiki, as shown in Figure 2, a long-term memory framework for dialogue agents
+that represents memory as source-grounded trajectories and organizes them into a persistent Memory
+Wiki. Unlike standard retrieval-augmented generation, which retrieves external passages at inference
+
+3
+
+Figure 2: Overview of the TrajWiki architecture. TrajWiki converts dialogue history into sourcegrounded memory trajectories, compiles them into a persistent and interlinked Memory Wiki, retrieves
+evidence hierarchically from wiki pages to trajectories and source messages, and generates answers
+grounded in the retrieved evidence. The Memory Wiki serves as a compounding knowledge artifact,
+maintaining cross-references, flagged conflicts, and synthesized evidence as memory accumulates
+over time.
+time [24], TrajWiki first converts dialogue history into evolving memory trajectories, then compiles
+them into wiki-style pages for hierarchical retrieval and evidence-grounded answer generation.
+Given a dialogue history
+D = {m1 , . . . , mN },
+mi = (xi , ui , τi , ρi ),
+(1)
+where xi , ui , τi , and ρi denote message content, speaker, timestamp, and source reference, respectively, TrajWiki follows the pipeline
+D → Σ → T → W → Eq → aq .
+(2)
+Here, Σ denotes episodic snapshots, T memory trajectories, W the Memory Wiki, Eq the retrieved
+evidence for query q, and aq the final answer. This design separates provenance tracking, persistent
+knowledge organization, and query-time grounding.
+3.1
+
+Provenance-Aware Memory Trajectories
+
+TrajWiki stores memory as source-linked trajectories rather than isolated records. Each dialogue
+exchange is converted into an immutable episodic snapshot containing extracted claims, speaker and
+temporal context, and links to raw source messages. A memory trajectory is an ordered append-only
+sequence:
+Tj = (σj,1 , σj,2 , . . . , σj,nj ),
+(3)
+where each snapshot σj,t remains traceable to the messages that produced it.
+For a new snapshot σ, TrajWiki either appends it to the most compatible trajectory or initializes a
+new one:
+ ⋆
+T ,
+g(σ, T ⋆ ) ≥ δ,
+⋆
+T = arg max g(σ, Tj ),
+σ 7→
+(4)
+Tj ∈T
+Tnew , otherwise.
+The compatibility function g considers entity continuity, facet overlap, lexical evidence, temporal
+compatibility, and semantic drift, allowing related updates to be connected without collapsing
+unrelated facts into overly broad trajectories.
+4
+
+Within each trajectory, memory evolution is represented through claim-level edit operations:
+Cj,t = Apply(Cj,t−1 , Oj,t ),
+
+Oj,t ⊆ {ADD, REVISE, DEPRECATE}.
+
+(5)
+
+Thus, revised or deprecated claims are not deleted; they remain linked to their original snapshots and
+source references, making memory updates inspectable over time.
+3.2
+
+Persistent Memory Wiki
+
+Although trajectories preserve provenance, directly retrieving over all snapshots and claims can
+become fragmented as memory grows. TrajWiki therefore compiles trajectories into a persistent
+Memory Wiki, which serves as a readable and routable organization layer between raw memory and
+query-time retrieval.
+Each wiki page is represented as
+p = (η, y, h, Lp ),
+
+Lp ⊆ T ,
+
+(6)
+
+where η is the page type, y is the title, h is the page content, and Lp is the set of linked trajectories.
+We use four page types:
+η ∈ {index, entity, topic, inventory}.
+The index page provides a global directory, entity pages organize recurring entities, topic pages
+capture events or thematic clusters, and inventory pages collect list-like or countable facts.
+Wiki construction is summarized as
+W = Compile(T ; C active , C hist , A),
+active
+
+(7)
+
+hist
+
+where C
+and C
+denote active and historical claims, and A denotes source anchors and
+metadata. The wiki does not replace source evidence with summaries; instead, it organizes accumulated memory while preserving links to trajectories and raw messages. To avoid making trajectories
+reachable only through the global directory, TrajWiki encourages non-index coverage:
+[
+Lp ≈ T .
+(8)
+p∈Wnon-index
+
+3.3
+
+Hierarchical Retrieval and Evidence-Grounded Generation
+
+Given a query q, TrajWiki retrieves evidence through a hierarchy of wiki pages, trajectories, and
+source-linked snapshots. It first routes the query to relevant wiki pages and uses their links to construct
+a candidate trajectory set:
+[
+Pq = Topt {Sp (q, p) : p ∈ W},
+Cq =
+Lp .
+(9)
+p∈Pq
+
+Here, Sp combines semantic, lexical, entity, facet, and temporal signals. This stage narrows retrieval
+from the entire memory store to organized memory regions.
+From Cq , TrajWiki selects trajectories using a relevance-and-coverage objective:
+Rq = Topk {b(q, T ) + α∆cov (T ) − λ red(T ) : T ∈ Cq } .
+
+(10)
+
+The base score b(q, T ) measures relevance, ∆cov rewards complementary entities, events, facets, or
+countable items, and red penalizes redundancy. This encourages retrieval of multiple complementary
+trajectories for list, count, temporal, and multi-hop questions.
+Selected trajectories are expanded into provenance-linked evidence:
+Eq = {(T, σ, c, ρ, τ ) : T ∈ Rq , σ ∈ T, c ∈ CT }.
+
+(11)
+
+Thus, retrieved evidence contains not only text fragments, but also their trajectory, claim, source
+reference, and timestamp.
+The final answer is generated under a source-support constraint:
+zq = Synthθ (q, Eq ),
+
+aq = Answer(zq ),
+5
+
+refs(aq ) ⊆ refs(Eq ).
+
+(12)
+
+The synthesis zq records the answerability decision, supporting facts, source references, temporal
+anchors, and uncertainties. If the retrieved evidence is insufficient, TrajWiki abstains or performs a
+controlled retry by generating retrieval hints and rerouting through the wiki and trajectory layers. In
+all cases, the final answer must remain grounded in retrieved source evidence.
+Overall, TrajWiki decomposes long-term dialogue memory into three layers: source-grounded
+trajectories for memory evolution, Memory Wiki pages for persistent organization, and hierarchical
+retrieval for query-time grounding. This enables agents to accumulate, revise, and query long-term
+memory while preserving the provenance needed to audit both memory updates and generated
+answers. We provide the reproducible implementation details, including deterministic scoring
+features, structured-output schemas, hyperparameters, validation rules, and retry/repair procedures,
+in Appendix A.
+
+4
+
+Experiment
+
+4.1
+
+Datasets and Evaluation
+
+We evaluate TrajWiki on two long-horizon dialogue benchmarks. Our primary benchmark is
+LoCoMo, a long-term conversational memory dataset with gold question-answer pairs [16]. We use its
+QA task, which covers single-hop, multi-hop requiring cross-session evidence aggregation, temporal
+reasoning, and open-domain / world-knowledge questions. Following Mem0 [21], we exclude the
+adversarial category to ensure fair comparison with prior memory-augmented baselines. To assess
+robustness beyond open-domain conversations, we further use MedMT-Bench as a domain-specific
+stress test [25]. MedMT-Bench evaluates long multi-turn medical conversations using instance-level
+rubrics rather than a single reference answer. Since our goal is to evaluate memory mechanisms
+rather than medical knowledge or multimodal reasoning, we select memory-relevant cases from
+three categories: Long-Context Memory and Understanding (LCMU), Resistance to Contextual
+Interference (RCI), and the Information Contradiction (IC) subset of Instruction Clarification. These
+categories test long-history alignment, robustness to contextual noise, and conflict detection between
+historical facts and current user statements.
+We compare TrajWiki with five baselines: Full Context, which directly conditions on the complete
+dialogue history; Naive RAG, evaluated with both session-level and turn-level retrieval granularity
+[24]; LangMem, which extracts salient conversational information for persistent memory retrieval
+[35]; A-MEM, which dynamically links structured memory notes [22]; and Mem0, which performs
+incremental memory extraction, consolidation, and retrieval [21]. For LoCoMo, we report F1 and
+BLEU-1 as lexical overlap metrics [36]. Since long-horizon dialogue answers may be semantically
+correct despite different surface forms, we additionally use a strict LLM-as-a-Judge protocol to
+evaluate answer correctness [37]. For MedMT-Bench, we follow its rubric-based setting and report
+test-point pass accuracy. Details of metric computation are provided in Appendix B.1.
+4.2
+
+Implementation Details
+
+For all baselines, we follow their original configurations, hyperparameters, and system prompts.
+When details are underspecified, we use the closest publicly described setting while keeping the
+backbone model, answering format, and evaluation protocol consistent across methods. For closedsource experiments, we use GPT-4o-mini as the backbone model and LLM judge. For open-source
+experiments, we use Qwen3-8B and Qwen3-32B in non-thinking mode as backbone models, and
+Qwen3-8B as the judge. TrajWiki uses Qwen3-Embedding-8B for all embedding-based retrieval
+components. We report all major prompts in Appendix C. For TrajWiki, the default setting uses
+maximum trajectory length m = 15, routes each query through the top t = 15 wiki pages, and selects
+the top k = 15 trajectories. These settings balance retrieval coverage and computational cost.
+4.3
+
+Empirical Results
+
+Table 1 reports the main results on LoCoMo and MedMT-Bench [16, 25]. Across both benchmarks
+and both GPT- and Qwen-based backbones, TrajWiki consistently outperforms most of the baselines,
+including Full Context, Naive RAG, LangMem, A-MEM, and Mem0 [21, 22, 35]. On LoCoMo,
+TrajWiki achieves better performance and improves over the strongest memory baseline, Mem0. The
+gains are most pronounced on multi-hop questions, where answering requires aggregating evidence
+6
+
+Table 1: Overall performance comparison on LoCoMo and MedMT-Bench. For LoCoMo, we
+report F1, BLEU, and Acc separately for each question type. For MedMT-Bench, we report Acc for
+each subset. The best performance is marked in bold.
+LoCoMo
+MedMT-Bench
+Open
+Single
+Multi
+Hop
+Temporal
+LCMU RCI IC
+Domain
+Hop
+F1 BLEU Acc
+F1 BLEU Acc
+F1 BLEU Acc
+F1 BLEU Acc
+Acc
+Acc Acc
+Full Context 28.11 21.71 32.98 23.11 16.12 30.22 16.76 13.57 35.42 43.77 36.43 71.72 27.12 11.16 7.47
+Naive RAG 21.78 17.08 20.21 20.35 15.37 24.92 14.89 11.67 26.04 40.49 34.13 60.52 16.43 18.86 7.82
+LangMem
+22.01 16.92 28.01 20.59 14.43 31.78 10.31 8.09 23.96 34.4 26.62 55.28 17.78 16.34 8.26
+A-MEM
+27.02 20.09 37.58 41.52 35.6 26.17 12.44 9.97 23.96 38.74 34.03 50.54 12.51 17.12 9.33
+Mem0
+34.52 25.13 40.07 44.73 37.86 30.56 13.12 9.5 25.02 37.19 33.64 44.48 17.11 14.52 12.17
+TrajWiki
+35.23 36.47 59.44 42.42 41.14 35.39 20.56 18.66 42.12 48.72 43.14 78.56 29.33 21.42 17.68
+Full Context 27.79 20.91 49.65 32.47 26.56 32.27 15.52 11.44 39.67 29.53 32.71 79.68 29.63 13.16 9.42
+Naive RAG 24.22 19.01 35.82 22.61 18.21 20.25 12.88 8.7 36.46 35.19 27.27 69.08 19.63 21.05 7.62
+LangMem
+26.01 24.37 38.16 24.9 23.81 20.28 9.15 6.87 22.92 36.61 34.88 44.15 18.18 16.67 7.74
+25.17 19.12 41.48 29.79 24.63 28.78 11.29 7.68 41.67 33.76 26.21 63.26 13.89 17.07 10.36
+A-MEM
+Mem0
+26.32 20.17 45.74 32.41 29.68 31.49 15.03 11.28 42.7 42.58 35.15 73.72 17.89 23.68 11.21
+TrajWiki
+31.42 30.56 50.33 33.48 31.26 37.33 17.86 16.44 39.68 41.88 40.42 78.34 33.42 27.33 15.34
+Full Context 39.05 31.16 39.36 33.64 27.19 26.17 20.67 16.52 31.54 43.27 43.45 78.21 26.69 10.22 6.76
+Naive RAG 27.25 21.05 29.79 27.86 22.96 18.69 12.18 8.98 38.54 46.32 41.44 64.8 16.32 18.32 6.42
+LangMem
+16.48 15.08 27.09 17.85 15.83 15.61 9.47 6.96 24.58 36.24 35.16 51.77 17.81 15.47 7.74
+A-MEM
+27.54 22.08 35.46 34.30 28.38 21.18 11.39 8.62 22.29 42.3 37.66 59.45 12.04 16.32 8.76
+Mem0
+31.73 24.82 38.27 28.96 26.24 20.16 15.03 11.28 21.18 42.58 35.15 57.64 15.42 13.62 10.52
+TrajWiki
+30.25 32.14 42.14 31.48 30.48 34.62 16.89 13.52 39.78 43.46 37.24 63.48 27.56 20.11 14.28
+
+Qwen3
+8B
+
+Qwen3
+32B
+
+GPT
+4o-mini
+
+Model Method
+
+Figure 3: Hyperparameter Retrieval Cutoff Analysis on the LoCoMo. The left plot varies the
+wiki page routing cutoff t, showing how increasing routed pages improves gold trajectory coverage
+in the page-induced candidate universe. The right plot varies trajectory top-k, showing that selecting
+more trajectories improves recall but increases the evidence passed to answer generation.
+
+Figure 4: Snapshot Budget Analysis for trajectory length m on the LoCoMo. The left plot shows
+the cumulative fraction of queries whose gold evidence is covered within a given required snapshot
+rank. The right plot shows the marginal number of newly covered queries at each rank, indicating
+that most gains occur at shallow depths while m = 15 covers the remaining long-tail evidence.
+distributed across sessions. This suggests that source-grounded trajectories and Memory Wiki routing
+help recover complementary memory traces beyond local semantic similarity. TrajWiki also shows
+a consistent advantage on temporal reasoning questions, although the margin is smaller, reflecting
+
+7
+
+Table 2: Counterfactual ablation on LoCoMO with GPT-4o-mini. All counterfactual variants use
+k = 15 and a 32K offline context budget without rerunning answer generation. “Unsup. Risk” is an
+unsupported-evidence risk proxy.
+Setting
+
+Removed / Restricted Component
+
+Full TrajWiki
+Direct Trajectory Retrieval
+Wiki Summaries Only
+Flat Raw-Memory Retrieval
+Latest Snapshot Only
+
+None
+Memory Wiki routing
+Source-grounded trajectory expansion
+Trajectory and wiki organization
+Historical snapshot depth
+
+Cand. Univ. Gold Ref Cov. Gold Traj. R@15 Ctx. Tokens Unsup. Risk
+55.6
+130.4
+41.2
+594.7
+15.0
+
+0.610
+0.356
+0.000
+0.237
+0.613
+
+0.610
+0.346
+0.807
+0.457
+0.610
+
+2.7K
+25.6K
+25.3K
+0.7K
+6.4K
+
+0.645
+0.872
+1.000
+0.918
+0.649
+
+the difficulty of resolving temporally distant and evolving dialogue evidence. On MedMT-Bench,
+the performance gap becomes more substantial. Most baselines degrade in this domain-specific
+setting, especially on the Information Contradiction subset, where models must detect conflicts
+between historical facts and the current user statement. In contrast, TrajWiki remains robust across
+the three medical scenarios, demonstrating that its memory mechanism transfers beyond open-domain
+conversations to high-constraint professional dialogues. We attribute this improvement to two aspects
+of the design: trajectory-level memory preserves how claims evolve over time, while wiki-based
+routing reduces retrieval fragmentation before evidence-level expansion.
+4.4
+
+Hyperparameter Analysis
+
+We analyze three key hyperparameters of TrajWiki on LoCoMo: the maximum trajectory length
+m, the number of routed wiki pages t, and the number of selected trajectories k. Rather than
+rerunning answer generation for every setting, we use the compact retrieval diagnostics saved during
+benchmarking to perform an offline coverage analysis. Figure 3 compares the effects of page routing
+cutoff and trajectory top-k. Increasing t substantially improves the probability that gold trajectories
+enter the page-induced candidate universe: small values such as t = 5 or t = 10 miss many supporting
+trajectories, while t = 15 provides a practical trade-off and t = 20 further improves coverage at
+the cost of a larger candidate set. Increasing k similarly improves gold trajectory coverage, but also
+increases the amount of evidence passed to answer generation, which may introduce additional noise.
+Figure 4 analyzes the required snapshot depth inside gold trajectories. Most queries require only
+shallow trajectory history, while a small long tail requires deeper snapshots. The marginal utility plot
+shows that most additional coverage is gained at small ranks, with diminishing returns after m = 10,
+while m = 15 covers the remaining long-tail evidence. These results support the design of TrajWiki
+as a hierarchical memory system: wiki routing controls retrieval breadth, trajectory selection controls
+evidence depth, and bounded trajectories preserve sufficient historical context without requiring
+unbounded memory expansion.
+4.5
+
+Counterfactual Ablation
+
+We conduct a counterfactual ablation on the LoCoMo multi-hop split using GPT-4o-mini. The
+goal is to isolate how TrajWiki’s memory organization affects evidence retrieval, grounding, and
+context efficiency. Since the counterfactual variants are derived from a single full TrajWiki run and
+do not rerun answer generation, we report retrieval and context-grounding metrics for the ablated
+variants; observed answer-level metrics are available only for the full TrajWiki run. A more detailed
+budget-controlled analysis is provided in Appendix B.2. Table 2 shows the main results at k = 15
+under a 32K offline context budget. Removing the Memory Wiki and directly ranking trajectories
+increases the candidate universe from 55.6 to 130.4 trajectories, while reducing gold source-reference
+coverage from 0.610 to 0.356. This suggests that wiki routing provides useful semantic organization
+rather than acting as a simple lossy filter. The wiki-only setting further shows that summaries alone
+are insufficient for source-grounded QA: although they can point to relevant trajectories, they do
+not recover gold source references. Flat raw-memory retrieval also has a much larger candidate
+universe and higher unsupported-evidence risk. Overall, the results support TrajWiki’s combination
+of persistent wiki routing, source-grounded trajectories, and snapshot-level evidence expansion.
+4.6
+
+Trajectory Semantic Drift Analysis
+
+We further analyze whether memory trajectories remain semantically coherent as they accumulate
+updates over time. For each trajectory, we compute the cosine similarity between the embeddings of its
+8
+
+Figure 5: Trajectory Analysis. The left panel shows head-tail semantic similarity for non-singleton
+trajectories, while the right panel breaks semantic drift down by trajectory length and contrasts global
+head-tail span with local adjacent-snapshot similarity. Most trajectories remain semantically coherent,
+and longer trajectories mainly increase global span rather than causing unstable local updates.
+first and latest snapshots, which measures the semantic span of the trajectory, and the average cosine
+similarity between adjacent snapshots, which measures local continuity during memory updates. This
+analysis is performed offline using the saved snapshot embeddings from the LoCoMo run and does not
+involve additional model calls. As shown in Figure 5, the left panel indicates that most non-singleton
+trajectories maintain moderate to high head-tail similarity, while only a small fraction falls into the
+possible-drift region. The right panel further shows that longer trajectories naturally cover a broader
+semantic range, leading to lower head-tail similarity, but their adjacent-update similarity remains
+relatively stable. This suggests that TrajWiki trajectories support gradual memory evolution rather
+than arbitrary aggregation: even when a trajectory spans multiple related events, consecutive updates
+remain locally coherent. These results support the design of provenance-aware trajectories as a
+bounded yet extensible unit for long-term memory, where semantic drift can be measured and audited
+rather than hidden inside overwritten memory states.
+4.7
+
+Computational Cost and Scalability Analysis
+
+We analyze the observed cost of TrajWiki on the LoCoMo using GPT-4o-mini. The cost is concentrated in memory construction and evidence organization rather than final answer generation:
+excluding benchmark-only evaluation, the run uses 43.28M deployment tokens, including 23.71M for
+reusable memory construction, 10.84M for query-time retrieval, and 6.92M for answer generation.
+This reflects TrajWiki’s main trade-off: additional computation is used to build source-grounded
+trajectories and a persistent Memory Wiki. The scalability analysis further shows that the Memory
+Wiki reduces the query-time trajectory search space. Across dialogue samples, direct retrieval would
+consider 130.4 trajectories per query on average, while wiki routing reduces this to 55.6 candidate
+trajectories, a 2.35× reduction. Detailed phase-level costs, latency breakdowns, and memory-scaling
+results are provided in Appendix B.3.
+4.8
+
+Diagnostic Visibility and Limitations
+
+TrajWiki improves auditability by preserving source links across snapshots, trajectories, wiki pages,
+retrieval evidence, and final answers, but provenance-aware does not mean provenance-perfect. The
+system still depends on structured LLM outputs for extraction, memory updating, wiki construction,
+answer synthesis, and validation, so malformed outputs can trigger costly fallback or repair paths,
+especially for weaker non-instruction-tuned models. It also relies on LLM-generated summaries
+to organize raw dialogue history; although source links are retained, repeated abstraction can shift
+the salience of specific facts and cause answer generation to rely on compressed memory rather
+than the most relevant raw evidence. Finally, our diagnostics expose unsupported-answer risk,
+invalid supporting references, and likely failure stages, but these are proxy diagnostics rather than
+human-verified audit accuracy. Thus, TrajWiki should be viewed as an auditable long-term memory
+framework rather than a fully solved grounding system. Appendix B.4 reports quantitative diagnostic
+statistics and a case study of summary-mediated information loss.
+
+9
+
+5
+
+Conclusion
+
+We introduced TrajWiki, a long-term memory framework that represents dialogue history as
+provenance-aware memory trajectories and organizes them into a persistent Wiki-style semantic layer.
+By separating memory evolution and persistent organization, TrajWiki enables agents to accumulate,
+revise, and retrieve long-term conversational knowledge while preserving source-level evidence. Our
+experiments show that hierarchical retrieval over Wiki pages and trajectories improves the ability
+to locate multi-hop evidence, while evidence-grounded answer generation and post-hoc diagnostics
+make failures more interpretable. The results also highlight an important trade-off. TrajWiki incurs
+additional computational cost, but this cost supports reusable semantic organization, provenance
+tracking, and auditable retrieval, and can be amortized across future queries in long-term agent
+settings. Overall, TrajWiki demonstrates that treating memory as an evolving, source-grounded
+structure rather than a flat retrieval pool is a promising direction for building more reliable long-term
+dialogue agents.
+
+10
+
+References
+[1] Sadia Sultana Chowa, Riasad Alvi, Subhey Sadi Rahman, Md Abdur Rahman, Mohaimenul Azam Khan
+Raiaan, Md Rafiqul Islam, Mukhtar Hussain, and Sami Azam. From language to action: a review of large
+language models as autonomous agents and tool users. Artificial Intelligence Review, 2026.
+[2] Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. React:
+Synergizing reasoning and acting in language models. arXiv preprint arXiv:2210.03629, 2022.
+[3] Timo Schick, Jane Dwivedi-Yu, Roberto Dessì, Roberta Raileanu, Maria Lomeli, Eric Hambro, Luke
+Zettlemoyer, Nicola Cancedda, and Thomas Scialom. Toolformer: Language models can teach themselves
+to use tools. Advances in neural information processing systems, 36:68539–68551, 2023.
+[4] Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu, Linxi Fan, and Anima
+Anandkumar. Voyager: An open-ended embodied agent with large language models. arXiv preprint
+arXiv:2305.16291, 2023.
+[5] Guozhi Yuan, Youfeng Liu, Jingli Yang, Wei Jia, Kai Lin, Yansong Gao, Shan He, Zilin Ding, and
+Haitao Li. Poact: Policy and action dual-control agent for generalized applications. arXiv preprint
+arXiv:2501.07054, 2025.
+[6] Guangya Wan, Mingyang Ling, Xiaoqi Ren, Rujun Han, Sheng Li, and Zizhao Zhang. Compass:
+Enhancing agent long-horizon reasoning with evolving context. arXiv preprint arXiv:2510.08790, 2025.
+[7] Mrinal Rawat, Ambuje Gupta, Rushil Goomer, Alessandro Di Bari, Neha Gupta, and Roberto Pieraccini.
+Pre-act: Multi-step planning and reasoning improves acting in llm agents. arXiv preprint arXiv:2505.09970,
+2025.
+[8] Bernal J Gutiérrez, Yiheng Shu, Yu Gu, Michihiro Yasunaga, and Yu Su. Hipporag: Neurobiologically
+inspired long-term memory for large language models. Advances in neural information processing systems,
+37:59532–59569, 2024.
+[9] Zihang Dai, Zhilin Yang, Yiming Yang, Jaime G Carbonell, Quoc Le, and Ruslan Salakhutdinov.
+Transformer-xl: Attentive language models beyond a fixed-length context. In Proceedings of the 57th
+annual meeting of the association for computational linguistics, pages 2978–2988, 2019.
+[10] Aly Lidayan, Jakob Bjorner, Satvik Golechha, Kartik Goyal, and Alane Suhr. Abbel: Llm agents acting
+through belief bottlenecks expressed in language. arXiv preprint arXiv:2512.20111, 2025.
+[11] Orit Shahnovsky and Rotem Dror. Ai planning framework for llm-based web agents. arXiv preprint
+arXiv:2603.12710, 2026.
+[12] Siyan Zhao, Mingyi Hong, Yang Liu, Devamanyu Hazarika, and Kaixiang Lin. Do llms recognize your
+preferences? evaluating personalized preference following in llms. arXiv preprint arXiv:2502.09597,
+2025.
+[13] Hideaki Joko, Shubham Chatterjee, Andrew Ramsay, Arjen P De Vries, Jeff Dalton, and Faegheh Hasibi.
+Doing personal laps: Llm-augmented dialogue construction for personalized multi-session conversational
+search. In Proceedings of the 47th International ACM SIGIR Conference on Research and Development in
+Information Retrieval, pages 796–806, 2024.
+[14] Xiaotian Zhang, Yuan Wang, Ruizhe Chen, Zeya Wang, Runchen Hou, and Zuozhu Liu. Towards
+proactive personalization through profile customization for individual users in dialogues. arXiv preprint
+arXiv:2512.15302, 2025.
+[15] Qianyun Guo, Yibo Li, Yue Liu, and Bryan Hooi. Towards realistic personalization: Evaluating longhorizon preference following in personalized user-llm interactions. arXiv preprint arXiv:2603.04191,
+2026.
+[16] Adyasha Maharana, Dong-Ho Lee, Sergey Tulyakov, Mohit Bansal, Francesco Barbieri, and Yuwei Fang.
+Evaluating very long-term conversational memory of llm agents. In Proceedings of the 62nd Annual
+Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 13851–13870,
+2024.
+[17] Di Wu, Hongwei Wang, Wenhao Yu, Yuwei Zhang, Kai-Wei Chang, and Dong Yu. Longmemeval:
+Benchmarking chat assistants on long-term interactive memory. arXiv preprint arXiv:2410.10813, 2024.
+[18] Weizhi Wang, Li Dong, Hao Cheng, Xiaodong Liu, Xifeng Yan, Jianfeng Gao, and Furu Wei. Augmenting
+language models with long-term memory. Advances in Neural Information Processing Systems, 36:
+74530–74543, 2023.
+
+11
+
+[19] Wanjun Zhong, Lianghong Guo, Qiqi Gao, He Ye, and Yanlin Wang. Memorybank: Enhancing large
+language models with long-term memory. In Proceedings of the AAAI conference on artificial intelligence,
+volume 38, pages 19724–19731, 2024.
+[20] Jiazheng Kang, Mingming Ji, Zhe Zhao, and Ting Bai. Memory os of ai agent. In Proceedings of the 2025
+Conference on Empirical Methods in Natural Language Processing, pages 25972–25981, 2025.
+[21] Prateek Chhikara, Dev Khant, Saket Aryan, Taranjeet Singh, and Deshraj Yadav. Mem0: Building
+production-ready ai agents with scalable long-term memory. arXiv preprint arXiv:2504.19413, 2025.
+[22] Wujiang Xu, Zujie Liang, Kai Mei, Hang Gao, Juntao Tan, and Yongfeng Zhang. A-mem: Agentic
+memory for llm agents. arXiv preprint arXiv:2502.12110, 2025.
+[23] Joon Sung Park, Joseph O’Brien, Carrie Jun Cai, Meredith Ringel Morris, Percy Liang, and Michael S
+Bernstein. Generative agents: Interactive simulacra of human behavior. In Proceedings of the 36th annual
+acm symposium on user interface software and technology, pages 1–22, 2023.
+[24] Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman Goyal,
+Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, et al. Retrieval-augmented generation for
+knowledge-intensive nlp tasks. Advances in neural information processing systems, 33:9459–9474, 2020.
+[25] Lin Yang, Yuancheng Yang, Xu Wang, Changkun Liu, and Haihua Yang. Medmt-bench: Can llms memorize and understand long multi-turn conversations in medical scenarios? arXiv preprint arXiv:2603.23519,
+2026.
+[26] Charles Packer, Sarah Wooders, Kevin Lin, Vivian Fang, Shishir G. Patil, Ion Stoica, and Joseph E.
+Gonzalez. MemGPT: Towards LLMs as operating systems. arXiv preprint arXiv:2310.08560, 2023.
+[27] Alireza Rezazadeh, Zichao Li, Wei Wei, and Yujia Bao. From isolated conversations to hierarchical
+schemas: Dynamic tree memory representation for llms. arXiv preprint arXiv:2410.14052, 2024.
+[28] Preston Rasmussen, Pavlo Paliychuk, Travis Beauvais, Jack Ryan, and Daniel Chalef. Zep: a temporal
+knowledge graph architecture for agent memory. arXiv preprint arXiv:2501.13956, 2025.
+[29] Kai Tzu-iunn Ong, Namyoung Kim, Minju Gwak, Hyungjoo Chae, Taeyoon Kwon, Yohan Jo, Seung-won
+Hwang, Dongha Lee, and Jinyoung Yeo. Towards lifelong dialogue agents via timeline-based memory
+management. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the
+Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers),
+pages 8631–8661, 2025.
+[30] Zhen Tan, Jun Yan, I-Hung Hsu, Rujun Han, Zifeng Wang, Long Le, Yiwen Song, Yanfei Chen, Hamid
+Palangi, George Lee, et al. In prospect and retrospect: Reflective memory management for long-term personalized dialogue agents. In Proceedings of the 63rd Annual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers), pages 8416–8439, 2025.
+[31] Yujie Zhang, Weikang Yuan, and Zhuoren Jiang. Bridging intuitive associations and deliberate recall:
+Empowering llm personal assistant with graph-structured long-term memory. In Findings of the Association
+for Computational Linguistics: ACL 2025, pages 17533–17547, 2025.
+[32] Zhihong Shao, Yeyun Gong, Yelong Shen, Minlie Huang, Nan Duan, and Weizhu Chen. Enhancing
+retrieval-augmented large language models with iterative retrieval-generation synergy. In Findings of the
+Association for Computational Linguistics: EMNLP 2023, pages 9248–9274, 2023.
+[33] Parth Sarthi, Salman Abdullah, Aditi Tuli, Shubh Khanna, Anna Goldie, and Christopher D Manning.
+Raptor: Recursive abstractive processing for tree-organized retrieval. In The Twelfth International
+Conference on Learning Representations, 2024.
+[34] Darren Edge, Ha Trinh, Newman Cheng, Joshua Bradley, Alex Chao, Apurva Mody, Steven Truitt, Dasha
+Metropolitansky, Robert Osazuwa Ness, and Jonathan Larson. From local to global: A graph rag approach
+to query-focused summarization. arXiv preprint arXiv:2404.16130, 2024.
+[35] LangChain Team. LangMem: Long-term memory for ai agents. https://langchain-ai.github.io/
+langmem/, 2025. Software documentation. Accessed: 2026-05-06.
+[36] Kishore Papineni, Salim Roukos, Todd Ward, and Wei-Jing Zhu. Bleu: a method for automatic evaluation
+of machine translation. In Proceedings of the 40th annual meeting of the Association for Computational
+Linguistics, pages 311–318, 2002.
+[37] Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin,
+Zhuohan Li, Dacheng Li, Eric Xing, et al. Judging llm-as-a-judge with mt-bench and chatbot arena.
+Advances in neural information processing systems, 36:46595–46623, 2023.
+
+12
+
+APPENDIX
+A
+
+Reproducible Implementation Details
+
+This appendix provides the operational details needed to reproduce the main TrajWiki pipeline.
+TrajWiki combines deterministic scoring and validation with structured LLM calls. We therefore
+distinguish between deterministic candidate construction, structured model decisions, and fallback
+rules.
+A.1
+
+Memory construction.
+
+Dialogue messages are first grouped into exchange-level inputs. For each exchange, TrajWiki asks
+the backbone model to produce an episodic memory seed with three fields: summary_content,
+context, and keywords. A separate claim extraction stage then emits source-grounded atomic
+claims:
+c = (text, status, source_message_ids, supporting_quote),
+where status ∈ {active, deprecated, contradictory, needs-confirmation}. All claims are
+validated against the source messages. Unsupported source ids, empty claims, and ungrounded
+exact terms are discarded. If the claim extractor fails or omits high-confidence source details, a
+deterministic preservation fallback extracts must-preserve surfaces such as names, places, books,
+instruments, activities, counts, temporal expressions, and quoted titles from the raw exchange.
+A.2
+
+Trajectory matching.
+
+For each new episodic snapshot σ, TrajWiki first builds a deterministic feature vector from the
+snapshot text, extracted claims, and linked source messages. The feature set includes:
+Kσ , Eσ , Xσ , Fσ ,
+where Kσ are lexical keywords, Eσ are entity mentions, Xσ are exact source-backed terms, and
+Fσ are relation/value facets such as home_country, activity_location, research_topic, and
+event_type. For each open trajectory T , TrajWiki stores analogous trajectory-level signals from
+active claims, historical item terms, retrieval summaries, and the latest snapshot.
+Candidate trajectories are prefiltered by keyword/entity/facet overlap. If any overlap exists, only
+overlapping trajectories are kept, capped at 32 candidates by overlap count; otherwise all open
+trajectories are allowed as a fallback. Each candidate is scored by
+latest
+gdet (σ, T ) = 0.60 cos(eσ , esum
+) + 0.20J(Kσ , KT )
+T ) + 0.20 cos(eσ , eT
++ bentity + bfacet + bcont − pmismatch .
+
+Here J is keyword Jaccard overlap. The entity bonus is 0.08 when normalized entity keys overlap.
+The facet bonuses are 0.06 for exact facet-value overlap and 0.03 for facet-tag overlap. The continuity
+bonus is
+bcont = min(0.14, 0.04|specific(σ) ∩ specific(T )|).
+A mismatch penalty of 0.10 is applied when a candidate shares only a broad entity but no specific
+continuity terms; a smaller penalty of 0.04 is applied when lexical overlap exists without specific
+continuity.
+The top three candidates under gdet are then passed to a structured trajectory_match decision:
+decision ∈ {CONTINUE, NEW},
+
+selected_candidate ∈ {T 1, T 2, T 3, null}.
+
+If structured output is unavailable, TrajWiki falls back to a text parser. In mock deterministic mode
+only, the best candidate is continued when gdet ≥ δ, with δ = 0.72. Thus, δ is a deterministic
+fallback threshold rather than the sole decision rule in remote-model experiments.
+A.3
+
+Claim evolution.
+
+Within a trajectory, TrajWiki maintains an append-only claim lifecycle. Exact duplicate claims are
+first matched by normalized text. If the same claim text changes status, TrajWiki emits a status
+13
+
+operation: DEPRECATE when the new status is deprecated, otherwise REVISE. For unmatched new
+claims, previous claims are shortlisted by keyword overlap, keeping at most three candidate previous
+claims. A structured claim_transition_judge call then decides
+decision ∈ {REVISE, ADD}.
+A REVISE operation creates a new claim and marks the selected previous claim as deprecated; an
+ADD operation appends the claim without replacing prior evidence. If the judge fails or no previous
+claim candidate exists, TrajWiki falls back to ADD. Model-suggested operations are treated as hints
+only; the persisted state is derived by the validated deterministic procedure above.
+A.4
+
+Memory Wiki compilation.
+
+After replaying a sample’s dialogue into trajectories, TrajWiki compiles a sample-level Memory Wiki
+from the current trajectory store. In the implementation used for our experiments, wiki pages are
+refreshed after memory replay rather than edited one page at a time online. This preserves stable
+trajectory, snapshot, claim, and source ids while allowing page organization to be recomputed from
+the latest memory state.
+The compiler first creates candidate page seeds:
+η ∈ {index, entity, topic, inventory}.
+The index page links all trajectories. entity pages group trajectories sharing an entity. inventory
+pages are created for list-like trajectories with multiple exact terms, display items, counts, or inventorylike facets. topic pages group repeated retrieval keywords. Broad entity pages are split into entityfacet pages when they exceed a trajectory threshold. Seeds with more than six trajectories are split
+into medium-granularity shards using trajectory-summary embeddings; the target page size is four
+trajectories and the maximum non-index page size is six. Redundant topic seeds are suppressed when
+at least 80% of their trajectories are already covered by entity or inventory seeds. A coverage audit
+then adds rescue pages for any trajectory reachable only through the index page.
+Each page is compiled into markdown with required sections: overview, key facts, items/counts,
+linked trajectories, and conflicts/uncertainty. If the LLM page compiler returns empty text, missing
+sections, or placeholder-only content, TrajWiki falls back to deterministic markdown generated from
+linked trajectory summaries and evidence cards. Each page also stores a routing text, keywords,
+linked trajectory ids, page type, source-backed terms, display items, counts, and a page embedding.
+A.5
+
+Hierarchical retrieval.
+
+Given a query q, TrajWiki first classifies the query shape using deterministic lexical rules: list-like,
+count-like, multi-entity, comparison-like, duration-count, and item family. It then embeds the query
+and routes it to wiki pages. Index pages are suppressed when non-index pages exist, so the wiki
+directory does not dominate retrieval.
+Each page receives dense and sparse scores. The dense score combines page embedding similarity
+with entity, reflection, granularity, and answer-family adjustments:
+sdense
+= cos(eq , ep ) + bentity + breflect + agran + 0.10sfamily − 0.12pfamily .
+p
+The sparse score is lexical overlap over page keywords, title, entity keys, exact terms, source-event
+terms, and family terms:
+ssparse
+= J(Kq , Kp ) + 0.35sfamily − 0.25pfamily .
+p
+Dense and sparse rankings are fused by reciprocal rank fusion:
+1
+1
+RRF(x) =
++
+.
+60 + rdense (x) 60 + rsparse (x)
+The top page candidate pool is then optionally reranked by the backbone model with a structured
+textual output. If reranking fails, the RRF order is used.
+Selected wiki pages induce a candidate trajectory universe:
+[
+Cq =
+Lp .
+p∈Pq
+
+14
+
+Candidate trajectories are scored similarly:
+sdense
+= 0.75 cos(eq , esum
+) + 0.15 cos(eq , elatest
+) + 0.10bentity/facet
+T
+T
+T
++ 0.08sfamily + 0.10sevent − 0.04pfamily ,
+sparse
+sT
+= J(Kq , KT ) + 0.60sfamily
++ 0.75sevent − 0.25pfamily .
+Dense and sparse trajectory ranks are again fused with RRF. The top trajectory pool is reranked by
+the backbone model when available.
+For list, count, comparison, and multi-entity questions, TrajWiki performs coverage-aware greedy
+selection after reranking. The first selected trajectory is the strongest relevance anchor. Subsequent
+selections maximize
+S(T ) = srank (T ) + 0.90∆entity + 0.65∆facet + 0.30∆item + 0.12∆term
++ 0.18Iinventory + 0.18Icount + 0.75sfamily − pred ,
+where pred penalizes repeated entities, repeated terms, repeated item terms, repeated clusters, and
+answer-family mismatch. For non-coverage queries, TrajWiki simply fills from the reranked order.
+Evidence expansion and final answer. Selected trajectories are expanded into snapshots. TrajWiki
+first keeps the top snapshot per selected trajectory, then fills the remaining snapshot budget by
+query-snapshot embedding similarity. The snapshot budget is 2k. Depending on the expansion
+mode, neighboring snapshots and update-linked snapshots are also added. Source messages linked to
+selected snapshots are compacted into a final prompt context containing wiki pages, selected trajectory
+summaries, snapshots, active claims, source messages, temporal anchors, and conflict/deprecatedclaim diagnostics.
+LoCoMo answer generation uses a structured evidence synthesis schema:
+can_answer, answer_type,
+final_answer, supporting_facts,
+supporting_source_refs,
+counted_events, excluded_events,
+uncertainties, abstain_reason.
+All supporting refs must be visible source refs in the retrieved context. Invalid refs are removed. If
+an answer has no valid source support after validation, TrajWiki converts it to an abstention. Count
+answers are additionally validated by removing duplicate, future/planned, uncertain, or unsupported
+events. Type mismatches trigger a typed retry or safe abstention.
+A.6
+
+Retry and repair.
+
+Retrieval reflection is used only for LoCoMo when the initial answer abstains or retrieval is weak.
+A retrieval bundle is considered weak if it has no source messages, no candidate trajectories, no
+selected snapshots, or no active claims in the answer context. Reflection produces a structured query
+rewrite with target entities, event terms, temporal terms, must-find terms, candidate wiki slugs, and
+raw search terms. TrajWiki reroutes through the wiki using these hints. If the reflected answer still
+abstains or the synthesis schema returns can_answer=false, a raw-message rescue pass retrieves
+lexical/semantic raw source candidates without changing the memory state.
+Post-generation repair is triggered by deterministic checks for unsupported extra list items, unsupported counts, missing supported list items, over-generic items, scope-mismatched items, unresolved
+bridge aliases, or answer-type mismatch. Repairs are generated using only retrieved evidence. A repaired answer is discarded if it is malformed, loses required supported values, introduces unsupported
+extras, or fails arbitration; in such cases the initial answer is kept or TrajWiki emits a safe abstention.
+A.7
+
+Hyperparameters.
+
+Unless otherwise stated, the LoCoMo experiments use m = 15 memory trajectories/pages exposed to
+downstream stages, tpages = 15 wiki pages, k = 15 selected trajectories, neighbor radius 1, retrieval
+15
+
+expansion mode update_linked_plus_neighbors, trajectory candidate prefilter cap 32, rerank
+candidate-pool size 12, RRF constant 60, maximum non-index wiki page size 6, target wiki page size
+4, and mock-mode trajectory continuation threshold δ = 0.72. The implementation supports remote,
+local, and OpenAI-compatible providers; structured-output schemas are used when supported, with
+parser and deterministic fallbacks otherwise.
+
+B
+
+Evaluation Details
+
+B.1
+
+Evaluation Metrics
+
+We report two automatic text-based metrics, F1 and BLEU-1, following common practice in longform question answering benchmarks. In our implementation, both metrics are computed over a
+canonicalized semantic representation rather than raw surface text. This reduces spurious penalties
+when an answer expresses the correct fact using longer or slightly different natural-language phrasing.
+Given a reference answer y and a model answer ŷ, we first extract canonical answer slots from both
+answers. Let
+C(y) = {(si , vi )}ni=1 ,
+C(ŷ) = {(ŝj , v̂j )}m
+j=1 ,
+where s denotes a semantic slot identifier and v denotes a normalized canonical value.
+F1. We compute F1 using slot-aware semantic matching between reference and candidate canonical
+values. Unlike exact set overlap, our current implementation uses a conservative soft matching policy
+within the same slot. A candidate value may match a reference value if they are identical after
+normalization, differ only by articles, punctuation, or simple inflection, contain benign modifiers
+such as “LGBTQ support group” versus “support group”, or match through a predefined alias relation
+such as “NYC” and “New York City”. Contrastive modifiers, numbers, colors, person names, and
+other distinguishing terms are preserved to avoid over-matching.
+Formally, let
+
+µ (ŝ, v̂), (s, v) ∈ {0, 1}
+denote whether a candidate slot-value pair matches a reference slot-value pair under this policy.
+Matching is restricted to pairs with ŝ = s, and each candidate value can match at most one reference
+value. We therefore compute a maximum one-to-one matching
+X
+
+M ⋆ = arg max
+µ (ŝ, v̂), (s, v) .
+M
+
+((ŝ,v̂),(s,v))∈M
+
+Precision, recall, and F1 are then
+P =
+
+|M ⋆ |
+,
+|C(ŷ)|
+
+R=
+
+|M ⋆ |
+,
+|C(y)|
+
+2P R
+.
+P +R
+If both canonical sets are empty, F1 is defined as 1.0; if only one side is empty, F1 is 0.0. This metric
+rewards complete semantic coverage of the reference facts, penalizes missing reference facts through
+recall, and penalizes unsupported extra canonical facts through precision.
+F1 =
+
+BLEU-1. We also report BLEU-1 as clipped unigram precision over canonical answer text. We
+linearize the canonical slot-value representation into a deterministic text sequence, tokenize it after
+lowercasing and punctuation normalization, and compute
+P
+min (countŷ (w), county (w))
+BLEU-1 = w∈V P
+.
+w∈V countŷ (w)
+Unlike standard BLEU, we do not apply a brevity penalty. BLEU-1 therefore measures how much
+of the candidate’s canonical unigram content is supported by the reference answer. If both token
+sequences are empty, BLEU-1 is defined as 1.0; if only one is empty, it is 0.0.
+Together, F1 evaluates slot-level semantic fact coverage with conservative soft matching, while BLEU1 measures canonical unigram precision. These deterministic metrics complement the LLM-based
+judge by providing reproducible lexical-semantic scores over normalized answer content.
+16
+
+Table 3: Full offline ablation at 32K context budget. All settings use k = 15. Counterfactual
+variants report retrieval/context proxies only.
+Setting
+Full TrajWiki
+Direct Trajectory Retrieval
+Wiki Summaries Only
+Flat Raw-Memory Retrieval
+Latest Snapshot Only
+Latest Two Snapshots
+Source-Linked Claims Only
+
+B.2
+
+Cand. Univ. Gold Ref Cov. Gold Traj. R@15 All Ref Rate Ctx. Tokens Unsup. Risk
+55.6
+130.4
+41.2
+594.7
+15.0
+22.5
+347.0
+
+0.610
+0.356
+0.000
+0.237
+0.613
+0.564
+0.088
+
+0.610
+0.346
+0.807
+0.457
+0.610
+0.558
+0.136
+
+0.355
+0.128
+0.000
+0.082
+0.351
+0.287
+0.011
+
+2.7K
+25.6K
+25.3K
+0.7K
+6.4K
+6.8K
+0.2K
+
+0.645
+0.872
+1.000
+0.918
+0.649
+0.713
+0.989
+
+Offline Counterfactual Retrieval and Context Ablation
+
+We provide a more detailed offline ablation analysis to complement the compact results in Table 2.
+The analysis is conducted on the LoCoMo multi-hop split using the same full TrajWiki run with
+GPT-4o-mini. The counterfactual settings reuse saved retrieval diagnostics, gold evidence labels,
+trajectory/page rankings, source references, and token estimates. They therefore evaluate evidence
+availability and context cost, but do not rerun answer generation. Consequently, we do not report true
+judge accuracy for counterfactual variants.
+Metrics. Candidate universe is the average number of memory items considered before final
+selection. Gold Ref Cov. measures the fraction of gold source references recovered by the selected
+context. Gold Traj. R@15 measures recall of gold trajectories under the top-15 trajectory cutoff. All
+Ref Rate is the fraction of queries for which all gold source references are recovered. Ctx. Tokens is
+an offline whitespace-based context token estimate. Unsup. Risk is a proxy for unsupported evidence
+risk, indicating that selected evidence lacks sufficient source support for the gold references.
+Ablation settings. Full TrajWiki uses the observed wiki-routed retrieval and source-grounded
+trajectory expansion. Direct Trajectory Retrieval removes wiki routing and ranks all trajectories
+in the same dialogue sample. Wiki Summaries Only keeps wiki pages but does not expand them
+into source-linked trajectory evidence. Flat Raw-Memory Retrieval ranks raw dialogue messages
+directly using lexical signals. Latest Snapshot Only and Latest Two Snapshots restrict each selected
+trajectory to its most recent one or two snapshots. Source-Linked Claims Only keeps only claims
+with explicit source links and is included as a diagnostic proxy rather than a full source-supportconstraint ablation.
+Table 3 reports all variants at the 32K budget. The full TrajWiki setting provides the best balance
+between gold source-reference coverage, trajectory recall, and candidate-space size. Direct trajectory
+retrieval considers more than twice as many candidates but recovers less gold evidence under the
+same offline selection protocol. Wiki-only retrieval has high trajectory recall but zero gold sourcereference coverage, showing that wiki summaries alone are not sufficient as answer evidence. Flat
+raw-memory retrieval is cheap under this lexical selector but has a very large memory universe and
+high unsupported-evidence risk. The source-linked-claims-only diagnostic has very low context cost
+but poor coverage, indicating that source filtering alone cannot replace structured retrieval.
+Table 4 reports the budget-controlled results for the main settings. Full TrajWiki reaches its evidence
+coverage with a compact selected context. In contrast, direct trajectory retrieval improves as the
+budget increases, but even at 32K it remains below full TrajWiki in gold source-reference coverage
+and trajectory recall. Wiki-only retrieval increases trajectory recall with larger budgets but continues
+to have zero gold source-reference coverage, because wiki summaries are not source evidence. This
+supports the need for both hierarchical routing and source-grounded trajectory expansion.
+B.3
+
+Computational Cost and Scalability Analysis
+
+We provide a detailed cost and scalability analysis for TrajWiki on the LoCoMo multi-hop split using
+GPT-4o-mini, with m = 15, tpages = 15, and k = 15. Since TrajWiki uses multiple asynchronous
+workers, we report accumulated provider-side latency rather than end-to-end wall-clock time. We
+also separate deployment costs from benchmark-only evaluation costs. This section reports observed
+
+17
+
+Table 4: Budget-controlled offline ablation. Values are shown for k = 15. “Ctx.” is estimated
+context tokens.
+
+Setting / Budget
+
+Gold Ref Cov. Gold Traj. R@15
+
+Ctx.
+
+Unsup. Risk
+
+Full TrajWiki, 4K
+Full TrajWiki, 8K
+Full TrajWiki, 16K
+Full TrajWiki, 32K
+
+0.606
+0.610
+0.610
+0.610
+
+0.605
+0.610
+0.610
+0.610
+
+2.6K
+2.7K
+2.7K
+2.7K
+
+0.649
+0.645
+0.645
+0.645
+
+Direct Trajectory Retrieval, 4K
+Direct Trajectory Retrieval, 8K
+Direct Trajectory Retrieval, 16K
+Direct Trajectory Retrieval, 32K
+
+0.041
+0.110
+0.216
+0.356
+
+0.041
+0.108
+0.210
+0.346
+
+0.6K
+3.2K
+9.9K
+25.6K
+
+0.993
+0.979
+0.936
+0.872
+
+Wiki Summaries Only, 4K
+Wiki Summaries Only, 8K
+Wiki Summaries Only, 16K
+Wiki Summaries Only, 32K
+
+0.000
+0.000
+0.000
+0.000
+
+0.276
+0.442
+0.656
+0.807
+
+3.3K
+7.1K
+15.1K
+25.3K
+
+1.000
+1.000
+1.000
+1.000
+
+Flat Raw-Memory Retrieval, 4K
+Flat Raw-Memory Retrieval, 8K
+Flat Raw-Memory Retrieval, 16K
+Flat Raw-Memory Retrieval, 32K
+
+0.237
+0.237
+0.237
+0.237
+
+0.457
+0.457
+0.457
+0.457
+
+0.7K
+0.7K
+0.7K
+0.7K
+
+0.918
+0.918
+0.918
+0.918
+
+Table 5: Phase-level cost breakdown for TrajWiki on LoCoMo multi-hop. Tokens and latency are
+aggregated across the full run. Benchmark evaluation is reported separately from deployment cost.
+Phase
+
+Deployment Scope
+
+Reuse Scope
+
+Calls
+
+Tokens
+
+Provider Latency
+
+Memory construction
+Query-time retrieval
+Answer generation
+Repair / validation
+Benchmark evaluation
+
+Deployment
+Deployment
+Deployment
+Deployment
+Benchmark only
+
+Upfront reusable
+Per query
+Per query
+Mixed
+Benchmark only
+
+2256
+846
+564
+768
+846
+
+23.71M
+10.84M
+6.92M
+1.81M
+0.42M
+
+25.66h
+1.58h
+0.44h
+2.50h
+0.45h
+
+TrajWiki costs only; we do not claim a token break-even against proxy baselines without answer-level
+reruns.
+Table 5 gives the phase-level cost breakdown. The largest source of token usage is memory construction, which consumes 23.71M tokens, followed by query-time retrieval with 10.84M tokens and
+answer generation with 6.92M tokens. This confirms that the dominant cost of TrajWiki is not the
+final answer itself, but the construction and organization of source-grounded long-term memory.
+Figure 6 visualizes the same token distribution. Memory construction accounts for 54.3% of all
+measured tokens, query-time retrieval accounts for 24.8%, answer generation accounts for 15.8%,
+repair/validation accounts for 4.1%, and benchmark-only evaluation accounts for only 1.0%. Thus,
+evaluation overhead is not the main driver of the reported cost. Instead, the cost reflects TrajWiki’s
+design choice to transform raw dialogue into trajectories, claims, snapshots, and wiki pages before
+answer generation.
+Figure 7 shows an even stronger concentration in provider-side latency. Memory construction
+accounts for 83.8% of accumulated provider latency, compared with 8.1% for repair/validation, 5.2%
+for query-time retrieval, 1.5% for benchmark evaluation, and 1.4% for answer generation. The
+latency distribution indicates that memory-building operations such as claim processing, trajectory
+organization, and wiki construction are the main runtime bottlenecks. This suggests that future
+efficiency improvements should prioritize caching, batching, and replacing some LLM-based memoryconstruction steps with cheaper deterministic or distilled components.
+Table 6 summarizes how memory size grows across dialogue samples. On average, each dialogue
+contains 588.2 raw messages, which TrajWiki organizes into 128.6 trajectories, 294.3 snapshots,
+
+18
+
+Figure 6: Token usage by cost phase. Token usage is dominated by memory construction and
+query-time retrieval, while benchmark-only evaluation contributes less than 1% of total measured
+tokens.
+3409.2 claims, and 42.5 wiki pages. Figure 8 provides the same view across individual dialogue
+samples on a log scale. The figure shows that claims are the largest memory object class, while wiki
+pages remain much smaller in number than trajectories and snapshots. This supports the role of the
+Memory Wiki as a compact routing layer over a much larger provenance-rich memory store.
+Figure 9 shows the query-time effect of this organization. Direct trajectory retrieval would consider
+130.4 trajectories per query on average, whereas wiki routing reduces the candidate universe to 55.6
+trajectories, a 2.35× reduction before final top-k selection. This reduction is important because
+query-time retrieval otherwise scales with the full trajectory store. The wiki layer therefore provides
+a concrete scalability benefit even though the current implementation remains token-intensive.
+Overall, this analysis shows that TrajWiki is currently a computation-heavy, provenance-oriented
+memory system rather than a token-minimizing retrieval baseline. Its main efficiency benefit in this
+implementation is search-space reduction through persistent wiki routing. Future cost optimization
+should focus on reducing memory-construction latency, caching reusable retrieval computations,
+and replacing some repeated LLM-based organization steps with cheaper deterministic or distilled
+alternatives.
+
+19
+
+Figure 7: Provider-side latency by cost phase. Accumulated provider latency is primarily spent
+on memory construction, including extraction, trajectory organization, claim processing, and wiki
+compilation.
+Table 6: Memory size and candidate scaling. Values are averaged across LoCoMo dialogue
+samples or evaluated queries.
+
+Quantity
+
+Mean
+
+Min
+
+Max
+
+Raw messages per sample
+Raw memory tokens per sample
+Trajectories per sample
+Snapshots per sample
+Claims per sample
+Wiki pages per sample
+
+588.2
+19.9K
+128.6
+294.3
+3409.2
+42.5
+
+369
+12.0K
+43
+185
+2613
+30
+
+689
+23.9K
+188
+344
+4483
+59
+
+Direct trajectory universe per query
+Wiki-routed trajectory universe per query
+Selected trajectories per query
+Selected snapshots per query
+Selected source messages per query
+
+130.4
+55.6
+15.0
+28.3
+74.2
+
+43
+27
+15
+16
+29
+
+188
+66
+15
+30
+150
+
+20
+
+Figure 8: Memory size across dialogue samples. Counts are shown on a log scale. TrajWiki stores
+raw messages, trajectories, snapshots, claims, and wiki pages as separate memory objects.
+
+Figure 9: Candidate universe scaling. Wiki routing keeps the trajectory candidate universe
+substantially smaller than direct retrieval over all stored trajectories.
+
+21
+
+Table 7: Answer-support diagnostics on LoCoMo. Metrics are offline proxies computed from
+recorded support references and gold evidence, not human-verified hallucination labels.
+Diagnostic
+
+Value
+
+Evaluated queries
+Source-supported answer proxy
+Unsupported-answer risk proxy
+Mean retrieved gold-reference coverage
+Mean support gold-reference coverage
+Invalid supporting-reference rate
+Unsupported extra-item count
+Unsupported count-error count
+Support refs with no gold overlap
+
+282
+0.390
+0.610
+0.615
+0.332
+0.216
+30
+3
+78
+
+Table 8: Failure-localization proxy distribution. The table reports automatically assigned diagnostic stages; no human failure-stage labels are used.
+Diagnostic Stage
+Unsupported overgeneration
+Answer synthesis error
+Trajectory selection miss
+Page routing miss
+Grounding miss
+Correct
+
+B.4
+
+Queries
+
+Rate
+
+133
+76
+28
+12
+1
+32
+
+0.472
+0.270
+0.099
+0.043
+0.004
+0.113
+
+Limitations and Diagnostic Visibility
+
+We provide additional diagnostics for the limitations discussed in Section 4.8. These diagnostics
+are computed offline from the LoCoMo run with GPT-4o-mini. They do not introduce extra LLM
+calls and should be interpreted as observable proxies rather than human-verified audit accuracy. In
+particular, we do not report true conflict detection accuracy, obsolete-claim handling accuracy, or
+human auditor time/error rate without external labels.
+Source-support and unsupported-answer diagnostics. Table 7 summarizes answer-support diagnostics. TrajWiki records supporting references for final answers and compares them with gold source
+references. The source-supported answer proxy is 0.390, while the unsupported-answer risk proxy is
+0.610. The mean retrieved gold-reference coverage is 0.615, but the mean support gold-reference
+coverage is 0.332, indicating that gold evidence is often retrieved but not always preserved as final
+answer support. This supports the diagnostic value of TrajWiki: it can distinguish retrieval availability
+from answer-stage grounding failures.
+Failure localization. Table 8 reports the distribution of automatically localized failure stages.
+These stages are derived from recorded provenance, retrieval metadata, gold evidence coverage, and
+answer-support diagnostics. They are useful for error analysis, but should not be read as failurelocalization accuracy because no human stage labels are provided. The largest category is unsupported
+overgeneration, followed by answer synthesis error. This indicates that many failures occur after
+relevant evidence is available, rather than only at the retrieval stage.
+Conflict, obsolete-claim, and audit-packet diagnostics. TrajWiki also records claim lifecycle state
+and compact audit packets. In this run, conflict-related context was observable for 0.535 of queries,
+deprecated claims were suppressed in rendered context with rate 1.000, and the deprecated-leakage
+proxy was 0.128. These numbers show that TrajWiki exposes conflict and obsolete-claim signals, but
+they are not substitutes for labeled conflict or obsolete-handling accuracy.
+The audit packet provides a compact unit for human or post-hoc inspection. Compared with a
+full-context audit proxy, TrajWiki reduces the mean audit source count from 594.7 to 195.1 and the
+mean audit packet size from 20.33K to 11.34K estimated tokens. This suggests that the provenance
+structure can make post-hoc inspection more focused, although actual human audit time and error
+rate remain future work.
+
+22
+
+Table 9: Auditability diagnostics. Conflict and obsolete-claim metrics are observable proxies.
+Audit-packet size measures the compactness of evidence made available for inspection.
+Diagnostic
+
+Value
+
+Conflict exposed rate
+Deprecated-claim suppression rate
+Deprecated leakage proxy
+Obsolete-answer risk proxy
+
+0.535
+1.000
+0.128
+0.128
+
+TrajWiki mean audit source count
+Full-context proxy source count
+TrajWiki mean audit packet tokens
+Full-context proxy audit tokens
+TrajWiki mean audit claim count
+
+195.1
+594.7
+11.34K
+20.33K
+315.2
+
+Table 10: Fallback and repair diagnostics on LoCoMo with GPT-4o-mini. Extra tokens and calls
+quantify the overhead introduced by fallback, repair, and deterministic validation paths.
+
+Stage
+
+Events
+
+Fallbacks
+
+Repairs
+
+Risk Events
+
+Extra Tokens
+
+Answer synthesis / validation
+Repair phase
+Semantic metrics
+Unknown fallback events
+
+554
+564
+848
+156
+
+0
+0
+1
+7
+
+69
+1408
+0
+0
+
+330
+158
+1
+0
+
+25.10M
+1.84M
+0.00M
+0.00M
+
+Total
+
+2122
+
+8
+
+1477
+
+489
+
+26.93M
+
+Fallback and repair overhead. A separate limitation is structured-output dependence. Table 10
+summarizes fallback and repair diagnostics. Even with GPT-4o-mini, TrajWiki records substantial
+repair activity, especially around answer synthesis, validation, and claim preservation. These paths are
+useful for robustness and diagnosis, but they increase cost and latency. For weaker or non-instructiontuned models, this dependency is likely to become more severe.
+The ledger reports approximately 2,562 extra provider calls, 26.93M extra tokens, and 23.90M ms of
+accumulated provider-side latency from fallback and repair-related paths. These overheads should
+not be interpreted as end-to-end failures, but they show that reliable structured generation is an
+operational requirement for TrajWiki.
+Case study: summary-mediated salience drift.
+
+A concrete example is query conv-26_qa_24:
+
+Question: What does Melanie do to destress?
+Gold answer: Running, pottery
+Model answer: Melanie engages in various self-care activities to destress, including running, reading, playing the violin, and prioritizing self-care.
+The raw evidence supports both required items: D5:4 states that Melanie signed up for a pottery class
+and described it as “therapy for me,” while D7:22 states that she had been running farther to de-stress.
+This was not a pure retrieval miss: the relevant evidence was present in the memory store. The failure
+occurred because the pottery fact became less salient through snapshot, trajectory, and wiki-level
+abstraction. The fact survived in source-linked metadata, but it was not foregrounded strongly enough
+during final answer synthesis.
+This case illustrates the main limitation of provenance-aware summarization. Source links make
+the failure traceable, but they do not guarantee that every source-specific fact remains salient after
+repeated abstraction. Future work should combine stricter constrained decoding, periodic sourcesummary consistency audits, and final-answer verification against raw source evidence rather than
+generated summaries alone.
+
+23
+
+C
+
+Prompts
+
+This appendix lists the main prompts used by TrajWiki. For tasks using structured output, the
+prompt is paired with a schema through the provider’s structured-output interface; we show the
+natural-language instruction portion here.
+C.1
+
+Memory Construction Prompts
+
+Episodic Claim Extraction.
+TASK=EPISODIC_CLAIM_TEXT_EXTRACT_STRUCTURED
+Rewrite the current exchange into readable, source-grounded atomic claim sentences.
+Return structured data only through the provider's structured output channel.
+Rules:
+- Use only facts explicitly stated in the raw messages.
+- Resolve speaker names from the raw source lines. If the raw line says "(Melanie):
+my son", write "Melanie's son", not "Caroline's son", "the user", or "the
+assistant".
+- claim text must be a complete readable factual sentence, not a transcript
+fragment or broad summary.
+- For list-like utterances, include item-level claims for every stated item.
+- Preserve exact raw surface phrases for names, titles, places, counts,
+instruments, events, and items.
+- Do not collapse books, instruments, cities, places, activities, events, painted
+objects, or counts into umbrella-only claims.
+- Do not replace concrete raw noun phrases with broader categories: if raw says "
+sunset", keep "sunset", not only "nature-inspired artwork".
+- You may include broader context, but the original source phrase must remain
+visible in at least one claim.
+- supporting_quote must be copied from the raw source message and must support the
+claim.
+
+Claim Signal Extraction.
+TASK=CLAIM_SIGNAL_EXTRACT_STRUCTURED
+Extract validated retrieval and display signals from readable claims and source
+snippets.
+Return structured data only through the provider's structured output channel.
+Rules:
+- Every surface/value/value_span/display value must be copied from a supplied
+claim or source snippet.
+- Do not invent normalized names or semantic replacements.
+- Do not output transcript fragments, greetings, acknowledgements, or sentence
+opener fragments.
+- Prefer concise useful retrieval/display signals over exhaustive noisy spans.
+
+Trajectory Matching.
+TASK=TRAJECTORY_MATCH_STRUCTURED
+Decide whether the new memory continues one of the shortlisted candidate
+trajectories.
+Return structured data only through the provider's structured output channel.
+Rules:
+
+24
+
+- Choose CONTINUE only if the new memory clearly belongs to the same evolving
+trajectory as one candidate.
+- Each candidate includes a trajectory summary for the whole thread and a latest
+update note for only the newest step.
+- Use the trajectory summary as the primary signal; use the latest update note
+only as recent supporting context.
+- Do not require the new memory to resemble only the latest update if the broader
+trajectory summary clearly matches.
+- Same person, broad topic, or generic words such as community/support/art are not
+enough to CONTINUE.
+- CONTINUE requires the same evolving event, project, item, place, count, or fact
+thread.
+- Choose NEW when the memory is about a different item, place, event, count, or
+topic cluster under the same person unless it explicitly updates the existing
+thread.
+- selected_candidate must be null when decision is NEW.
+- selected_candidate must be one of the provided candidate labels when decision is
+CONTINUE.
+- rationale should briefly explain the shared evolving trajectory or why no
+candidate fits.
+- Do not say candidates are merely related or similar.
+
+C.2
+
+Memory Wiki and Retrieval Prompts
+
+Trajectory Retrieval Summary.
+TASK=TRAJECTORY_RETRIEVAL_SUMMARY
+Create a markdown retrieval summary for ONE episodic trajectory using only the
+supplied grounded internal memory state.
+Goal:
+- produce a retrieval-oriented synopsis for coarse trajectory selection
+- preserve exact names, items, and specific facts
+- keep older but query-relevant facts visible even when later snapshots shift
+topic
+- surface uncertainty or conflicts explicitly instead of hiding them
+Required headings:
+## Profile / Stable Facts
+## Item Sets / Named Entities
+## Relations / Temporal Updates
+## Conflicts / Uncertainty
+Rules:
+1. Use only the supplied claims, facets, exact terms, and recent snapshot notes.
+2. Preserve exact titles, books, recipes, instruments, symbols, places, and named
+items.
+3. Keep list items explicit; do not collapse them into broad themes.
+4. Do not let the newest update erase older item sets, places, events, dates, or
+counts from the trajectory.
+5. Do not replace concrete source phrases with broad categories: keep "sunset"
+visible even if you also mention "artwork".
+6. Mention contradictory or uncertain facts under Conflicts / Uncertainty instead
+of resolving them yourself.
+7. Do not add commentary, preamble, or conclusions outside the markdown sections.
+8. Exclude filler words, acknowledgements, discourse markers, and casual fragments
+from the useful retrieval content.
+
+Wiki Page Planning.
+
+25
+
+TASK=WIKI_PAGE_PLAN
+Plan a compact sample-level wiki graph from the provided candidate seed manifest.
+Return markdown only with the exact heading:
+## Pages
+Then emit one bullet per page:
+- page_type=<index/entity/topic/inventory> | title=<title> | slug=<slug> |
+trajectories=<comma-separated trajectory ids> | entities=<comma-separated
+entities> | links=<comma-separated page slugs>
+Rules:
+1. Always include exactly one index page.
+2. Treat each input block as a candidate seed that already groups related
+trajectories; refine or select from those seeds instead of inventing broad new
+groupings.
+3. Create entity pages when a person/entity appears across multiple trajectories.
+4. Create inventory pages for list/count/item-heavy facts such as activities,
+books, recipes, instruments, symbols, places, wins, dogs, or repeated events.
+5. Create topic pages only when they add navigation value beyond entity or
+inventory pages.
+6. Keep pages compact and specific; avoid broad pages that overlap heavily with
+existing entity or inventory coverage.
+7. Prefer explicit evidence coverage over narrative grouping.
+8. Use trajectory historical evidence cards as first-class evidence; do not rely
+only on a trajectory's latest summary.
+9. If a card exposes a specific item, place, event, count, or source anchor, cover
+it in a non-index page whenever possible.
+
+Wiki Page Compilation.
+TASK=WIKI_PAGE_COMPILE
+Compile one wiki page from the supplied page metadata, representative trajectory
+summaries, and historical trajectory evidence cards.
+Return markdown only with these headings:
+## Overview
+## Key Facts
+## Items / Counts
+## Linked Trajectories
+## Conflicts / Uncertainty
+Rules:
+1. Use only supplied linked trajectory ids, dominant entities, exact terms, facet
+values, representative trajectory summaries, and historical evidence cards.
+2. Keep exact names, items, places, counts, and titles.
+3. For inventory pages, favor explicit item lists over prose.
+4. Preserve enumerated items and counts explicitly; do not collapse them into
+broad narrative summaries.
+5. Do not replace a concrete source phrase with a broader category: if an evidence
+card contains "sunset", keep "sunset", not only "nature-inspired artwork".
+6. Do not add speculative links or inferred facts not stated in the supplied
+inputs.
+7. In Items / Counts, use only readable display items, readable counts, and
+readable key facts.
+8. If a latest summary and historical card emphasize different facts, present the
+historical facts in their own concrete bullets instead of dropping them.
+9. Do not dump Dominant exact terms verbatim; ignore any low-confidence or
+fragment-like signal.
+10. Do not write placeholder descriptions such as "Not provided", "Unknown", "N/A",
+"None provided", "No specific key facts", or "No explicit items".
+
+26
+
+11. Describe a linked trajectory only when its representative summary or evidence
+card is supplied; otherwise leave the trajectory id without a fabricated
+description.
+12. The system may rewrite the final Linked Trajectories section deterministically,
+so keep that section concise.
+
+C.3
+
+Answer Generation and Evaluation Prompts
+
+LoCoMo Evidence Synthesis.
+TASK=LoCoMo_ANSWER_EVIDENCE_SYNTHESIS
+Legacy structured LoCoMo evidence synthesis.
+Input contains a LoCoMo question followed by retrieved memory/wiki/source evidence.
+Rules:
+1. Use only retrieved evidence. If it cannot answer the question, set can_answer=
+false, leave final_answer empty, and explain the gap in abstain_reason.
+2. Preserve exact source terms for names, titles, places, dates, counts,
+activities, and items.
+3. supporting_source_refs must use only visible refs such as D8:4, and each ref
+must support the requested answer family.
+4. Count distinct completed events only. Exclude future plans, intentions,
+reactions, duplicate mentions, general hobbies, and uncertain candidates.
+5. Count final_answer must be natural language, not a bare number; use an exact
+count only when complete evidence supports it, otherwise state a retrievedevidence lower bound.
+6. Date/time answers must use source line date=... fields, snapshot Timestamp
+lines, and the ## Temporal Anchors block; resolve terms such as "yesterday" to
+the grounded date when available.
+7. For lists/events/preferences, include every in-scope source-backed specific
+item and avoid scope-mismatched extras.
+8. For bridge/alias facts, answer with the concrete source-backed value, e.g. "
+West County" rather than "old area".
+Return structured data only. If structured output is unavailable, return only a
+JSON object matching the same fields.
+
+LoCoMo Judge.
+Evaluate the candidate answer against the question and gold answer.
+Equivalence Policy:
+- Allow semantic equivalence, near-synonyms, ordering/format variants, harmless
+modifiers, and concise or longer phrasing with the same meaning.
+- Accept date variants for the same time point, e.g. "May 7th" and "7 May"; an
+unanchored relative date such as "last Tuesday" is PARTIAL, and a clearly wrong
+date is INCORRECT.
+- Treat source-backed aliases as covered: "LGBTQ support group" covers "support
+group"; "LGBTQ pride parade" covers "pride parade"; "shared her journey at a
+school event and encouraged students" covers "school speech"; "mentorship
+program for LGBTQ youth" covers "mentoring program".
+- Harmless same-category extras are allowed unless they change the requested scope,
+contradict the gold answer, or replace a required item.
+Strict Cases:
+- Counts are strict: "Twice", "2 times", and "two confirmed rejections" are
+equivalent, but an unqualified wrong count is INCORRECT.
+
+27
+
+- A retrieved-evidence lower bound such as "The retrieved evidence confirms one
+rejection" is PARTIAL when the gold requires more.
+- Missing a required list item is PARTIAL; for example, omits "school speech" from
+"pride parade, school speech, support group".
+- Wrong entity, polarity, count, time, or place is INCORRECT.
+Verdicts:
+- CORRECT: all required gold facts/items are covered and no contradiction changes
+the answer.
+- PARTIAL: at least one required fact is covered, but required content is missing
+or qualified as a lower bound.
+- INCORRECT: no required fact matches, or the answer reverses/changes the core
+meaning.
+
+28
+
+

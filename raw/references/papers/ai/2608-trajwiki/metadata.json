@@ -1,0 +1,39 @@
+{
+  "title": "TrajWiki: Source-Grounded Memory Trajectories for Long-Horizon Dialogue Agents",
+  "authors": [
+    "Jingyu Sun",
+    "Yuyang Xue",
+    "Mingyang Li",
+    "Zhengtao Yao",
+    "Jiachen Li",
+    "Yang Cui",
+    "Wenhao Cai",
+    "Haozhe Liu",
+    "Fangying Wang",
+    "Magdalene Katharina Montgomery",
+    "Syed Murtuza Baker",
+    "Hongpeng Zhou"
+  ],
+  "institution": "University of Manchester (lead), with Melbourne, Edinburgh, USC, UT Austin",
+  "date": "2026-08-02",
+  "arXiv": "2608.00967",
+  "subjects": ["cs.AI"],
+  "tags": [
+    "agent-memory",
+    "long-horizon-dialogue",
+    "memory-trajectories",
+    "memory-wiki",
+    "hierarchical-retrieval",
+    "provenance",
+    "episodic-snapshots",
+    "evidence-grounded-generation",
+    "diagnostic-visibility"
+  ],
+  "paper_path": "raw/references/papers/ai/2608-trajwiki/2608.00967.pdf",
+  "wiki_source": "wiki/sources/trajwiki-sun-2026.md",
+  "benchmarks": ["LoCoMo", "MedMT-Bench (LCMU, RCI, IC subsets)"],
+  "backbones": ["GPT-4o-mini", "Qwen3-8B", "Qwen3-32B"],
+  "status": "seed",
+  "processed_by": "rowlet",
+  "processed_date": "2026-08-26"
+}

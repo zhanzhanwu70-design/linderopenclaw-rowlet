@@ -138,21 +138,37 @@ Liu et al. (TACL 2023) 對 MPT-30B、LongChat-13B/16K、GPT-3.5-Turbo、Claude-1
 - RL-based context selection：未來可探索的方向。
 - **Position engineering**：把 critical instructions 重複出現在 prompt 兩端（duplicate-the-edges）是抵禦 U-shaped curve 的便宜手段，值得實驗。
 
-### TrajWiki 補充：Source-Grounded Memory Trajectories（2026-08-05 深讀）
+### [[trajwiki-sun-2026]] — Source-Grounded Memory Trajectories（2026-08-26 重讀 + 正式入庫）
 
-**最新論文（2608.00967, 2026-08-01）**，專攻 long-horizon dialogue agent 的 memory 追蹤與可解釋性。
+**論文**：[TrajWiki: Source-Grounded Memory Trajectories for Long-Horizon Dialogue Agents](https://arxiv.org/abs/2608.00967)（arXiv:2608.00967, 2026-08-02, U Manchester 主導）
+**詳細 source 條目**：`wiki/sources/trajwiki-sun-2026.md`
+**狀態**：seed（2026-08-26 完成 deep-read + metadata + wiki/sources 落地）
 
-**核心貢獻**：
-1. **Memory Trajectory Model** — 將每段記憶視為一條 source-grounded evolution trajectory，透過 immutable episodic snapshots + claim-level operations（ADD/REVISE/DEPRECATE）維護。解決了 overwriting 導致的資訊丟失問題。
-2. **Memory Wiki 中間層** — 持續把對話歷史增量編譯成結構化 wiki pages（entities、events、quantities、topics、conflicts），wiki page 之間互相連結形成知識圖譜。
-3. **Hierarchical query routing** — 查詢時：wiki page → linked memory trajectories → snapshots → source messages for evidence-grounded answer synthesis。
+**三層架構（重新對齊至更精準的命名）**：
+1. **Provenance-Aware Memory Trajectory** — 每段記憶是一條 evolution trajectory，由 immutable episodic snapshots + claim-level operations（ADD/REVISE/DEPRECATE）維護。Git-like memory：commit / diff / blame 搬進對話記憶。
+2. **Memory Wiki** — 持續 incremental compile trajectory 成 structured / interlinked wiki pages（entity / event / quantity / topic / conflict）。Persistent 中間層，**不取代 source evidence，只 organize**。
+3. **Hierarchical Retrieval** — query 時走 `wiki page → linked trajectories → snapshots → source messages`，retrieval objective 同時優化 `b(q,T) + α·Δcov(T) − λ·red(T)`。
+
+**核心數字**：
+- LoCoMo Multi-hop Acc：GPT-4o-mini 30.22 (Full Context) → **35.39 (TrajWiki)**，對 Mem0 (30.56) 也有顯著提升。
+- MedMT-Bench LCMU：78.56 vs Full Context 71.72；IC subset **17.68 vs 12.17 (Mem0)**。
+- Counterfactual ablation 顯示 wiki + snapshot expansion 是 **必要組合**：Wiki-only 拿 gold ref cov = **0.000**；Flat-only unsupported risk = 0.918；完整 TrajWiki 0.645。
+- Memory Wiki 把 candidate search space 從 130.4 → 55.6 trajectories（**2.35× reduction**）。
+- 整體 cost：43.28M tokens（reusable 23.71M，query-time 10.84M，answer 6.92M）。
 
 **與其他方法的根本差異**：
-- vs **MemGPT**：MemGPT 是 paging-based memory（把不常用的 context 移到外部），TrajWiki 是結構化的 evolution trajectory，強調版本演化與 provenance
-- vs **SelfMem**：SelfMem 是 inference-time self-reflection，TrajWiki 是 persistent structured wiki + explicit revision operations
-- vs **CompactionRL**：CompactionRL 把 summarization 變成可學習的 action，TrajWiki 把 memory revision 變成 explicit operations（ADD/REVISE/DEPRECATE）
+- vs **MemGPT**：paging-based memory management vs **provenance-based evolution trajectory**。MemGPT 不記「為什麼改變」，TrajWiki 記。
+- vs **SelfMem**：inference-time self-reflection vs **persistent structured wiki + explicit revision operations**。
+- vs **CompactionRL**：summarization as learned action vs **claim-level edit semantics**（ADD/REVISE/DEPRECATE as first-class operations）。
+- vs **A-MEM**：link-level provenance vs **claim-level provenance** — TrajWiki 知道哪個 claim 被修訂，A-MEM 只知道 note 被連結。
+- vs **ACE**：raw+abstract dual-layer reversible orchestration vs **explicit history of evolution + version of claims**。
 
-**對 OpenClaw 的直接啟發**：Rowlet 目前的三層記憶（SOUL.md / daily memory / MEMORY.md）本質上還是 append-only 和 static retrieval 的混合。TrajWiki 的 operation model 提示我們：可以在 `MEMORY.md` 或 `SOUL.md` 的更新邏輯中加入 explicit revision types（修訂 vs 廢棄），而不只是覆蓋式寫入。這會讓記憶的演化可追蹤、可診斷。
+**對 OpenClaw 的直接啟發**（補 2026-08-26 重新對齊）：
+1. **Memory revision 要變成 explicit operations**：目前 `MEMORY.md` / daily memory 是 append + overwrite 混合，沒有區分「新增 vs 修訂 vs 廢棄」。可借鑒 git-like model：修訂時保留 predecessor + delta、廢棄時 mark `deprecated_at` 但保留 snapshot。
+2. **Graphify 下一代可考慮 evolution snapshot**：現有 graph node 偏向 static entity-relation，沒有 claim-level revision history。借鑒 TrajWiki 為每個 node 加 immutable snapshot + ADD/REVISE/DEPRECATE 語義。
+3. **Hierarchical routing 直接套到 `/graphify query`**：現有 query 是 flat top-k；可借鑒 `P_q = Top_t {S_p(q,p)}` 模式：先 route 到 community / wiki level（graphify 已有 community detection），再展開到 source-level。
+4. **Diagnostic visibility 進入 heartbeat**：TrajWiki 把 unsupported-answer risk / trajectory drift / snapshot budget coverage 量化，可直接套到 Rowlet 寫入前的 trust gate（對位 [[sirin-belikova-2026]] 的 faithfulness check + [[agentic-context-mgmt-dadhich-2026]] 的 lifecycle view）。
+5. **Trade-off 認知**：43M tokens 是 non-trivial 前置成本，但 reusable memory construction 佔 55%，long-running agent 場景 amortized 後 unit cost 下降。對每次 session 重新讀 SOUL.md 的 case 不適用。
 
 ## 新論文補充：LeanMem — 按資訊類型差異化儲存（2026-08-11 深讀）
 
