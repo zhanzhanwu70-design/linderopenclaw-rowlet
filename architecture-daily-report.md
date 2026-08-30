@@ -1,65 +1,87 @@
-# 每日 Agent × 軟體開發情報 — 2026-08-20
-
-> 研究窗口：2026-08-18～2026-08-20（UTC）。以 08-18 報告的「trajectory-first observability、shared-artifact multi-agent、self-managed managed-agent 邊界」三條主線為基線，補上 48 小時內新訊號。結論以「事實 → 結構性推論 → OpenClaw 判斷」分層。
+# 每日 Agent × 軟體開發情報 — 2026-08-30
 
 ## 今日 5 個重點
 
-1. **Cursor 8/19 把 long-running、event-driven、isolated subagent 全部推到 cloud agent，並把 skill 升級為 always-on "Custom Mode"。**
-   - **發生什麼（事實）**：Cursor 8/19 changelog 推出 Subscriptions（agent subscribe PR/Slack thread/scheduled task，事件喚醒）、Custom Modes（skill pinned-in-chat，⌥⏎ 觸發）、Subagents on own VMs（每個 subagent 拿 fresh project copy + clean context）、`/goal`（long-lived objective 直到 complete）、Steering improvements（follow-up 等 next tool call 才插入）。
-   - **為什麼重要（判斷）**：coding agent 商業化正式宣告「always-on 必須在 hosted runtime」；事件訂閱取代 polling 成為 first-class primitive；VM-isolated subagent 直接對齊 08-18 `2608.16801` 的 hidden-material 觀察。OpenClaw 必須把 long-lived goal store、PR/Slack event source、disposable subagent VM 列為 roadmap。
-   - **來源**：https://cursor.com/changelog/08-19-26 · raw snapshot：`raw/2026-08-20/cursor-cloud-agents-harness-08-19-26.md`
+### 1. Harness Engineering 已成 2026 Agent 開發主戰場
+**發生什麼**：Mitchell Hashimoto 年初提出「Harness Engineering」概念，現在已成為獨立領域。Microsoft Azure SRE Agent 案例震驚業界——單一 agent 在 production 處理了 35,000+ 事故，將平均Mitigation 時間從 40.5 小時壓到 3 分鐘。關鍵架構：MCP 工具 + 遙測 + 程式碼倉庫 + 事故管理平台的整合，加上 human-in-the-loop governance。
 
-2. **OpenRouter 加入 Stripe：routing layer 被 payment infra 廠商吸收，inference 計費/路由/observability/guardrails 打包進 payment stack。**
-   - **發生什麼（事實）**：8/19 公告 OpenRouter 10T tokens/day、400+ model、10M+ devs、年通過量約 $100B（HN comment 記憶）、5.5% cut；OpenRouter 維持原品牌與產品，Stripe 收購是 finance 鄰接而非 LLM 戰略。HN comment 指出 OpenRouter 內建 provider selection with performance floors、broadcast analytics 到 ClickHouse/S3/Snowflake、prompt-injection + PII detection guardrails。
-   - **為什麼重要（判斷）**：routing layer 商業模式已驗證（proxy 也能 $8B）；multi-model 是 baseline；observability + guardrails 隨 routing 一起走；context management 列入 OpenRouter roadmap，**與 LLM Wiki / graphify 直接競爭 context layer**。對 OpenClaw：自建 observability 必須涵蓋 routing-layer，並評估 self-hosted guardrail 替代品。
-   - **來源**：https://openrouter.ai/blog/announcements/openrouter-is-joining-stripe/ · https://news.ycombinator.com/item?id=49364559 · raw snapshot：`raw/2026-08-20/openrouter-stripe-acquisition-08-19-26.md`
+**為什麼重要**：這是首個有大量數據支撐的 production harness 案例研究，代表 agent 從實驗走向實際任務執行的里程碑。對於 OpenClaw 這類框架，harness 設計直接決定 agent 的可靠度上限。
 
-3. **Volcengine OpenViking 把 context retrieval 從 vector store 升級為 `viking://` filesystem；L0/L1/L2 tiered loading + observable trajectory + session async extract memory。**
-   - **發生什麼（事實）**：GitHub trending weekly 1,659 stars/wk（總 ~30,266）。OpenViking 統一 memory/resources/skills 為 `viking://` URI；寫入時建 L0/L1/L2，任務按需 load；directory recursive retrieval；每次 query 留 directory-browsing path；session commit 後 async extract user preferences + agent experience 到 long-term memory。
-   - **為什麼重要（判斷）**：filesystem metaphor 對 LLM prompt cost 接近零（檔案操作已大量在訓練資料）；tiered loading = explicit token budget；self-evolving 對齊 Letta sleep-time compute；trajectory observability by design 對齊 08-18 AGENTCHAOSBENCH。OpenClaw 必須把 graphify query 升級為 trajectory-aware、把 L1 community/loc/node 升級為 runtime tiered load、並寫 `memory-curator` skill 仿 async extract。
-   - **來源**：https://github.com/volcengine/OpenViking · https://docs.openviking.ai/en/getting-started/01-introduction · raw snapshot：`raw/2026-08-20/openviking-context-database-2026-08.md`
+**來源**：[Faros.ai - Harness Engineering](https://www.faros.ai/blog/harness-engineering) | [awesome-harness-engineering](https://github.com/ai-boost/awesome-harness-engineering)
 
-4. **arXiv 2608.16003（parsa-mz）：prior audit-repair context 會讓 LLM verifier 降 threshold 變 lenient，但這是 criterion shift 不是 discrimination 改善；reasoning enabled 不免疫。**
-   - **發生什麼（事實）**：parsa-mz/crtitxer 在 ProcessBench 上測 929 verified-correct + 929 labelled-incorrect、5 wording × 多個 model；prior audit-repair context 在 15/15 model × wording 組合把 false-alarm rate 降 2.8–11.5 pp。Signal-detection analysis 拆解：Δcriterion 在 15/15 移動（13/15 survive correction），Δd′ 全不 survive。Reasoning enabled 仍 Δc +0.087/+0.058、Δd′ ≈ 0。否定 accumulated-message literature 預測「越 audit 越嚴格」。Wording 5 種改 2 claim 1 reading。
-   - **為什麼重要（判斷）**：self-repair loop 對 verifier 是污染；OpenClaw 的 actor + verifier + repairer 同一個 agent 必須把 verifier 隔離到 fresh context；eval 不能只看 accuracy，要看 criterion shift；prompt wording 是 reliability bug surface。
-   - **來源**：https://arxiv.org/abs/2608.16003 · https://github.com/parsa-mz/crtitxer · https://huggingface.co/papers?date=2026-08-18 · raw snapshot：`raw/2026-08-20/audit-repair-verifier-threshold-shift-2608-16003.md`
+---
 
-5. **Microsoft Agent Framework 把 agent isolation、bounded approval loop、skill discovery hardening、conversation history 單源化 列為當前主軸；LangSmith Tuned Evaluators 把 eval signal 推上 runtime。**
-   - **發生什麼（事實）**：microsoft/agent-framework 近期 commits：A2A task store with isolation key scoping、bounded tool-approval auto-approval loop（#7472）、harden file skill discovery、hosted agent 單一 conversation history、AgentIsolationKeyProvider（BREAKING rename）、Cosmos NoSQL vector memory sample、prevent telemetry serialization failures from failing workflows。LangChain 8/18 推出 LangSmith Tuned Evaluators（從 Perceived Error 起步），把 eval signal 推到 production runtime（對齊 Anthropic `Demystifying evals for AI agents` 與 `Eval awareness in Opus 4.6`）。
-   - **為什麼重要（判斷）**：isolation key、approval loop bounded、skill discovery hardened 顯示 framework 層把 **agent isolation + safety** 從 nice-to-have 變 must-have；Cosmos vector memory 顯示 memory layer 走向 managed DB；Tuned Evaluators 顯示 LangSmith 認為「eval 是 runtime signal，不是 offline report」。對 OpenClaw：skill discovery（`~/.openclaw/skills/`）必須做路徑 / permission hardening；isolation key 概念要 ingest 到 wiki。
-   - **來源**：https://github.com/microsoft/agent-framework/releases · https://www.langchain.com/blog（LangSmith Tuned Evaluators 08-18）
+### 2. Agent Memory 領域出現整合型工具：context-mode 與 agentmemory
+**發生什麼**：context-mode（2天前）提出 context window 優化方案：tool output 減少 98%、session memory 持久化、跨 17 個平台透過 MCP + hooks 路由。agentmemory（6天前）則提供 persistent memory + 6 個 lifecycle hooks（SessionStart、PreToolUse、PostToolUse、PreCompact 等）+ 17 個內建 skills，支援 Codex Desktop。
+
+**為什麼重要**：記憶管理是長 session agent 的核心瓶頸。過去各平台各自為政，這兩個工具都試圖做跨平台的通用記憶層。context-mode 的 98% tool output 減少尤其值得注意——這直接解決了 context window 消耗過快的問題。
+
+**來源**：[context-mode](https://github.com/mksglu/context-mode) | [agentmemory](https://github.com/rohitg00/agentmemory)
+
+---
+
+### 3. arXiv 三篇 8 月底的 agent 研究信號強
+**發生什麼**：8/26-27 有三篇值得注意的論文：
+- "Don't Overthink, Don't Underthink"（8/26）：研究 adaptive reasoning，發現 over-reasoning 高成本低準確，under-reasoning 一致性出錯。提出需要根據 tool-decision latency、token 消耗動態調整推理深度。
+- "Trace Integrity for LLM Data Agents"（8/26）：提出 agent reasoning 的可稽核性框架，目標是 real-world systems 的 structured reasoning 有跡可循。
+- "Calibrated Enough to Know, Not Calibrated to Act"（8/27）：發現 LLM agents 會對「不可知」的問題产生虛構證據並 commit，導致錯誤行動。
+
+**為什麼重要**：三篇都是 4 天內的新論文，代表 agent reasoning 的研究前沿。adaptive reasoning 和 trace integrity 對 OpenClaw 的 taskflow 和 heartbeat 設計有直接參考價值。
+
+**來源**：[arXiv:2608.26442](https://arxiv.org/abs/2608.26442) | [arXiv:2608.26036](https://arxiv.org/abs/2608.26036) | [arXiv:2608.27167](https://arxiv.org/abs/2608.27167)
+
+---
+
+### 4. LangGraph 生態系持續擴張，Multi-Agent 框架戰局明朗
+**發生什麼**：LangGraph（stateful/durable orchestration）與 CrewAI（易學、context-aware synthesis）的比較持續受到關注。CrewAI Enterprise 剛推出 managed deployment + observability。Python agent framework 格局大致底定：LangGraph（stateful）、Pydantic AI（type安全、單 agent）、OpenAI Agents SDK（原生沙盒 execution + 記憶）、CrewAI（快速多 agent 原型）、Microsoft Agent Framework（.NET/Azure 生態）。
+
+**為什麼重要**：從 2025 年的框架戰國時代，現在收斂到 5 個明確玩家。OpenClaw 作為 Specialist Agent 框架，生態定位值得思考——是跟這幾個整合還是走出自己的路？
+
+**來源**：[Python AI Agent Framework August 2026](https://www.newtechie.com/2026/08/choosing-python-ai-agent-framework-in.html) | [LangGraph vs CrewAI](https://press.farm/crewai-vs-langgraph-comparison-which-multi-agent-framework-wins/)
+
+---
+
+### 5. Modular Monolith 回潮，Observability 成為領導優先
+**發生什麼**：SoftwareMill 的 2026 趨勢報告指出「Many teams are pivoting toward modular monoliths to cut complexity and cost」。同時 Enlightlab 指出「Observability will become a leadership priority because systems are becoming more distributed, cloud-based, and complex」。兩者互補：架構趨向簡化，但系統複雜度仍在上升，所以可觀測性是應對之道。
+
+**為什麼重要**：對 OpenClaw 的啟示：agent 的行為可觀測性（session 追蹤、tool call 審計、memory 消耗）將從「nice to have」變成「required」。Modular monolith 趨勢也影響如何設計 agent harness 的職責邊界。
+
+**來源**：[SoftwareMill - Technology Trends 2026](https://softwaremill.com/it-trends-to-watch-in-2026/) | [Enlightlab - DevOps Trends 2026](https://enlightlab.com/devops-trends-for-2026/)
+
+---
 
 ## 對 OpenClaw / Linder 的啟發
 
-1. **建立 `cursor-harness-comparator` skill + disposable subagent VM 原型**：把 Cursor 五個能力 mapping 到 OpenClaw primitive；優先補 (a) PR / Slack event subscribe、(b) `~/.openclaw/skills/` pinned-in-chat UX、(c) disposable container subagent（與 mrmime 合作）、(d) long-lived goal store。對齊 `Cursor-Style Cloud Agent Harness` concept 與 `Agent Harness as First-Class Citizen`。
-2. **把 `verifier-threshold-guard` skill 與 trajectory-aware graphify query 列入 wiki/cron**：啟動 self-repair loop 時強制 verifier 用 fresh context + byte-identical prompt；`graphify query` 加 `--show-path` 模仿 OpenViking observable retrieval；`graphify load --layer L0` 給 agent 顯式選擇 context 深度。對齊 `Verifier Threshold Shift` concept 與 `Viking Filesystem Context` concept。
-3. **重新定位 OpenClaw 的 managed-agent 邊界**：routing / observability / guardrails / context management 正在被 OpenRouter × Stripe、LangSmith、Microsoft、Cursor 圍攻；OpenClaw 的差異化必須放在 **self-hostable + graph-native + agent-isolation-first**。寫 `routing-as-payment-layer-risk-brief` 評估 OpenRouter 切換成本，並在 wiki 建立 `Routing as Payment Layer` concept。
+1. **Harness Engineering 是 OpenClaw 的核心價值**：Microsoft Agent Framework 的 `DEFAULT_HARNESS_INSTRUCTIONS`、`skills_provider`、`skills_paths` 機制，與 OpenClaw 的 skill system 高度相關。建議 compare OpenClaw 現有 skill loader 與 Microsoft Harness 設計，找出可以借鑒之處。
 
-## 值得追蹤的 repo / paper / article
+2. **Context compaction 數據支援**：context-mode 的 98% tool output 減少 + agentmemory 的 PreCompact hook，印證了 OpenClaw AGENTS.md 裡「compaction at 60%/80%」的策略有實證基礎。可以考慮把 compaction threshold 變成可配置參數。
 
-- https://cursor.com/changelog/08-19-26 — Cursor cloud agents + harness（2026-08-19）
-- https://openrouter.ai/blog/announcements/openrouter-is-joining-stripe/ — OpenRouter × Stripe（2026-08-19）
-- https://news.ycombinator.com/item?id=49364559 — HN 討論（含 5.5% cut、$8B 估值推論、broadcast / guardrails 功能列舉）
-- https://github.com/volcengine/OpenViking — Self-evolving Context Database for AI Agents（viking:// protocol + L0/L1/L2）
-- https://github.com/cactus-compute/needle — 14MB / 45M-param on-device agent model（對 mobile / OpenClaw node 有意義）
-- https://arxiv.org/abs/2608.16003 — Verifier Threshold Shift paper（criterion vs discrimination）
-- https://github.com/parsa-mz/crtitxer — paper code + raw ProcessBench signals
-- https://github.com/microsoft/agent-framework/releases — A2A isolation key、bounded approval、skill discovery hardening
-- https://www.langchain.com/blog — LangSmith Tuned Evaluators（Perceived Error, 2026-08-18）+ Agentic Commerce at Scale（08-17）
-- https://huggingface.co/papers?date=2026-08-18 — audit-repair verifier HF entry
-- https://www.anthropic.com/engineering — `How we contain Claude across products`（featured）、`Scaling Managed Agents`（04-08）
-- https://simonwillison.net/2026/Aug/19/ — Claude Fable 5 + smolmachines sandbox test（agentic sandbox 實務案例）
+3. **Agent-to-Agent 知識共享是新興需求**：OzBrain（HN 18小時前）和「agent-first knowledge systems」的概念代表未來知識庫的主要使用者會是 agent 而非人類。OpenClaw 的 memory 系統應該往「跨 session 可共享」的方向設計。
+
+---
+
+## 值得追蹤的 Repo / Paper / Article
+
+1. [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent) — Self-improving RLM harness，3天前，相關學術論文
+2. [mksglu/context-mode](https://github.com/mksglu/context-mode) — Context window 優化，tool output 減少 98%，2天前
+3. [rohitg00/agentmemory](https://github.com/rohitg00/agentmemory) — Persistent memory + lifecycle hooks，支援 Codex Desktop
+4. [ai-boost/awesome-harness-engineering](https://github.com/ai-boost/awesome-harness-engineering) — Harness Engineering 資源大全
+5. [Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills) — 817 個結構化資安 skill，29 個領域
+6. [Vibe-Trading](https://github.com/HKUDS/Vibe-Trading) — v0.1.13，408 commits，162 PRs，最大版本
+7. [arXiv:2608.26442](https://arxiv.org/abs/2608.26442) — Adaptive Reasoning in Agentic AI，4天前
+8. [OzBrain - Show HN](https://news.ycombinator.com/item?id=49394827) — Agent 知識共享，18小時前
+
+---
 
 ## 下一步建議
 
-1. **Ingest 三大 high-value items 到 llm-wiki**：OpenRouter × Stripe、OpenViking、Cursor 8/19 — 已寫 raw snapshot + source page + concept page（本日完成）。下次 `graphify extract` 跑過後自動 resolve edge；先手動 link：`Cursor-Style Cloud Agent Harness ↔ Agent Harness as First-Class Citizen`、`Routing as Payment Layer ↔ Managed Agent Era`、`Verifier Threshold Shift ↔ Reasoner / Verifier / Refiner`。
-2. **排兩個 disposable 實驗**：(a) 用 GitHub Action 跑 PR event → taskflow trigger prototype，記錄 latency / approval boundary；(b) 跑 5 wording × multi-model 的 verifier threshold probe，比對 OpenClaw self-repair loop 是否同樣有 criterion shift。
-3. **更新 `~/.openclaw/skills/` hardening**：參考 Microsoft Agent Framework `harden file skill discovery` + Cursor Custom Modes pinned skill，寫一份 `skills-security-checklist` skill，把 discovery 路徑白名單、permission scope、version pinning 列為 baseline。
+1. **研究 OpenClaw vs Microsoft Harness 差異**：用 graphify query "OpenClaw skill harness DEFAULT_HARNESS_INSTRUCTIONS" 對比 Microsoft Agent Framework 的 harness 設計，看 skill_provider/skills_paths 與 OpenClaw skill loader 的功能覆蓋差距。
 
-## Wiki-first 與來源範圍
+2. **把 context-mode 的 98% tool output 減少當作實驗假設**：在 OpenClaw 的 heartbeat 或 taskflow 裡，設計一個 tool output 壓縮/過濾的實驗，測量 context window 節省效果。
 
-- 成功執行：`cd /home/amr/llm-wiki && npx graphifyy query "AI agent architecture agent skills multi-agent workflow software architecture software development trends coding agents 2026" --budget 1000` 與 `agent skills multi-agent orchestration memory context architecture OpenClaw coding agent workflow TDD harness engineering`（1500 budget）。
-- Graphify 命中既有頁面：`Code 與 Agent 地圖`、`AI Agent 虛擬團隊核心技術`、`Agent Handoff Skill`、`Reasoner / Verifier / Refiner`、`Agent Prototype Skill`、`Persona vs Personalization in LLM Systems`、`LLM 自我反駁工作流`、`AI Agent 簡報`、`Karpathy LLM Wiki Ecosystem`、`MemGPT → Letta Evolution 2023-2026`、`Managed Agent Era`、`Agent Skill Architecture Guide`、`MCP — Model Context Protocol`、`Coding Agent Black Box Debugging`、`Agent Harness as First-Class Citizen`、`Continual Harness — Self-Improving Agent State`、`viking://-style Context File System`、`agentskills.io Standard`、`Context Control Plane`、`Thoughtworks Radar 2026-04`、`Letta Memory Blocks`、`Letta Stateful Agents`、`Letta Filesystem`、`Letta Code`、`collective-intelligence-multi-agent`、`multi-agent-systems-architecture`、`agent-collaboration-patterns`、`distributed-agent-architecture`、`SwarmForge-Constitution-Based-Coordination`、`swarm-intelligence-llm-agents-2025-2026`、`group-decision-making-systems-2026`、`market-based-coordination-mechanisms-2026`、`distributed-consensus-fault-tolerance-2026`、`multi-agent-orchestration-patterns-2026`、`federated-multi-agent-networks-2026`。
-- 查閱：arXiv cs.MA 2026-08 listing、HF papers 2026-08-16/17/18/19、Hacker News front + best 24h + OpenRouter thread、LangChain blog、Anthropic news + engineering、OpenAI news、Microsoft Agent Framework releases、Cursor changelog、GitHub Trending weekly、Simon Willison 2026-08/19、Pragmatic Engineer 主頁。
-- 限制：Cursor cloud runtime 是否真隔離、PR drive-to-completion 是否真 production work 未獨立驗證；OpenRouter 收購細節未公開；cactus needle 14MB 性能數字來自官方未獨立 benchmark；Microsoft Agent Framework 部分 commit 屬 .NET only，Python 對應未確認。LangChain 8/18 Tuned Evaluators 與 LangSmith BYOC 為系列延伸，08-18 daily 報告已涵蓋 managed-agent 框架本體。
-- 圖譜連結：`graphify link` 未在本日主動觸發，待下次 `graphify extract` 跑過後自動 resolve edges。
+3. **Ingest 三篇 arXiv 論文到 wiki**：2608.26442（Adaptive Reasoning）、2608.26036（Trace Integrity）、2608.27167（Calibration）都是高價值資料，值得摘要後存到 wiki/sources/，並 link 到既有的 AI agent 地圖頁面。
+
+---
+
+*報告生成時間：2026-08-30 10:00 AM Asia/Taipei*
+*資料來源：Brave Web Search、arXiv、GitHub、Hacker News、Releasebot*
