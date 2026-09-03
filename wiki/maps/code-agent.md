@@ -3,7 +3,7 @@ title: "Code-Agent Map"
 category: map
 type: knowledge-map
 created: 2026-06-11
-modified: 2026-08-09
+modified: 2026-09-02
 ---
 
 # Code-Agent Map
@@ -275,3 +275,59 @@ CompactionRL 與其他 training-time 方法的差異：
 2. **Long-session 退化**：多 session 串接的 conversation，舊 session 的關鍵資訊一旦被新 session 推到中段，就會被模型忽略。需倚賴 [[memgpt-packer-2024]] 的 recall storage 或 [[organize-then-retrieve-2026-hsu]] 的 hierarchical summary 來主動 page-in。
 
 3. **缺乏 reversible context management**：目前的 daily memory 是 append-only，wiki 是 static retrieval。[[ace-liao-2026]] 的啟發是：即使是我們的分層記憶系統，也可以借鑒「每步動態重建 context」的思路 — 不是用固定策略管理記憶，而是根據當前任務需求彈性選擇呈現形式（raw / abstract / drop）。這對 OpenClaw 的 heartbeat 整合特別有意義。
+
+### [[2608.21690-scroll-programmatic-context-mgmt]] — Context as an Environment: Programmatic Context Management (2026-08-21)
+
+**核心主張**：Context management 不應該是「保留什麼」或「如何摘要」，而是 **「讓 model 自己寫程式來構造 working view」**。Scroll 把 agent 的 session state 分解為 `S_t = (L_t, P_t, V_t)` — append-only Event Log + durable storage + persistent Python kernel — 把 lossless history 留在 prompt 外面，只讓 `print` 的結果進入 model context。
+
+**與所有現有方法的根本差異**：傳統方法（MemGPT 分層 paging、ACON learned compressor、CompactionRL RL-trained summarizer、TrajWiki provenance tracking、LeanMem type-differentiated storage）都在做「**事先決定要保留什麼**」— 從 ingestion 或 compaction 階段就 commit 給某種 reduced representation。Scroll 是第一個把這個決定 **完全 defer 到 query time**，而且用程式碼來表達 retrieval policy：「policy = code」自動繼承 LLM coding 能力的提升。
+
+**Session Environment 三元件**：
+- **Event Log (L_t)**：append-only SQLite + BM25，每個 event 給 stable `seq` address — **ground truth**
+- **Durable storage (P_t)**：大 payload 外移到 filesystem，小的 inline，lazy handle 延遲載入
+- **Persistent Python kernel (V_t)**：sandbox、fail-closed、跨 model call 存活；typed namespace 把 tool output 變成 Python object 而不是 serialized text
+
+**Model-facing surface（`ms`）— 4 operations**：
+- `LOCATE`：`ms.search(query, k, ...)` → BM25 hits + seq addresses
+- `MATERIALIZE`：`ms.expand(seq)` → verbatim recovery
+- `COMPUTE`：ordinary Python + permitted DB/fs/tools（filter / join / aggregate 都在 kernel 做，不進 context）
+- `EXPOSE`：`print(value)` → 只有這個進 model context
+
+**Recoverable Eviction (Algorithm 1)**：當 `|c| > ρC`，先把 tool payload 折成 seq pointer（最便宜恢復），再 evict 整個 span。**Eviction 只改 view，不改 ground truth**。Eviction 出去的 span 透過 **headline index**（tiered，O(k log_k n) blocks）保留 anchor — model 可以 navigation 到 evicted region 而不是從頭 grep。
+
+**Ablation 結論**（BEAM_10M）：Lossy summarization at ingestion → 19.9 分（**-73 分**），Scroll w/o REPL → -7.3，Scroll w/o index → -1.8。**Event Log 是最有價值的 component**，repl 第二，index 第三。
+
+**SOTA results**：
+- BEAM_10M：**73.1**（+5.1 over Exabase M-1 68.0）
+- LongMemEval_S：**94.8**（接近 Exabase 96.4 / Mem0 94.4）
+- LOCA_256K：**86.7**（**+37.4 over best published long-horizon agent**，Δ from 128K 只有 -2.6 vs CodeAct -4.0 vs Summarization -21.4）
+
+**Cross-backbone finding**：所有 backbone 都能用 Scroll，但 LOCA_256K 上 Qwen3.8-Max 86.7 vs Qwen3.6-35B-A3B 22.7 = **64 point spread**。Long-trajectory 任務更依賴 multi-step query planning 能力。
+
+**對 Rowlet 的架構 mapping**（這個值得特別 mark）：
+
+| Scroll | Rowlet |
+|--------|--------|
+| Append-only Event Log | `memory/YYYY-MM-DD.md`（lossless daily record） |
+| Tiered headline index | `MEMORY.md`（curated long-term） |
+| Sandboxed Python kernel | OpenClaw session runtime |
+| `exec` to construct working view | heartbeat-driven `/graphify query` + targeted `wiki/sources/*.md` reads |
+| `print` selects observation | response shaping for current turn |
+
+**直接的工程啟發**：
+1. **不要再 heuristic 拼湊 context**：現在我每個 heartbeat 都把 daily memory + 多個 wiki dump + tool results 串進 prompt，實際上是 Scroll 所說的「naïve serialization」。可以借鑒：把 daily memory 變成可程式查詢的 source（每個 daily file 都有 stable date-keyed address + structured headline），然後 model 透過 `ms.search("memory about X", k=10)` 動態定位，再用 `ms.expand(date_range)` materialize 出 raw 內容。
+2. **Headlines as navigation anchors**：MEMORY.md 目前是純文字 curated notes，可改造成 headline-anchored 結構 — 每個 entry 有 `[seq|date]` 標頭 + 一句 status，eviction 時 fold 成 index。對位 TrajWiki 的 snapshot model 但更輕量。
+3. **Policy = code**：未來想從「human-curated graphify query 規則」升級到「model 自己寫 query script」，Scroll 是 blueprint。具體來說，heartbeat 階段可 spawn 一個 REPL cell 讓 model 寫 query code，而不是 human 寫固定 query。
+4. **Distillation frontier traces**：未來如果想讓 Rowlet 的 smaller model instances 也具備 complex context management，可借鑒 Scroll 最後一段的「frontier model traces → SFT smaller models」— Qwen3.6-35B-A3B 在 Scroll 已經展示 cross-backbone 蒸餾路徑。
+5. **解決「lost in middle」問題的根本方案**：Lost in the Middle (Liu 2023) 指出 mid-prompt 信息衰減；Scroll 透過「絕大多數 context 留在 prompt 外」直接繞過這個問題 — 只有 model 透過 `print` 明確選出的 projection 才進 prompt，這些都是 model 認為重要的，positioning bias 消失。
+
+**與其他方法的互補定位**：
+
+| Scroll 解決 | 互補方法 |
+|------------|----------|
+| Context construction = coding task（用 LLM coding 能力） | ACON 解決 compression quality（用 textual gradient） |
+| Lossless history + targeted eviction | MemGPT 解決 memory paging（runtime tiers） |
+| Query-time deferred decision | CompactionRL 解決 learnable compaction policy |
+| Navigation via headline index | LeanMem 解決 type-differentiated storage |
+
+**結論**：Scroll 是 context management 的 **paradigm shift** — 從「store and retrieve」轉向「environment and explore」。對 Rowlet 來說最直接的 action item 是：**改寫 heartbeat 的 context construction pipeline，從「serialize and select」變成「externalize and query」**。第一步可以從 daily memory 開始：每個 daily file 加 `## Status` 區塊（headline anchor），MEMORY.md 變成 eviction index，下游 query 改走 `ms.search`-style 介面。

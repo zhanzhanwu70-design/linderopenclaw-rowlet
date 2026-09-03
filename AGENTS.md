@@ -41,7 +41,7 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - **Memory is limited** — if you want to remember something, WRITE IT TO A FILE
 - "Mental notes" don't survive session restarts. Files do.
 - When someone says "remember this" → update `memory/YYYY-MM-DD.md` or relevant file
-- When you learn a lesson → update AGENTS.md, TOOLS.md, or the relevant skill
+- When you learn a lesson → update AGENTS.md or the relevant skill
 - When you make a mistake → document it so future-you doesn't repeat it
 - **Text > Brain** 📝
 
@@ -115,7 +115,9 @@ Reactions are lightweight social signals. Humans use them constantly — they sa
 
 ## Tools
 
-Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (camera names, SSH details, voice preferences) in `TOOLS.md`.
+### Local notes
+
+Skills define how tools work. Keep environment-specific local notes in this section.
 
 **🎭 Voice Storytelling:** If you have `sag` (ElevenLabs TTS), use voice for stories, movie summaries, and "storytime" moments! Way more engaging than walls of text. Surprise people with funny voices.
 
@@ -124,6 +126,100 @@ Skills provide your tools. When you need one, check its `SKILL.md`. Keep local n
 - **Discord/WhatsApp:** No markdown tables! Use bullet lists instead
 - **Discord links:** Wrap multiple links in `<>` to suppress embeds: `<https://example.com>`
 - **WhatsApp:** No headers — use **bold** or CAPS for emphasis
+
+### Local notes (migrated from TOOLS.md)
+
+# TOOLS.md - Local Notes
+
+Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
+
+## What Goes Here
+
+Things like:
+
+- Camera names and locations
+- SSH hosts and aliases
+- Preferred voices for TTS
+- Speaker/room names
+- Device nicknames
+- Anything environment-specific
+
+## Examples
+
+```markdown
+### Cameras
+
+- living-room → Main area, 180° wide angle
+- front-door → Entrance, motion-triggered
+
+### SSH
+
+- home-server → 192.168.1.100, user: admin
+
+### TTS
+
+- Preferred voice: "Nova" (warm, slightly British)
+- Default speaker: Kitchen HomePod
+```
+
+## Why Separate?
+
+Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
+
+---
+
+Add whatever helps you do your job. This is your cheat sheet.
+-e 
+## Local Whisper.cpp Transcription
+
+本機轉錄已實作，不用 OpenAI Whisper API、不上傳音檔。
+
+- Source: `/home/amr/.openclaw/local/whisper.cpp`
+- Model: `/home/amr/.openclaw/local/whisper.cpp/models/ggml-small.bin`
+- Portable toolchain: `/home/amr/.openclaw/local/toolchain`（CMake + Ninja + Zig，免 root）
+- Build/rebuild: `/home/amr/.openclaw/local/bin/build-whispercpp`
+- Single/batch audio: `/home/amr/.openclaw/local/bin/whispercpp-transcribe <wav-or-dir>`
+- YouTube audio + transcript: `/home/amr/.openclaw/local/bin/youtube-whispercpp-transcribe <youtube-url> [output-dir]`
+
+Wrapper 預設使用 `-ng -nfa` CPU-only / no flash-attn，因為 dynamic/shared build 曾在 model load 後 `free(): invalid pointer`；目前 static build smoke test OK。
+
+## API Key Reading
+
+When you need an API key, use:
+
+const fs = require('fs');
+const apiKey = fs.readFileSync(process.env.OPENAI_API_KEY_DIR, 'utf8').trim();
+
+OPENAI_API_KEY_DIR = /home/amr/.openclaw/secrets/openai-api-key.txt
+
+## MiniMax API (Graphify)
+
+- **Endpoint**: `https://api.minimax.io/v1` (OpenAI-compatible)
+- **Model**: MiniMax-M2.7
+- **Key**: stored in `~/.openclaw/secrets/minimax-api-key.txt`
+- **Usage**: Graphify semantic extraction on `raw/code/` directories
+- **Command**:
+  ```bash
+  OPENAI_API_KEY=$(cat ~/.openclaw/secrets/minimax-api-key.txt) \
+    OPENAI_BASE_URL="https://api.minimax.io/v1" \
+    /home/amr/.local/bin/graphify extract <dir> --backend openai --model "MiniMax-M2.7"
+  ```
+
+## LLM Wiki (大書庫)
+
+- **Nickname**: 大書庫
+- **Graph layer (primary)**: `/home/amr/llm-wiki/graphify-out/`
+  - `GRAPH_REPORT.md` — clustered communities + node index
+  - `graph.json` — full graph for queries
+- **Wiki (secondary)**: `/home/amr/llm-wiki/wiki/`
+- **Raw (last resort)**: `/home/amr/llm-wiki/raw/`
+- **Query command** (preferred over reading wiki/):
+  ```bash
+  /graphify query "<question>"
+  # or
+  cd /home/amr/llm-wiki && graphify query "<question>" --budget 800
+  ```
+- **Do not** preload `wiki/**/*.md` or scan `raw/` at session start. Trust the precomputed graph.
 
 ## 💓 Heartbeats - Be Proactive!
 
