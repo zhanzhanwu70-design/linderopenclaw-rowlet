@@ -1,87 +1,85 @@
-# 每日 Agent × 軟體開發情報 — 2026-08-30
+# 每日 Agent × 軟體開發情報 — 2026-09-04
 
 ## 今日 5 個重點
 
-### 1. Harness Engineering 已成 2026 Agent 開發主戰場
-**發生什麼**：Mitchell Hashimoto 年初提出「Harness Engineering」概念，現在已成為獨立領域。Microsoft Azure SRE Agent 案例震驚業界——單一 agent 在 production 處理了 35,000+ 事故，將平均Mitigation 時間從 40.5 小時壓到 3 分鐘。關鍵架構：MCP 工具 + 遙測 + 程式碼倉庫 + 事故管理平台的整合，加上 human-in-the-loop governance。
+### 1. MCP 2026-07-28 規格正式生效：Stateless 化讓 MCP 變成普通 HTTP 工作負載
+**發生什麼**：MCP 在 7 月底釋出 2026-07-28 規格，徹底改寫 transport 層。核心變化：(1) 把 session 拿掉，去掉 `Mcp-Session-Id` header；(2) 任何 HTTP 實例都可回答同一請求，等同普通 HTTP workload；(3) 同時釋出 TypeScript / Python / Go / C# SDK。Google Developers Blog 與 Cloudflare Blog 都寫了跟進文章，OpenAI Codex 在 PR #36361 同步採用，支援 paginated discovery、multi-round requests、non-blocking server startup。
 
-**為什麼重要**：這是首個有大量數據支撐的 production harness 案例研究，代表 agent 從實驗走向實際任務執行的里程碑。對於 OpenClaw 這類框架，harness 設計直接決定 agent 的可靠度上限。
+**為什麼重要**：MCP 從「協定層有狀態、需要 sticky session」變成「可橫向擴展、走標準 HTTP routing」。這對部署 OpenClaw 之類多 agent 系統的影響是：MCP server 之間可以放在任何 CDN / reverse proxy 後面，不再綁特定 instance。對 Linder 是好消息——llm-wiki graphify MCP server 終於能放 Cloudflare / Google Cloud Run 等無狀態平台。
 
-**來源**：[Faros.ai - Harness Engineering](https://www.faros.ai/blog/harness-engineering) | [awesome-harness-engineering](https://github.com/ai-boost/awesome-harness-engineering)
-
----
-
-### 2. Agent Memory 領域出現整合型工具：context-mode 與 agentmemory
-**發生什麼**：context-mode（2天前）提出 context window 優化方案：tool output 減少 98%、session memory 持久化、跨 17 個平台透過 MCP + hooks 路由。agentmemory（6天前）則提供 persistent memory + 6 個 lifecycle hooks（SessionStart、PreToolUse、PostToolUse、PreCompact 等）+ 17 個內建 skills，支援 Codex Desktop。
-
-**為什麼重要**：記憶管理是長 session agent 的核心瓶頸。過去各平台各自為政，這兩個工具都試圖做跨平台的通用記憶層。context-mode 的 98% tool output 減少尤其值得注意——這直接解決了 context window 消耗過快的問題。
-
-**來源**：[context-mode](https://github.com/mksglu/context-mode) | [agentmemory](https://github.com/rohitg00/agentmemory)
+**來源**：[modelcontextprotocol.io/roadmap](https://modelcontextprotocol.io/development/roadmap) | [blog.cloudflare.com/mcp-v2](https://blog.cloudflare.com/mcp-v2/) | [developers.googleblog.com/mcp-stateless](https://developers.googleblog.com/scaling-ai-agent-infrastructure-with-the-mcp-stateless-updates/)
 
 ---
 
-### 3. arXiv 三篇 8 月底的 agent 研究信號強
-**發生什麼**：8/26-27 有三篇值得注意的論文：
-- "Don't Overthink, Don't Underthink"（8/26）：研究 adaptive reasoning，發現 over-reasoning 高成本低準確，under-reasoning 一致性出錯。提出需要根據 tool-decision latency、token 消耗動態調整推理深度。
-- "Trace Integrity for LLM Data Agents"（8/26）：提出 agent reasoning 的可稽核性框架，目標是 real-world systems 的 structured reasoning 有跡可循。
-- "Calibrated Enough to Know, Not Calibrated to Act"（8/27）：發現 LLM agents 會對「不可知」的問題产生虛構證據並 commit，導致錯誤行動。
+### 2. Anthropic 推出 Model Hardware Standard (MHS)：Agent 從「操作資料」走進「操作實體設備」
+**發生什麼**：8/27–29 Anthropic 釋出 MHS research preview，定義 agent 操作實體設備的共享 driver 介面：顯微鏡、liquid handler、機械手臂、雷射校準、盤式讀取器都可以被同一個 spec 覆蓋。設計意圖同 MCP：model-agnostic、可透過 MCP 連到任何 agent harness、會 open-source。已公開的合作夥伴包含 AWS Strands Robots、Hugging Face LeRobot、Raspberry Pi、Automata、Universal Robots。Ars Technica 與 Quartz 都以「agents on infra」框架報導。
 
-**為什麼重要**：三篇都是 4 天內的新論文，代表 agent reasoning 的研究前沿。adaptive reasoning 和 trace integrity 對 OpenClaw 的 taskflow 和 heartbeat 設計有直接參考價值。
+**為什麼重要**：MCP 之後，Anthropic 把同一個「標準化介面 + 多 vendor」策略延伸到實體世界。這預告 agent 應用會從螢幕內的 code action 走向濕實驗室 / 倉儲 / 工廠。如果 OpenClaw 真的要走 Agentic AI Foundation 的 hardware bridge，這條路今天有了起點。
 
-**來源**：[arXiv:2608.26442](https://arxiv.org/abs/2608.26442) | [arXiv:2608.26036](https://arxiv.org/abs/2608.26036) | [arXiv:2608.27167](https://arxiv.org/abs/2608.27167)
+**來源**：[anthropic.com/news/model-hardware-standard](https://www.anthropic.com/news/model-hardware-standard-research-preview) | [arstechnica.com/2026/08/anthropics-new-hardware-standard](https://arstechnica.com/ai/2026/08/anthropics-new-hardware-standard-lets-ai-agents-control-the-physical-world/) | [marktechpost.com/2026/08/29/mhs](https://www.marktechpost.com/2026/08/29/anthropic-opens-a-research-preview-of-the-model-hardware-standard-mhs-a-shared-specification-for-ai-agents-to-safely-operate-physical-devices/)
 
 ---
 
-### 4. LangGraph 生態系持續擴張，Multi-Agent 框架戰局明朗
-**發生什麼**：LangGraph（stateful/durable orchestration）與 CrewAI（易學、context-aware synthesis）的比較持續受到關注。CrewAI Enterprise 剛推出 managed deployment + observability。Python agent framework 格局大致底定：LangGraph（stateful）、Pydantic AI（type安全、單 agent）、OpenAI Agents SDK（原生沙盒 execution + 記憶）、CrewAI（快速多 agent 原型）、Microsoft Agent Framework（.NET/Azure 生態）。
+### 3. DeepSeek Harness (dsh) 開源：「Everything is a Plugin」架構 + 95K stars 兩天內達標
+**發生什麼**：8/13 DeepSeek 把自家 agent runtime `deepseek-ai/deepseek-harness`（command name `dsh`）以 MIT / TypeScript 開源。規模：226 個 package、約 272,000 行產品程式碼（不含測試），其中 model-facing adapter layer 只佔 3.3%。整個架構設計是「每個 agent capability 都是可替換的 plugin」。DeepSeek V4-Pro 同日 GA。Enkr1 blog 對程式碼結構做了解剖：「agents are mostly plumbing」——session logs、tool pipelines、sandboxing、approval policy、telemetry 才是本體。
 
-**為什麼重要**：從 2025 年的框架戰國時代，現在收斂到 5 個明確玩家。OpenClaw 作為 Specialist Agent 框架，生態定位值得思考——是跟這幾個整合還是走出自己的路？
+**為什麼重要**：這是中國 lab 第一次開源 production-grade agent runtime。對照美國：Grok Build 在 8/7 升 v1.0 + Apache-2.0，是第一個完全 open agent harness 的大型美國 lab。OpenAI / Anthropic 仍 closed source。OpenClaw 的 specialist agent 設計若想往「harness as platform」演進，dsh 的 plugin boundary 是值得解剖的實證樣本。
 
-**來源**：[Python AI Agent Framework August 2026](https://www.newtechie.com/2026/08/choosing-python-ai-agent-framework-in.html) | [LangGraph vs CrewAI](https://press.farm/crewai-vs-langgraph-comparison-which-multi-agent-framework-wins/)
+**來源**：[github.com/deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) | [deepseek.com/harness](https://deepseek.com/harness/en/) | [blog.enkr1.com/agents-are-mostly-plumbing](https://blog.enkr1.com/agents-are-mostly-plumbing/) | [pinggy.io/best-open-source-cli-coding-agents](https://pinggy.io/blog/best_open_source_cli_coding_agents/)
 
 ---
 
-### 5. Modular Monolith 回潮，Observability 成為領導優先
-**發生什麼**：SoftwareMill 的 2026 趨勢報告指出「Many teams are pivoting toward modular monoliths to cut complexity and cost」。同時 Enlightlab 指出「Observability will become a leadership priority because systems are becoming more distributed, cloud-based, and complex」。兩者互補：架構趨向簡化，但系統複雜度仍在上升，所以可觀測性是應對之道。
+### 4. Karpathy Coding Guidelines 變成可安裝的 Agent Skill，Claude Code / Cursor / Codex / Windsurf 通用
+**發生什麼**：8/25 forrestchang/andrej-karpathy-skills repo 釋出 `karpathy-guidelines` skill（MIT），把 Karpathy 的四原則（Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution）打包成 agent skills metadata，可被 Claude Code、Cursor、Cline、Codex、Windsurf、Goose、GitHub Copilot、Kimi CLI 等 11+ 個 agent 載入。skill 內容不是文件，而是會注入 system prompt 的可執行行為指南。
 
-**為什麼重要**：對 OpenClaw 的啟示：agent 的行為可觀測性（session 追蹤、tool call 審計、memory 消耗）將從「nice to have」變成「required」。Modular monolith 趨勢也影響如何設計 agent harness 的職責邊界。
+**為什麼重要**：這是「行為準則即 skill」這個 meta-pattern 變成主流的訊號。Agent skill 不只是工具呼叫封裝，開始包含「該怎麼想、該怎麼編輯、該怎麼收斂」。對 OpenClaw 的啟示：skill_workshop 之後可以開一個 `behavioral-guidelines/` 子類別，把 Karpathy 風格、OWASP 安全風格、SRE 風格做成可裝載 skill。
 
-**來源**：[SoftwareMill - Technology Trends 2026](https://softwaremill.com/it-trends-to-watch-in-2026/) | [Enlightlab - DevOps Trends 2026](https://enlightlab.com/devops-trends-for-2026/)
+**來源**：[github.com/forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) | [skillselion.com/guides/karpathy-guidelines](https://skillselion.com/guides/karpathy-guidelines-skill-claude-code) | [notes.nicolasdeville.com/github/karpathy-skills](https://notes.nicolasdeville.com/github/karpathy-skills/)
+
+---
+
+### 5. 編碼 Agent 戰況：Opus 5 = 97% SWE-bench Verified，Codex 「Persistent mode」 浮上檯面
+**發生什麼**：(1) Claude Opus 5 在 SWE-bench Verified 達 97.0%，Terminal-Bench 4.0 (Aug 2026 釋出，66 tasks) 在 GitHub Trending 受關注；(2) Codex GPT-5.6 Sol 在 Terminal-Bench 2.1 達 85.8%，$8.39/DeepSWE task；7/30 又降價（$0.28/M input tokens）；(3) 8/28 Codex CLI repo 出現「Persistent mode」always-on agent 程式碼，是 open-harness 模型之後的下一步；(4) Codeforces / HN 開始比較 Codex persistent vs Claude Code max-tier 的 cost vs hit-rate。
+
+**為什麼重要**：coding agent 進入「模型能力不再是主要差異化、harness design 才是」的階段。Opus 5 / GPT-5.6 / GLM 5.3 / Kimi K3 / Muse Spark 1.1 都已在 90% SWE-bench 上方廝殺；harness 設計（context window 管理、subagent、persistent memory、approval flow）才是 2026 下半場的勝負手。
+
+**來源**：[morphllm.com/codex-vs-claude-code](https://www.morphllm.com/comparisons/codex-vs-claude-code) | [explainx.ai/codex-as-a-platform](https://explainx.ai/blog/codex-as-a-platform-open-agent-harness-august-2026) | [snorkel.ai/terminal-bench-4-0](https://snorkel.ai/leaderboard/terminal-bench-4-0/)
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-1. **Harness Engineering 是 OpenClaw 的核心價值**：Microsoft Agent Framework 的 `DEFAULT_HARNESS_INSTRUCTIONS`、`skills_provider`、`skills_paths` 機制，與 OpenClaw 的 skill system 高度相關。建議 compare OpenClaw 現有 skill loader 與 Microsoft Harness 設計，找出可以借鑒之處。
+1. **MCP server 可以正式 stateless 化**：把 llm-wiki MCP server、skills MCP server、graphify MCP server 重新檢視一遍：哪些還依賴 session / sticky instance？哪些可以放 Cloudflare Workers / Google Cloud Run？配合 2026-07-28 spec 重寫 client side，立即得到 CDN-friendly + 橫向擴展能力。
 
-2. **Context compaction 數據支援**：context-mode 的 98% tool output 減少 + agentmemory 的 PreCompact hook，印證了 OpenClaw AGENTS.md 裡「compaction at 60%/80%」的策略有實證基礎。可以考慮把 compaction threshold 變成可配置參數。
+2. **建立「行為準則即 skill」目錄**：在 skill_workshop 開一個 `behavioral-guidelines/` 子類別，參考 Karpathy guidelines 的 metadata 結構。首批三條準則：Karpathy coding guidelines、SRE incident response、OpenClaw SOUL/AGENTS 安全原則。每一條都做成 Claude Code / Codex / Cursor 都吃得下的 skill 檔。
 
-3. **Agent-to-Agent 知識共享是新興需求**：OzBrain（HN 18小時前）和「agent-first knowledge systems」的概念代表未來知識庫的主要使用者會是 agent 而非人類。OpenClaw 的 memory 系統應該往「跨 session 可共享」的方向設計。
+3. **Agentic AI Foundation / MHS 觀察員角色註冊**：Anthropic 已表示 MHS 會 open-source 並走類似 MCP 的治理路線。OpenClaw 團隊（透過 Linder）值得註冊追蹤，未來能 bridge MHS 時就有 ground truth。短期在 llm-wiki 開一個 `wiki/sources/2026-09-mhs/` 追蹤頁即可。
 
 ---
 
 ## 值得追蹤的 Repo / Paper / Article
 
-1. [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent) — Self-improving RLM harness，3天前，相關學術論文
-2. [mksglu/context-mode](https://github.com/mksglu/context-mode) — Context window 優化，tool output 減少 98%，2天前
-3. [rohitg00/agentmemory](https://github.com/rohitg00/agentmemory) — Persistent memory + lifecycle hooks，支援 Codex Desktop
-4. [ai-boost/awesome-harness-engineering](https://github.com/ai-boost/awesome-harness-engineering) — Harness Engineering 資源大全
-5. [Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills) — 817 個結構化資安 skill，29 個領域
-6. [Vibe-Trading](https://github.com/HKUDS/Vibe-Trading) — v0.1.13，408 commits，162 PRs，最大版本
-7. [arXiv:2608.26442](https://arxiv.org/abs/2608.26442) — Adaptive Reasoning in Agentic AI，4天前
-8. [OzBrain - Show HN](https://news.ycombinator.com/item?id=49394827) — Agent 知識共享，18小時前
+1. [github.com/deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) — MIT, "everything is a plugin", 226 packages
+2. [blog.enkr1.com/agents-are-mostly-plumbing](https://blog.enkr1.com/agents-are-mostly-plumbing/) — dsh 程式碼結構解剖
+3. [github.com/forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) — 行為準則 skill 化的範本
+4. [github.com/cloudflare/cloudflare-os](https://github.com/cloudflare/cloudflare-os) — Cloudflare Workers 上的 agent workspace
+5. [blog.modelcontextprotocol.io/posts/mcp-roadmap](https://blog.modelcontextprotocol.io/posts/mcp-roadmap/) — MCP 2026-07-28 規格官方說明
+6. [anthropic.com/news/model-hardware-standard-research-preview](https://www.anthropic.com/news/model-hardware-standard-research-preview) — MHS research preview
+7. [arxiv.org/abs/2608.21690](https://arxiv.org/abs/2608.21690) — Context as an Environment（programmatic context mgmt）
+8. [arxiv.org/abs/2608.11775](https://arxiv.org/abs/2608.11775) — The Sleeping Agent: Gist Compression 的盲點
+9. [arxiv.org/html/2608.06745](https://arxiv.org/html/2608.06745) — MemPrism：task-conditioned relational memory views
+10. [aiagentstore.ai/ai-agent-news/this-week](https://aiagentstore.ai/ai-agent-news/this-week) — 每週 AI agent 動態彙整
 
 ---
 
 ## 下一步建議
 
-1. **研究 OpenClaw vs Microsoft Harness 差異**：用 graphify query "OpenClaw skill harness DEFAULT_HARNESS_INSTRUCTIONS" 對比 Microsoft Agent Framework 的 harness 設計，看 skill_provider/skills_paths 與 OpenClaw skill loader 的功能覆蓋差距。
+1. **建立 MCP stateless 移轉檢查表**：用 graphify 對目前 llm-wiki 內 MCP 相關條目做 query，列出所有假設有 session 的地方；下週排 1 次實驗，把其中 1 個 MCP server 改寫為 stateless 並驗證。
 
-2. **把 context-mode 的 98% tool output 減少當作實驗假設**：在 OpenClaw 的 heartbeat 或 taskflow 裡，設計一個 tool output 壓縮/過濾的實驗，測量 context window 節省效果。
+2. **把 Karpathy guidelines skill 移植到 skill_workshop**：用 skill_workshop create 行為準則類別的提案，先做 Karpathy 一條；同時比對 OpenClaw 自己的 AGENTS.md 安全原則，看能否對齊。
 
-3. **Ingest 三篇 arXiv 論文到 wiki**：2608.26442（Adaptive Reasoning）、2608.26036（Trace Integrity）、2608.27167（Calibration）都是高價值資料，值得摘要後存到 wiki/sources/，並 link 到既有的 AI agent 地圖頁面。
+3. **MHS 觀察頁 + arXiv 2608 cluster 收錄**：在 llm-wiki 新開 `wiki/sources/2026-09-mhs/` 與 `wiki/sources/2026-08-agent-memory-cluster/`，把今天 arXiv 4 篇 + Anthropic MHS 公告原文 snapshot 進 raw/，再讓 graphify 連結到既有 Agent Memory 與 MCP 條目。
 
 ---
 
-*報告生成時間：2026-08-30 10:00 AM Asia/Taipei*
-*資料來源：Brave Web Search、arXiv、GitHub、Hacker News、Releasebot*
+_排程：cron:a72cb46b | 執行時間：2026-09-04 10:02 Asia/Taipei | 模型：MiniMax-M3_
