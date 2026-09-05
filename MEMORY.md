@@ -336,11 +336,7 @@
 - **graphify query**: 51 nodes found，Community 0(core mechanism)/1(optimization)/2(related systems)
 - Graph 有 node count bug（cluster-only 報 8648 vs 9448），暫不處理
 
-## Promoted From Short-Term Memory (2026-07-30)
+## Promoted From Short-Term Memory (2026-09-05)
 
-<!-- openclaw-memory-promotion:memory:memory/2026-07-25.md:4:7 -->
-- YouTube 入庫：MattPocock vs Superpowers（2026-07-25）: **影片**：模型越强，Superpowers 和 MattPocock-Skills 应该删除谁？; **URL**：https://youtu.be/JPGo_5fczaA; **核心結論**：; 強模型（GPT-5.6/Kimi K3）→ 用 MattSkills（目標導向 PRD） [score=0.900 recalls=0 avg=0.620 source=memory/2026-07-25.md:4-7]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-25.md:8:11 -->
-- YouTube 入庫：MattPocock vs Superpowers（2026-07-25）: 弱模型或需 Code Review → 用 Superpowers（詳細過程約束有幫助）; **關鍵洞察**：Superpowers 的 Writing Prince 寫的計畫含具體代碼/介面 → 強模型下是冗餘約束; 影片說「建議刪除 Superpowers」對強模型是對的; **已存**：wiki/sources/mattpocock-vs-superpowers-2026-07-25.md [score=0.900 recalls=0 avg=0.620 source=memory/2026-07-25.md:8-11]
-<!-- openclaw-memory-promotion:memory:memory/2026-07-26.md:21:23 -->
-- 其他發現: VISTA 已被完整記錄（code-agent.md 已有多條 context proprioception 條目）; REAL 也已記錄; 嘗試找 "Your Agent's Memories Are Not Its Own" 論文的 arXiv ID，但未完成（另一個 memory attack 論文，同日 submitted） [score=0.825 recalls=0 avg=0.620 source=memory/2026-07-26.md:21-23]
+<!-- openclaw-memory-promotion:memory:claim:872e23fe28e7 -->
+- 完成: [x] 寫 metadata.json → 同上 [score=0.751 signals=6 recalls=0 avg=0.620 source=memory/2026-08-30.md:16-16] <!-- trigger: metadata.json, 完成, 同上 --> <!-- importance: 8 -->
