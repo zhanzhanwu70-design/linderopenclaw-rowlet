@@ -1,92 +1,68 @@
-# 每日 Agent × 軟體開發情報 — 2026-09-07
+# 每日 Agent × 軟體開發情報 — 2026-09-09
 
-> Cron job: `每日 Agent × 軟體開發潮流研究`（08:00 Asia/Taipei）
-> 今天查過的本地圖譜：`llm-wiki/graphify-out`，查詢句：AI agent architecture / agent skills / multi-agent workflow / software architecture / software development trends / coding agents 2026（budget 1000）。命中節點多集中於 community 1（AI / Code 與 Agent）與 community 24（Karpathy LLM Wiki Ecosystem）；既有主題「agent skills、harness engineering、multi-agent orchestration、memory/context architecture、OpenClaw、coding agent workflow、TDD/diagnosis/prototype」皆已建立連結，本次外部新資料將補強「Anthropic Skills API equivalent in OpenClaw」與「MCP Server Card」兩條主線。
+> Rowlet 每日研究報告 · 篩選原則：最近 7–14 天優先；事實／推論／個人判斷分開；不堆新聞標題，講結構性意義。
+> 本日查過的來源：本地 LLM Wiki（graphify query）、arXiv、Hacker News、Releasebot（OpenClaw / Anthropic / Microsoft）、awesome-harness-engineering、Martin Fowler、mem0、StartupCorners GitHub Trending、tech-insider.org MCP 文章、volcengine/OpenViking、mattpocock/skills、lilianweng（Lilian Weng 轉述見 The AI News Report 9/2）。
 
 ---
 
 ## 今日 5 個重點
 
-### 1. DeepSeek Harness v0.1 — 「Everything is a plugin」的開源 agent runtime
-- **發生什麼**：DeepSeek 在 **2026-08-13** 把 `deepseek-ai/deepseek-harness`（MIT）以 developer preview 對外釋出。設計哲學是「agent = model + harness」，因此 model、tools、sessions、loop、sandbox、persistence、web UI **全部都是可替換 plugin**（代號 Cordis）。Flowtivity 稱上線兩天就 95k stars，Moclaw 的同期截圖顯示 62.7k stars，差異反映 PR/話題熱度。
-- **為什麼重要**：第一次由模型供應商公開展示「harness 與模型解耦」的開源實作。這把「哪一家 agent runtime 比較好」的問題，從模型綁定拉回到**外層編排層** — 是 LangGraph / Microsoft Agent Framework 之後，harness 競爭再升級的訊號。
-- **可信來源/URL**：
-  - https://deepseek.com/harness/en/
-  - https://github.com/deepseek-ai/deepseek-harness
-  - https://flowtivity.ai/blog/deepseek-harness-open-source-agent-explained/
-  - https://medium.com/@adnanmasood/deepseek-harness-and-the-rise-of-the-composable-agent-runtime-7ac7ae836380
+1. **MCP 2026-07-28 規格大改：stateful handshake 被拔掉**
+   - 發生什麼：MCP steering group 7/28 發出 2026-07-28 spec，把 stateful handshake 拆掉、加入 stateless scaling、企業級授權、Python/TS/Go/C# SDK 進入 stable beta。OpenAI、Google DeepMind、Microsoft 都已採用。
+   - 為什麼重要：MCP 從「連線協議」變成「企業級 infra」。我們 gateway-side MCP 整合若還在依賴 stateful session，要規劃 stateless 化。
+   - 來源：tech-insider.org / hackernoon.com（MCP Explained）。
 
-### 2. Anthropic Skills API + Files API — skills 變成一等公民
-- **發生什麼**：Anthropic 把 Skills API 與 Files API 推上線 — skill 是一個「資料夾」（instructions + scripts + templates），Claude **只在任務需要時才載入**，執行在內建 code execution sandbox，使用者不必自架 server。Skill 可版本化、可掛在任何 request 上。
-- **為什麼重要**：把 skill 從 prompt hack 升級成平台支援的 runtime 概念。意味著：skills 已成為 agent platform 的可分發單位（不是「暖啟動提示詞」），所有做 agent framework 的人都必須思考 skill lifecycle。
-- **可信來源/URL**：
-  - https://releasebot.io/updates/anthropic/claude
-  - https://code.claude.com/docs/en/sub-agents（sub-agent memory 欄位即同一系列觀念）
-  - https://github.com/Picrew/awesome-agent-harness（彙整上述兩種定義）
+2. **Anthropic 把 Skills 變成 open standard；Claude Code 9 月加入 managed MCP + headless permissions + GitLab MR 識別 + JSON plugin validation**
+   - 發生什麼：2025-12 Anthropic 開源 Skills 規格；9 月 Claude Code 新版內建 managed MCP servers、無人值守 headless 權限控制、JSON plugin schema 驗證、開機更快、workflow views、concurrency/resume/permissions/remote sessions 全面修穩。
+   - 為什麼重要：「Agent Skills」正式成為跨廠商可移植的單位，這對 OpenClaw 自家 skill_workshop 是結構性利多——可以直接做 MCP Skills 互通層。
+   - 來源：releasebot.io/updates/anthropic/claude-code、SiliconANGLE 12/18/2025 報導。
 
-### 3. Claude Code v2.1.261 + Codex CLI — sub-agent、thread memory、跨工具 import
-- **發生什麼**：
-  - Claude Code 在 **v2.1.198 預設把 sub-agent 跑在背景**、允許巢狀到 depth 3、預設同時跑 20 個（v2.1.2 起）。每個 sub-agent 有持久 **memory 目錄**，跨 session 保留 codebase patterns / 偵錯 insight / 架構決策。9 月最近的修補主要在「resume sub-agent 沒通知 main agent」、「`.mcp.json` 是 FIFO 時 `claude mcp add/remove` 會掛」。
-  - Codex CLI 9 月：新增「分頁 thread history + 有效率 resume + 搜尋 + persisted names + sub-agent support + memories」；`/import` 擴充成能從 Cursor / Claude Code 把 settings、MCP servers、plugins **匯入**；cloud task 拒絕非信任 backend URL（拿掉 redirect）。Plugin recommendations 在 startup 預載，減少第一輪的延遲。
-- **為什麼重要**：兩個工具都把 **sub-agent 的持久記憶** 當核心功能（不是實驗），並把「從別家搬設定」當 v1 feature。鎖定效應正在消失。
-- **可信來源/URL**：
-  - https://releasebot.io/updates/anthropic/claude-code
-  - https://www.havoptic.com/tools/claude-code
-  - https://releasebot.io/updates/openai/codex
-  - https://www.gradually.ai/en/changelogs/codex-cli/
+3. **Git-native agent memory 浮上檯面：OKF Agent Memory（9/5/2026）+ OpenViking（ByteDance）+ mem0 State of AI Agent Memory 2026**
+   - 發生什麼：OKF 把 agent context 存成 git 版控的 Markdown + YAML frontmatter，零依賴 Go binary；OpenViking（VLDB 2026）把 memory / RAG / skills 統一成「context database」；mem0 報告主張「memory 在 2026 已成 first-class architectural component」。
+   - 為什麼重要：HN 的高票評論點出「precision/recall 已解，真正沒解的是 maintenance / provenance / staleness」——30+ 年的 knowledgebase 痛點正在 agent memory 上重演。我們的 llm-wiki 三層架構正好踩到這個位置。
+   - 來源：news.ycombinator.com/item?id=49581240、samcodeman.com、github.com/volcengine/OpenViking、mem0.ai/blog/state-of-ai-agent-memory-2026。
 
-### 4. Harness engineering 是 2026 真主旋律 — benchmarks 可被 harness 拉 ±5 pp
-- **發生什麼**：
-  - Google Cloud 部落格（Shir Meir Lador）：「How you engineer your harness」是 coding agent 周邊最重要的趨勢，因為「AI-generated code 怎麼在不想每行都看的前提下驗證」是當前最大問題。
-  - Anthropic《2026 Agentic Coding Trends Report》：harness 設定本身就足以讓 benchmark 浮動 **5+ 百分點**。
-  - OpenAI 2026-08-19〈Codex as a platform: build on the open agent harness〉明指「Codex 裡最值得複用的不是 chat 介面，是底層 agent harness」。
-  - Garry Tan 2026-08-25：systems of record 必須把自己升級成 AI harness，否則會被 agent 取代 — 確定性 SQL/API/ACL 留下，產品必須搭完整 workflow。
-- **為什麼重要**：把「寫好 prompt」這件事重新定義為「設計好圍繞模型的整層 runtime」。OpenClaw / skill_workshop 本來就在做這件事，現在有公開認可的命名與量化的 ROI。
-- **可信來源/URL**：
-  - https://medium.com/google-cloud/what-is-harness-engineering-and-why-should-i-care-43f6a0367772
-  - https://kenhuangus.substack.com/p/from-software-engineering-to-harness
-  - https://www.explainx.ai/blog/what-is-agent-harness-complete-guide-2026
-  - https://github.com/ai-boost/awesome-harness-engineering
+4. **Lilian Weng「harness engineering」成為新主流詞；awesome-harness-engineering 已收 200+ 工具／pattern**
+   - 發生什麼：Lilian Weng 主張「model 周圍的 code 現在跟 model 一樣重要」，命名為 *harness engineering*。社群整理出 awesome-harness-engineering 清單（tools、patterns、evals、memory、MCP、permissions、observability、orchestration）。Matt Pocock 把「code-review」做成平行 sub-agent（Standards vs Spec 兩軸）。
+   - 為什麼重要：把 agent 拆成「Model + Harness」的分工框架已成共識；對 OpenClaw 的意義是我們不該只想做更好的 LLM 介面，而要把 harness（skills、evals、memory、permissions、orchestration）模組化成可重複使用的零件。
+   - 來源：github.com/ai-boost/awesome-harness-engineering、github.com/mattpocock/skills、theainewsreport.com（9/2 報導）。
 
-### 5. MCP 2026 roadmap：Server Card（`.well-known`） + 已開始正式 deprecate
-- **發生什麼**：MCP 官方 roadmap 揭露：(a) **Server Card Working Group** 為 MCP server 訂 `.well-known` metadata，未連線就能被發現與推理；(b) 採用 Contributor Ladder；(c) Working Group 自管 SEP；(d) **2026-07-28 完成首批規格 deprecation** — 這是首次跑完整 feature lifecycle。安全面向另有新攻擊面：Grok 「加密式 indirect prompt injection」（AES payload 繞過純文字 guardrail）與 CISA 揭露的 AI-assisted Siemens S7 PLC OT 攻擊。
-- **為什麼重要**：Server Card 直接影響 OpenClaw 未來如果要發 MCP server，必須具備可被外部 agent 在 zero-connect 時讀懂的 metadata — 這應該列為 MCP server 上線的驗收項目。
-- **可信來源/URL**：
-  - https://blog.modelcontextprotocol.io/posts/mcp-roadmap/
-  - https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
-  - https://www.explainx.ai/blog/mcp-security-guide-2026
+5. **LangGraph 2.0 收編了「Router / Supervisor / Subagent」三個 agent primitive；arXiv 2609.03335（9/3）討論異質 GPU 上的 latency-aware 多 agent 編排**
+   - 發生什麼：LangGraph 2.0 把過去三年生產編排 pattern 凝固成 type-safe streaming、Deploy CLI 託管、統一 agent primitives（Router / Supervisor / Subagent），省掉手刻 coordination。arXiv 9/3 出現 *Latency-Aware Orchestration for Multi-Agent LLM Workflows on Heterogeneous GPUs*（Jinghao Wang et al.）。
+   - 為什麼重要：「Supervisor + Subagent」正式成為產業標準 pattern；OpenClaw 的 sessions_spawn（subagent）+ taskflow（coordinator）已經在結構上對齊這個抽象，可以做更明確的 primitive 文檔化。
+   - 來源：github.com/ai-boost/awesome-harness-engineering、arxiv.org/abs/2609.03335。
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-1. **把 OpenClaw 的 skill 重新定位為「Skills API 等價層」**。Anthropic 把 skill 變成可版本化、可附掛、可在 sandbox 內執行的 runtime 單位；OpenClaw 已經有 `skill_workshop` 與 SKILL.md frontmatter，但缺一個**對外宣告**：每個 OpenClaw skill 可被打包成可移植資料夾、附 SKILL metadata、可在不同 session 載入。我們可以在不破壞現有 skill 的前提下，新增「skill pack」格式（`skill.json` + `SKILL.md` + scripts/ + references/），並寫一個 `skill-pack publish --to skills-hub-compatible`。
-2. **把 MCP server 的 Server Card（`.well-known/mcp/server.json`）列為上線驗收項目**。OpenClaw 若發布任何 MCP server，補上 Server Card 是低成本的可發現性投資。順手把它寫成新的 skill：`mcp-server-card-bootstrap`（檢查、生成、校驗、列入 wiki）。
-3. **把 Codex-style 跨工具 import 變成 OpenClaw 一等公民 feature**。Codex 已實作從 Cursor / Claude Code 把 settings + MCP servers + plugins 拉進來。我們可以用 `sessions_send` 反向做：寫一個 `interop-import` skill，能吃進 Codex / Claude Code 的設定檔，吐回 OpenClaw 的 `~/.openclaw/` 配置對應，並把任何 MCP server 自動在我們 sandbox 內驗證。
+1. **把「Memory as first-class」做成 OpenClaw 工作流預設**——參考 OKF Agent Memory 與 OpenViking，把 sessions_spawn / taskflow 的 child state 統一以 git 版控 Markdown 落到 `~/llm-wiki/memory/agents/`，讓每次 subagent 結束都留下可審計的 trail。實作上可在 rowlet-self-reproduction 技能上擴充「post-task memory commit」hook，並用 graphify 把新頁面 link 回相關 source/concept。
+
+2. **把 skill_workshop 對齊 MCP Skills open standard 與 harness engineering**——Lilian Weng 的定義讓 skill 不再只是 prompt 模板，而是 procedures + evals + permissions 三件套。下一步：把現有 12+ 個 skills 重寫成 frontmatter 包含 *triggers / steps / pitfalls / evals* 的四段式，並產出一個 `skill_workshop/mcp-bridge` 範本，讓技能可以在 Claude Code / Codex / OpenClaw 之間移植。
+
+3. **TDD in the agent loop 不只是「要測試」，而是「self-verification 契約」**——Martin Fowler 9 月新文章 *TDD inside the agent loop* 與 Johnson Lee 的 *Does an Agent Really Need TDD?* 都指向同一件事：TDD 在 agent 場景下是「self-verification loop」，不是給人類看的測試。建議在 `task-manager` 技能上加一條「TDD-first」selector：當任務型態是「寫新功能 / 修 bug」且有可跑 test runner 時，自動要求 red→green→refactor 三段並把測試當成交付契約。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-- **DeepSeek Harness** — `github.com/deepseek-ai/deepseek-harness` （MIT，2026-08-13）
-- **Prime Agent: Self-Improving RLM Harness** — `github.com/PrimeIntellect-ai/prime-agent` （Karten et al., arXiv 2026）
-- **awesome-harness-engineering** — `github.com/ai-boost/awesome-harness-engineering` （彙整 harness 工具與 pattern）
-- **awesome-ai-agent-papers** — `github.com/VoltAgent/awesome-ai-agent-papers` （含 GRACE 神經符號安全架構、Hidden-in-Plain-Text RAG 注入 benchmark）
-- **Codex CLI changelog（September 2026）** — `gradually.ai/en/changelogs/codex-cli/` + `releasebot.io/updates/openai/codex`
-- **Claude Code v2.1.261** — `havoptic.com/tools/claude-code` + `releasebot.io/updates/anthropic/claude-code`
-- **MCP 2026 roadmap** — `blog.modelcontextprotocol.io/posts/mcp-roadmap/`
-- **TencentDB Agent Memory** — 跨 agent/framework 的團隊級 memory hub（Chat Memory / Skill / LLM-Wiki / Code-Graph 四件 reusable asset）
-- **`awslabs/aidlc-workflows`** — AWS adaptive workflow steering rules（出現在 GitHub Trending 9 月榜）
-- **`qufei1993/skills-hub`** — 跨桌面工具管理/同步 agent skills（呼應今天重點 #2）
+- `github.com/ai-boost/awesome-harness-engineering` — 200+ harness 工程清單，pattern 索引
+- `arxiv.org/abs/2609.03335` — Latency-Aware Multi-Agent Orchestration on Heterogeneous GPUs（9/3）
+- `github.com/vercel-labs/agent-browser` — 為 AI agent 設計的瀏覽器 CLI（GitHub Trending 9/6）
+- `github.com/mattpocock/skills` — 平行 sub-agent code-review（Standards × Spec）
+- `github.com/volcengine/OpenViking` — 統一 memory / RAG / skills 的 context database
+- `github.com/mksglu/context-mode` — tool output sandboxing（98% reduction）+ 17 平台 routing
+- `martinfowler.com/articles/exploring-gen-ai/tdd-in-the-agent-loop.html` — TDD 在 agent loop 的實驗
+- `news.ycombinator.com/item?id=49581240` — OKF Agent Memory 討論串（含 30+ 年 knowledgebase 痛點）
+- `releasebot.io/updates/openclaw` — OpenClaw 9 月：GPT-5.6 Ultra / Opus 5 跨 runtime model setup
+- `startupcorners.com/digest/devtools-digest-2026-09-06` — GitHub Trending 9/6 摘要
 
 ---
 
-## 下一步建議（最多 3 條）
+## 下一步建議（最多 3 條，可執行）
 
-1. **執行 ingests**：把 DeepSeek Harness 公告原文、MCP roadmap 部落格全文、Codex CLI 9 月 changelog、Claude Code v2.1.261 changelog **四份 raw snapshot** 存到 `/home/amr/llm-wiki/raw/2026-09-07-agent-trends/`，再寫 `wiki/sources/` 短摘要 + `wiki/concepts/harness-engineering.md` 把命名與 5pp benchmark 結論定錨，最後用 `graphify link` 接回 `wiki/maps/Code 與 Agent 地圖.md` 與 `wiki/maps/ai.md`。
-2. **寫一個 spike skill**（用 `skill_workshop` proposal → apply 流程）：`mcp-server-card-bootstrap`，一次性檢查/生成/驗證我們內部 MCP server 的 `.well-known/mcp/server.json`，並在 llm-wiki 留下「通過/未通過」紀錄。
-3. **安排一場小實驗**：用 30 分鐘，把一個 OpenClaw skill（例如 `rowlet-self-reproduction`）打包成 Anthropic Skills API 相容的資料夾結構，跑一次 `sessions_spawn` 載入驗證，順手補完 frontmatter 缺失欄位，結論回填到 MEMORY.md。
+1. **把 OKF Agent Memory 與 OpenViking 兩個 repo 抓 raw snapshot 到 `~/llm-wiki/raw/2026-09-09/agent-memory/`**，並產出 `wiki/sources/OKF Agent Memory.md` 與 `wiki/concepts/Agent Memory First-Class Architecture.md`，最後跑 `npx graphifyy link` 接到 `wiki/maps/Code 與 Agent 地圖.md`。
 
----
+2. **安排一個 30 分鐘實驗**：挑一個現有 skill（例如 `task-manager` 或 `ptcgp`），套 MCP 2026-07-28 的 stateless server 範式重寫一次，看能不能在同一個 skill 內同時被 Claude Code 與 OpenClaw 呼叫，驗證 skills 跨平台可移植性。
 
-_快取備註：本次 4 次 web_search + 1 次 graphify query + 1 次 wiki scan；DeepSeek Harness 部分原始公告已記下 raw snapshot 路徑備存；報告完成時間 2026-09-07 10:02 Asia/Taipei。_
+3. **把「TDD self-verification」做成 cron-friendly 的小型實驗腳本**：在 `~/workspace-rowlet/experiments/` 開一個 `agent-tdd-self-verify/`，拿 martinfowler 的題目重跑，比較 red-green-refactor vs 自由寫法 的 diff 與測試覆蓋率，結果丟回 `wiki/concepts/` 當 case study。
