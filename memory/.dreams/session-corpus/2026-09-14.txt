@@ -1,0 +1,5 @@
+[rowlet/sessions/rowlet/296bf9c5-d0e8-47b1-b7f1-2493092c02d3#L5] User: {"protocol":"ClawCodex-A2A","version":"0.1","msg_id":"jormungand-agent-task-2026-09-14-rowlet","in_reply_to":null,"from":"jormungandr","to":"openclaw:rowlet","intent":"task","summary":"Jormungand agent task test","body":{"requirement":"health-probe","stage":"probe","title"
+[rowlet/sessions/rowlet/296bf9c5-d0e8-47b1-b7f1-2493092c02d3#L6] Assistant: Rowlet (木木鴞) operational 🌿 — ready for tasks.
+[rowlet/sessions/rowlet/a0f45bdc-b780-4a30-be48-ba88047d4d75#L5] User: BRIDGE_TEST_R1_OPENCLAW_ROWLET_REPLY_OK
+[rowlet/sessions/rowlet/a0f45bdc-b780-4a30-be48-ba88047d4d75#L6] Assistant: BRIDGE_TEST_R1_OPENCLAW_ROWLET_REPLY_OK 🌿🦉
+[rowlet/sessions/rowlet/bb2db1fe-b496-4d7a-8dc9-2c38f3140cf4#L9] Assistant: hi 🌿🦉
