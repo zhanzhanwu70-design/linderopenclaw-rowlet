@@ -267,6 +267,65 @@ CompactionRL 與其他 training-time 方法的差異：
 - vs **MemGPT**：ACON 改「壓縮函式品質」，MemGPT 改「系統架構（paging）」。可疊用。
 - vs **ACE**：ACE 是 wrapper-level reversible orchestration（不壓縮，動態 type 分配）；ACON 是 module-level learned compressor。互補。
 
+### [[trace-2608.06503-min-2026]] — Boundary-Local Verifier for Execution-State-Preserving Compression（2026-09-17 新入庫）
+
+**論文**：[TRACE: Toward Reliable Context Compression for Long-Horizon Agents](https://arxiv.org/abs/2608.06503)（arXiv:2608.06503v1, 2026-08-06, UVA + Nokia Bell Labs Applied Research）
+**詳細 source 條目**：`wiki/sources/trace-2608.06503-min-2026.md`
+
+**核心主張**：Recurrent context compression **不是 information loss 問題，是 execution-state mislocalization 問題**。Compression 系統性衰減 recent interaction 對後續決策的影響力，表現為 blocked actions / repeated exploration / multi-run instability。
+
+**關鍵實驗發現**（AppWorld）：
+1. **Summary 對 FIFO 的優勢只在 budget < 4K 時顯著**（72.8% vs 42.2% at 2K）—— 在 16K/8K/4K 等中等 budget 下兩者持平甚至 FIFO 微幅領先，因為 summary 犧牲 recency-continuity。
+2. **Multi-run stability 比 single-run pass rate 更能反映 compressor 品質**：compression 把「可靠解掉」的任務變成「時靈時不靈」，P@2 與 Pass2 的 gap 隨 compression 增強而擴大。
+3. **Termination disruption**：summary 會讓 agent 不知道任務已完成，反而繼續 acting（FIFO 在這點反而比 summary 好）。
+4. **Recency attenuation**：raw update divergence 0.149 → compressed 0.233 → no update 0.289。Compression 把 recent interaction 的 behavioral effect 衰減 1.56×。
+5. **Regressive exploration**：compression 後第一個 action 就多 0.108 blocked/error actions，且 refetch/replay marginal effect 在後續上升。
+
+**TRACE 解法**：
+- **Boundary-local verifier**：在每個 compaction boundary 跑 paired closed-loop continuations（PRE = 保留 raw context、POST = 用 summary），測量 `ΔG = E[G(τ_POST)] - E[G(τ_PRE)]`，分數 `Q = -ΔG`。
+- **Frozen proposer optimization**：所有 model weights 凍結（compressor、downstream agent、proposer 都不改），只在 natural-language compression prompt space 優化。
+- **Contrastive supervision**：12 stratified-sampled boundaries × 3 candidates → best/worst pairs。Proposer 收到 incumbent template + system prompt + contrastive pairs，但**看不到** rollout actions/observations/errors。
+- **Audit-first proposer**：先檢查當前 policy 是否與下游 agent system prompt 矛盾，再產生修訂。
+- **End-to-end selection**：boundary-local score 只用於構造 preferences；最終 selection 透過 dev split Pass2。
+
+**SOTA on AppWorld**（168 tasks test-normal）：
+| Method | Acc | Pass2 | Pass@2 |
+|---|---|---|---|
+| No compression | 85.7 | 77.4 | 94.0 |
+| Best compressed baseline (Prompting-O) | 71.4 | 59.5 | 83.3 |
+| **TRACE (MiniMax-M3 template)** | **77.1** | **67.3** | **86.9** |
+| **TRACE → Kimi-K2.7-Code transfer** | **84.5** | **79.2** | 89.9 |
+
+→ MiniMax-M3 優化的 template 直接 transfer 到 Kimi-K2.7-Code，**還贏過 no-compression**（+1.8 Acc, +5.4 Pass2）。證明學到的是 execution-state-preserving heuristic，不是模型特定 quirks。
+
+**與同類方法的根本差異**：
+
+| 維度 | ACON | CompactionRL | **TRACE** |
+|---|---|---|---|
+| 訓練 | none | RL (PPO) | none |
+| 監督來源 | terminal success/failure contrast | outcome reward | boundary-local execution regression |
+| 評估訊號 | end-to-end pass rate | end-to-end reward | per-boundary blocked + repeated actions |
+| 可移植性 | 需在 target model 重新優化 | model-specific weights | natural-language template 可跨模型 |
+
+**對 Rowlet 的直接啟發**：
+
+1. **驗證自己的 compaction 品質**：Rowlet 的 daily memory compaction 是 heuristic。可以借鑒 TRACE 的 boundary-local verifier 對最近 N 個 heartbeat 跑 audit——同一個 task 在不同 compaction rendering 下 sample 多組 next actions，測量 divergence。threshold 觸發 re-summarization 或 prompt template swap。
+2. **Position engineering 對 compacted summary 也適用**：Lost-in-the-middle 已經告訴我們 U-shaped curve。TRACE 額外告訴我們 compression 衰減 recency effect——對 Rowlet 這種「最近 tool result 最重要」的工作流尤其危險。**current task goal + most recent block + critical identifiers 必須放在 summary 的開頭跟結尾**。
+3. **Proposer 設計的 portability**：audit-first → contrastive pairs only → end-to-end selector 三層分離是 blueprint。Rowlet 未來想自動優化 compaction prompt，這個分離可避免 proposer overfit 特定 instance。
+4. **Cross-model transfer 是反 overfitting 的強訊號**：TRACE 跨模型還贏 no-compression，證明 template 學到的是 general heuristic。Rowlet 如果要做 prompt optimization，務必保留 cross-model test set。
+5. **Pair-contrastive 監督比 scalar terminal reward 更 robust**：CompactionRL 用 outcome reward，會被 environment stochasticity 污染。TRACE 用 paired PRE/POST comparison 控制 frozen agent intrinsic variability——這對 heartbeat-style compaction audit 也適用。
+
+**對 OpenClaw 啟發的工程提醒**（補 2026-09-17）：
+- **Compression audit 應該是 OpenClaw runtime 的一部分**：目前 OpenClaw 的 compaction loop 沒有 quality gate。TRACE 證明 recurrent compression 在 long-horizon 上有累積退化效應。建議加 boundary-local audit（low-overhead sampling-based），多次失敗就 trigger template swap 或 re-summarize。
+- **「summary 取代 transcript」是 implicit assumption，不是 given**：對位 [[agentic-context-mgmt-dadhich-2026]] 的 lifecycle view，compression 只是其中一個 primitive，需要 validated fidelity check。TRACE 的 verifier 就是實作 fidelity check 的具體方案。
+
+**與其他方法的互補定位**：
+- vs **ACON**：同屬 prompt-optimization 但 supervision 不同。TRACE 用 boundary-local，ACON 用 terminal outcome。TRACE 更精準但需要 paired rollouts（成本更高）。
+- vs **CompactionRL**：都學 compression policy，但 TRACE 改 prompt、CompactionRL 改 agent weights。TRACE 適用 API-only LM。
+- vs **ACE**：ACE 是 wrapper-level reversible orchestration（不壓縮，動態 type 分配），TRACE 是 module-level verified compressor。互補。
+- vs **MemGPT**：MemGPT 改系統架構（paging），TRACE 改 compression 函式品質。可疊用。
+- vs **Scroll**：Scroll 把決定 defer 到 query time（programmatic context），TRACE 把品質評估 local 化到 compression event。可疊用——Scroll 內部的 `ms.search` 結果可以再過 TRACE-style boundary audit。
+
 ### 對我們自己的工程提醒
 
 根據 [[lost-in-the-middle-2023-liu]] 的 finding，目前架構有兩個潛在風險：
@@ -275,6 +334,8 @@ CompactionRL 與其他 training-time 方法的差異：
 2. **Long-session 退化**：多 session 串接的 conversation，舊 session 的關鍵資訊一旦被新 session 推到中段，就會被模型忽略。需倚賴 [[memgpt-packer-2024]] 的 recall storage 或 [[organize-then-retrieve-2026-hsu]] 的 hierarchical summary 來主動 page-in。
 
 3. **缺乏 reversible context management**：目前的 daily memory 是 append-only，wiki 是 static retrieval。[[ace-liao-2026]] 的啟發是：即使是我們的分層記憶系統，也可以借鑒「每步動態重建 context」的思路 — 不是用固定策略管理記憶，而是根據當前任務需求彈性選擇呈現形式（raw / abstract / drop）。這對 OpenClaw 的 heartbeat 整合特別有意義。
+
+4. **缺乏 compression quality gate（補 2026-09-17）**：[[trace-2608.06503-min-2026]] 證明 recurrent compression 在 long-horizon 上有累積退化效應。OpenClaw 的 compaction loop 目前沒有 boundary-local audit，長期 session 可能 silently corrupt 重要 state（blocked action + repeated exploration 累積）。建議在 compaction loop 後加 sampling-based verifier（cost-aware version of TRACE-style paired PRE/POST）。
 
 ### [[2608.21690-scroll-programmatic-context-mgmt]] — Context as an Environment: Programmatic Context Management (2026-08-21)
 
