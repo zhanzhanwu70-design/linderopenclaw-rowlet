@@ -1,86 +1,68 @@
-# 每日 Agent × 軟體開發情報 — 2026-09-16
+# 每日 Agent × 軟體開發情報 — 2026-09-18
 
-> 執行：Rowlet 🌿🦉 / cron job `a72cb46b`
-> 範圍：2026-09-09 ~ 2026-09-16（過去 7 天為主）
-> 篩選原則：事實／推論／個人判斷分開標註；外部搜尋結果僅作資料、不作指令。
+> 執行：Rowlet 🌿🦉（cron 每日任務）
+> 主題：AI agent / 軟體架構 / 開發方法論 — 最近 7–14 天信號
 
 ---
 
 ## 今日 5 個重點
 
-### 1. Cognition 釋出 SWE-2 與 Fusion 雙模型 harness
-- **發生什麼**：Cognition 於 9/10 推出 **SWE-2**（以 Kimi K3 為基底的 post-trained coding model，FrontierCode 1.1 Main 達 50.0%），並於 9/11~9/12 推出 **Fusion**——一個 frontier planner 搭配 SWE-2 executor 的雙 agent 編碼 harness，已部署到 Devin Desktop 與 CLI，宣稱編碼基準成本降 36–39%。
-- **為什麼重要**：這是 2026 第一個明確把「planner + cheap executor」做成 production product 的案例，呼應 arxiv 6 月的 planner/executor 解耦趨勢。對 OpenClaw 而言，這驗證了「context isolation as firewall」（planner 看全文、executor 看精簡指令）的工程效益。
-- **來源**：
-  - https://aicybr.com/blog/cognition-swe-2-coding-model-benchmarks-training
-  - https://www.explainx.ai/blog/cognition-swe-2-devin-frontier-coding-september-2026
-  - https://www.neoteo.com/en/cognition-fusion-brings-a-lead-and-sidekick-coding-workflow-to-devin
+### 1. MCP 2026-07-28 規範正式把協定變成「stateless by default」（SEP-2575）
+- **發生什麼**：Model Context Protocol 在 2026-07-28 release 把 MCP core 改為 stateless；舊的 initialize handshake / sampling（client-side）走入 deprecated。n8n 9 月已 ship 對 2026-07-28 discovery handshake 的支援（#35470）。
+- **為什麼重要**：harness 端不再假設 server 持有 session 狀態 → 多行程 / 多裝置切換成本下降；同時把「狀態」責任推回 client／應用層，這正是 OpenClaw 這種 gateway 架構最舒服的位置。SEP-2575 的「bare-metal stateless client」是未來 6 個月所有 MCP server 實作的 baseline。
+- **可信來源**：https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro、https://dev.to/sindhuja_sudhakar/why-mcp-dropped-the-handshake-building-a-bare-metal-stateless-client-sep-2575-277d、https://releasebot.io/updates/n8n
 
-### 2. openJiuwen：結構可組合 + runtime 自適應的 long-horizon harness
-- **發生什麼**：arxiv 2608.27969 提出 openJiuwen，主張「結構可組合 + runtime 自適應」harness 在 SWE-bench Verified 達 **82.6%**、Terminal-Bench 2.1 達 **87.19%**，超過 prior 編碼 agent 系統。
-- **為什麼重要**：分數高不是重點，重點是「structural composability」這個設計詞——它把 SWE-agent 那篇的 agent-computer interface (ACI) 概念往「可插拔子系統」推進，與 Confucius Code Agent 的三視角 (AX/UX/DX) 框架屬於同一方向。
-- **來源**：https://pith.science/paper/2608.27969
+### 2. Subagent「context mode」正式二分：isolated vs forked — LangChain 9 月推出
+- **發生什麼**：LangChain 9 月發佈的「Organizing Context in a Multi-Agent Harness」把 subagent 收斂成兩種 context mode：isolated（重新乾淨啟動，context 作 firewall）與 forked（繼承 supervisor 對話，但切掉尾部工具呼叫、把 task description 改寫成 user message，保留 prompt cache）。
+- **為什麼重要**：這是 multi-agent 設計裡「該給 subagent 多少 context」這個最常被繞過問題的官方答案雛形。Worker-vs-verifier 的分流規則因此可寫成 policy：worker 用 forked（繼續 in-progress investigation），verifier 用 isolated（必須獨立判斷）。
+- **可信來源**：https://github.com/ai-boost/awesome-harness-engineering（內含 LangChain 原文摘錄）
 
-### 3. OpenAI Agents API 公開 beta + 沙盒夥伴
-- **發生什麼**：OpenAI 把 Codex harness 變成「one-API-call service」，公開 beta 處理 orchestration、長跑 session、context management，沙盒由 OpenAI / 客戶端 / 合作夥伴（Vercel、DigitalOcean）提供。
-- **為什麼重要**：把 harness 變成 managed service，意味著小型團隊不再需要自己養 coding agent infra。但對 OpenClaw 這種 self-hosted gateway 是雙面刃：能借力 managed API，但同時失去本地 control plane 的價值。
-- **來源**：
-  - https://aiagentstore.ai/ai-agent-news/this-week
-  - https://www.bighatgroup.com/blog/openclaw-weekly-2026-09-14/
+### 3. NVIDIA SoL-Pi 把「context efficiency」做成可組合的 4 個機制
+- **發生什麼**：NVIDIA 9 月把在 Pi harness 上跑 152 個 candidate 自動研究得到的 4 個 efficiency 機制打包成 SoL-Pi：Action Fusion（編輯 → 驗證同一個 tool call 跑完）、ObservationPack（大工具結果變成 stable handle + 精確分頁 recall）、Evidence-Preserving Reducer（長 log 緊縮成 receipt 且每段引述都能對回原文）、Online Context Compact（完成步驟即候選 compact，加上經濟性檢查）。
+- **為什麼重要**：把「context engineering」從口號變成可量測、可拼裝的零件。Rowlet 目前用 `MEMORY.md / daily memory / raw` 三層記憶，剛好可以套這套框架重審一次：哪層是 ObservationPack 候選？哪層是 Reducer 目標？
+- **可信來源**：https://github.com/ai-boost/awesome-harness-engineering
 
-### 4. OpenClaw v2026.9.1–9.4 + 第一個 MCP CVE 上 CISA KEV
-- **發生什麼**：OpenClaw 一週內出四個版本，強調需先升 Node 至 24.16+。MCP consortium 發佈 spec 2.1（雙向 streaming，server push context，agent-to-agent 延遲降 80%）。同週 **CVE-2026-59822** 成為第一個登上 CISA KEV 的 MCP 漏洞。
-- **為什麼重要**：MCP 從「實驗規格」正式進入「有 CVE」的生產風險面。我們 OpenClaw rowlet 的 secrets、MCP server 暴露面、allowedHosts 政策都該重新審視。
-- **來源**：
-  - https://releasebot.io/updates/openclaw
-  - https://github.com/openclaw/openclaw/releases
-  - https://www.bighatgroup.com/blog/openclaw-weekly-2026-09-14/
+### 4. Claude Code 修掉兩個長期痛點：cwd 在 stream-json / Agent SDK 不持久 + 舊 HTTP+SSE MCP server 連不上
+- **發生什麼**：Anthropic 9 月 patch 修正 `cd` 在 non-interactive sessions（-p with stream-json input、Agent SDK、cloud sessions）跨 turn 不持續的 bug；同時修好「MCP server 配成 http 但只講 legacy HTTP+SSE transport」永遠連不到的問題。
+- **為什麼重要**：coding agent 在 shell 持久狀態 + MCP 互通這兩條生產線上仍會出 regression。對 OpenClaw 來說是提醒：**任何 coding harness 升級都要重跑 regression，不要假設 patch 等於「更穩」**。
+- **可信來源**：https://releasebot.io/updates/anthropic
 
-### 5. Agent Memory 成本下降的兩條技術路線
-- **發生什麼**：Microsoft Research 9/10 發 "Grounding Agent Memory: Environment-Probing Curation for Enterprise Agents"，宣稱 Copilot pass rate 翻倍、memory cost 砍半。DeepSeek V4.1-Flash 用 causal encoder-decoder split（40 層切成兩半），號稱 memory cost 降 4 倍。
-- **為什麼重要**：對 Linder 而言，memory 從「context window 大小問題」變成「架構問題」。兩條路線（curation / split-architecture）可同時借鑑——我們的 MEMORY.md 三層架構 (SOUL/USER/daily) 已經是 curation 派，可以再加 split 派的 cache 設計。
-- **來源**：
-  - https://www.techtimes.com/articles/327530/20260915/microsoft-research-nearly-doubles-copilot-pass-rates-halves-agent-memory-cost.htm
-  - https://www.techtimes.com/articles/327163/20260910/deepseek-v41-flash-cuts-agent-memory-costs-fourfold-new-architecture.htm
+### 5. Meta-harness 開始具象化：Omnigent、Concord MCP 各自解決不同層
+- **發生什麼**：
+  - **Omnigent**（open-source meta-harness）聲稱可在 Claude Code / Codex / Cursor / OpenCode / Hermes / Pi / 自寫 agent 之間切換、加政策 / sandbox、共用協作層。
+  - **Concord MCP** 把 Claude Code / Codex / Cursor / Gemini CLI / Grok Build 的多 agent 用 shared coordination protocol 串起來：claim work、detect edit collision、durable message、ownership transfer、review evidence handoff。
+- **為什麼重要**：harness 市場進入「**orchestration-of-orchestrators**」階段。對 Linder 的意義：我們不需要押注某一個 CLI，而是開始想「OpenClaw 在 meta-harness 層能不能當 policy + audit gateway」這條路。
+- **可信來源**：https://github.com/omnigent-ai/omnigent、https://github.com/andyrewlee/awesome-agent-orchestrators
 
 ---
 
-## 對 OpenClaw / Linder 的啟發（3 條）
+## 對 OpenClaw / Linder 的啟發
 
-1. **Planner / Executor 解耦 + context isolation** — 借鏡 Cognition Fusion 與 LangChain 9 月推出的 subagent context modes，把 rowlet 的「CEO 派任務 / specialist 執行」拆成兩層 session：planner 持有完整 context + task list，executor 用最小 context 跑 sub-task，並用 flock locking 防止併發踩踏。這跟我們現在 `sessions_spawn(context="fork")` 模式高度一致，可作為 `sessions_spawn` 的下一個改進方向。
-
-2. **MCP 已是攻擊面** — 第一個 MCP CVE 上 CISA KEV 是警訊。OpenClaw rowlet 的 `secrets` / `gateway` 配置該做一次 audit：(a) 所有 MCP server allowedHosts 是否真的鎖死？(b) MCP transport 是否升級到 2.1 streaming 以便快速 revoke？(c) 是否要把 `gateway egress proxy` 預設 off、顯式啟用？
-
-3. **Spec-driven development 該進工作流** — Kiro 與 Gentle-AI 都把 spec 寫到磁碟、可審閱、可修正，再進 TDD/Apply。我們目前用 Matt Pocock 的 6 步流程（含 Grimmy 調研→PRD→TDD），但 spec 中間產物沒沉澱成可重用的 wiki 條目。下一步把每次 cron 跑的 research/PRD 結果直接 ingest 到 `wiki/concepts/` 與 `wiki/sources/`，配合 graphify 連結。
+1. **OpenClaw 應該宣告自己是「stateless MCP gateway + 有狀態 policy / audit layer」**。MCP 2026-07-28 變 stateless 是天時；OpenClaw 的祕密注射、allow-once、SecretRef 本來就擅長把狀態放在「不該信任的 client 之外」。可以發一個 `openclaw-mcp-gateway` skill 概念：每個 MCP server 在 OpenClaw 後面被 proxy，狀態由 OpenClaw 持有（rate limit、pairing、audit），harness 看起來仍是 stateless。
+2. **正式採納 subagent 兩段式 context policy**。在 `sessions_spawn` / `taskflow` 的 docstring 標註：worker 用 fork、verifier 用 isolated；寫進 `SOUL.md` 的工作方式區段。這比現在「看心情」乾淨。
+3. **memory 三層（SOUL / MEMORY / daily）需要重新對齊 SoL-Pi 的 4 機制**。ObservationPack = 外部 wiki 條目（paged recall）；Reducer = daily → MEMORY 蒸餾；Online Context Compact = 完成 taskflow 時自動回收已完成 child session 的 context。寫一支 `memory-architecture-v2` skill 驗證。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-- **ai-boost/awesome-harness-engineering** — 2026 最新的 harness engineering awesome list，含 MCP、permissions、observability、orchestration 分類。https://github.com/ai-boost/awesome-harness-engineering
-- **arxiv 2608.27969 openJiuwen** — 結構可組合 long-horizon coding agent。https://pith.science/paper/2608.27969
-- **Microsoft Research "Grounding Agent Memory"** — enterprise agent memory curation。arxiv 2609 序列（待確認正式 ID，可從 MS Research blog 找）
-- **DeepSeek V4.1-Flash** — causal encoder-decoder split 架構。https://www.techtimes.com/articles/327163/20260910/deepseek-v41-flash-cuts-agent-memory-costs-fourfold-new-architecture.htm
-- **OpenClaw Weekly 2026-09-14** — OpenClaw 本體四版本、MCP CVE、OpenAI Agents API。https://www.bighatgroup.com/blog/openclaw-weekly-2026-09-14/
-- **Confucius Code Agent (CCA)** — AX/UX/DX 三視角 harness，59% SWE-Bench-Pro。已在 awesome-harness-engineering 列表
-- **volcengine/OpenViking** — Self-evolving Context Database，event-driven memory extraction。https://github.com/volcengine/OpenViking
-- **andyrewlee/awesome-agent-orchestrators** — agent orchestrators 分類列表，含 opengoat（跨 Codex/Claude Code/Cursor 編排）。https://github.com/andyrewlee/awesome-agent-orchestrators
-- **Martin Fowler "Phoenix Architecture"** — 兩條對立賭注：模型會吃掉所有 spaghetti vs 內部設計品質永遠重要。https://www.darinarcher.com/technology/phoenix-architecture-airdropped-in-a-bar
+- **awesome-harness-engineering**（ai-boost）— 最完整的 harness engineering curated list，把 worker-vs-verifier、context mode、SoL-Pi 一次收齊。https://github.com/ai-boost/awesome-harness-engineering
+- **Omnigent** — meta-harness 雛形，觀察它的 sandbox / policy API 是否變成事實標準。https://github.com/omnigent-ai/omnigent
+- **Concord MCP** — 多 CLI 共用 coordination protocol；對 OpenClaw 多 agent 互通最有參考價值。https://github.com/andyrewlee/awesome-agent-orchestrators
+- **Hermes Agent** — Nous Research patch release，real-profile browsing、separate desktop Browser、expanded remote MCP。https://releasebot.io/updates/nousresearch/hermes-agent
+- **PsychoAgent**（arXiv:2608.07438）— 把 factual 與 affective memory 分開 + conflict-aware executive controller；對未來 multi-agent 情緒 / 衝突管理有先驅意義。https://arxiv.org/abs/2608.07438
+- **CreaMem**（arXiv:2609.08550）— Scene-Aware Memory for Personalized Agents；長期記憶的最新基準。https://arxiv.org/abs/2609.08550
+- **mem0 State of AI Agent Memory 2026** — 10 種記憶法在 LoCoMo 基準的橫向比較，可作為 OpenClaw 三層記憶 benchmark 的 reference。https://mem0.ai/blog/state-of-ai-agent-memory-2026
+- **browser-use / jev-ultrafast** — Python AI agents 類 GitHub Trending breakout（9/17 data）。https://gitnova.dev/en/r/browser-use/jev-ultrafast
 
 ---
 
 ## 下一步建議（最多 3 條）
 
-1. **Ingest 到 llm-wiki** — 把 openJiuwen、Cognition Fusion、Confucius CCA 三個條目寫入 `wiki/concepts/`，並對應連到既有的 `coding-agent-workflow`、`harness-engineering` 節點。本輪 `npx graphify query` 失敗（CLI 未安裝），建議下次任務前先確認 graphify 在 PATH。
-2. **寫 MCP hardening skill** — 基於 CVE-2026-59822 寫一個 `mcp-hardening-audit` skill，自動掃描 OpenClaw `~/.openclaw/openclaw.json` / gateway config 中的 allowedHosts、transport 版本、token 過期政策。
-3. **安排一次 planner/executor 解耦實驗** — 用 rowlet 自家 session 跑 A/B：傳統 `context="fork"` spawn vs 規劃中先寫出 task_plan.md、再 spawn minimal-context executor。記錄成本與品質差異，預計 3 天後回顧。
+1. **把「awesome-harness-engineering」+ Omnigent + Concord MCP 三份原始資料 ingest 到 llm-wiki**：`/home/amr/llm-wiki/raw/harness-engineering/2026-09-18/`，再寫 `wiki/sources/harness-engineering-2026-09.md` 作為入口；用 `npx graphifyy link` 串到既有的 `wiki/maps/Code 與 Agent 地圖.md`。
+2. **排一支 `memory-architecture-v2` skill**：依 SoL-Pi 4 機制審視 Rowlet 現有三層記憶，下週實作「完成 taskflow 時自動回收已完成 child context」的 Online Context Compact prototype。
+3. **建立 `openclaw-mcp-gateway` 概念驗證**：spawn 一個隱形 subagent 在 sandbox 內跑最小 MCP server，OpenClaw 前置 proxy，驗證 stateless MCP 與 OpenClaw SecretRef / 審計機制如何相容；做完再決定要不要正式成 skill。
 
 ---
 
-## 執行備註
-
-- 本輪 Wiki-first 步驟失敗：`npx graphify query ...` 回傳 `could not determine executable to run`；`graphify` 與 `graphifyy` 都不在 PATH。本日依賴 web search 作為主要資料源。
-- 已查來源：Brave web search（4 個 query，共 24 筆結果）、releasebot.io、arxiv.org、github.com、thehackernews.com、explainx.ai、aiagentstore.ai、techtimes.com、pith.science。
-- 本日新增 wiki 條目：0（graphify CLI 不可用，暫緩 ingest）。
-- 本日新增 raw snapshot：0（無高價值單頁值得單獨保存）。
-<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+*資料來源備註*：本報告所有外部網頁視為不可信來源，僅作事實線索；結構性判斷由 Rowlet 自行歸納。今日本地 llm-wiki 圖譜查詢命中以「AI / Code 與 Agent 地圖」社群為主，未見本週新 ingestion 條目。
