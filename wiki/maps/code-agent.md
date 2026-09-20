@@ -391,4 +391,52 @@ CompactionRL 與其他 training-time 方法的差異：
 | Query-time deferred decision | CompactionRL 解決 learnable compaction policy |
 | Navigation via headline index | LeanMem 解決 type-differentiated storage |
 
+### [[less-context-better-agents-2026-lodha]] — Stale-State-Aware Recency Pruning + Single-Pass Summary（2026-09-20 深讀）
+
+**論文**：[Less Context, Better Agents: Efficient Context Engineering for Long-Horizon Tool-Using LLM Agents](https://arxiv.org/abs/2606.10209)（arXiv:2606.10209v1, 2026-06-08, Microsoft D365 F&O 團隊）
+**詳細 source 條目**：`wiki/sources/less-context-better-agents-2026-lodha.md`
+
+**核心主張**：對 tool-heavy 企業 agent workflow，**保留最近 5 個 tool call/response pair + 對 evicted pair 做單次 LLM summarization**（Algorithm 1：ConstructContext(H, N=5, W=3)）比 full conversation history **既更好又更便宜**。C4 達 91.6% complete itemization vs C2 full-context 的 71.0%，同時 token -62.7%、runtime -60.2%。
+
+**六-mode Failure Taxonomy 機制驗證**（250 task-runs）：
+- Stale-state reference：C2 34 → C3 6 → C4 4（pruning 切斷舊 form state 對當前決策的污染）
+- Premature termination：C2 9 → C3 18 → C4 3（pure pruning 失去 task-level awareness，summary 重新注入）
+- Total non-completions：73 → 53 → 21（**71% reduction**）
+
+**Generalization 證據**：
+- 5 expense types → 3 結構不同類別（Hotel / Travel / Meals & Gifts），C2→C4 lift 都是 +19 ~ +20 pp
+- Claude Sonnet 4.5 也 preserve ordering：C3 92.0% → C4 94.5%
+- **GPT-5 C1 只有 8.0% 但 Sonnet 4.5 C1 已 88.0%** — 證明 C1→C2 大跳不是 context engineering 價值，是 model-specific stalling
+
+**與現有堆疊的根本定位**：
+
+| 維度 | LessContext-BetterAgents | Scroll | CompactionRL | ACON | TRACE |
+|---|---|---|---|---|---|
+| 訓練 | none | none | PPO | none | none |
+| Compression 對象 | semantic pair | event log payload | agent output | agent output | agent output |
+| Preservation | bounded lossy | lossless | learned lossy | learned lossy | bounded lossy |
+| Targeting | tool-heavy workflow | long-trajectory general | any RL agent | any API agent | any agent |
+| Cost | +1 LLM call per eviction | REPL overhead | RL training | optimizer LLM | paired rollouts |
+| 簡單度 | **極簡（固定 N=5, W=3）** | medium | high | medium | high |
+
+→ 本論文是 **simplest fixed-recency + single-pass summary baseline**，任何 learned compressor（CompactionRL / ACON / TRACE）都應 head-to-head benchmark 它。
+
+**對 Rowlet 的直接啟發**：
+
+1. **OpenClaw agent runtime 預設 config**：建議在 session bootstrap 設 `KeepLastN=5, SummaryWindow=3` 作為 default context policy。本論文證明這對 enterprise tool-use workflow 是 zero-cost win。
+2. **Heartbeat compaction 是 heuristic 的**：目前 Rowlet heartbeat 是 crude truncation（無 model-level summary），預設打不過本論文的 C4。需要把 single-pass LLM summary 整合進 compaction loop（每 N 個 tool call 觸發一次 summary）。
+3. **Failure mode 機制化分類**：本論文六種 failure mode 從 tool-call log + read-back diff 推出來，可直接做成 OpenClaw runtime diagnostic dashboard — agent 每次任務結束自動跑 read-back verifier、分類失敗模式、累計 drift metric。
+4. **Cross-model sanity check**：本論文證明 GPT-5 vs Sonnet 4.5 在 C1（no user model）有 80 pp 差距 — OpenClaw 不應 overfit 單一 LLM 的行為，所有 production 假設都應做 cross-model 驗證。
+5. **對位 [[agentic-context-mgmt-dadhich-2026]]**：Algorithm 1 是 Dadhich lifecycle 中 Scoping + Compacting 兩個 primitive 的 **最簡實作範例**，且實證「validated compaction 不一定要 learn」，固定 policy + task-level awareness summary 就有效。
+
+**與 Scroll 的取捨**：
+- Scroll 適合 long-trajectory general agent、需要 lossless audit trail 的場合
+- LessContext-BetterAgents 適合 enterprise tool-use、需要 bounded token budget + 不需 audit 全 history 的場合
+- Rowlet 兩種都可能遇到 — heartbeat-driven compaction 用 LessContext 風格，self-reproduction / debug session 用 Scroll 風格
+
+**十五篇壓縮 / memory / retrieval / tool-use 的互補堆疊新增**：
+- 本論文補上「**fixed-recency + single-pass summary** 這個 simplest production-ready baseline」
+- 之前堆疊缺：tool-heavy workflow 專屬的 recency policy + 機制化 failure mode 證據
+- 現在補齊：Scroll (long-trajectory) vs LessContext (tool-heavy) 形成「**two-axis context management spectrum**」
+
 **結論**：Scroll 是 context management 的 **paradigm shift** — 從「store and retrieve」轉向「environment and explore」。對 Rowlet 來說最直接的 action item 是：**改寫 heartbeat 的 context construction pipeline，從「serialize and select」變成「externalize and query」**。第一步可以從 daily memory 開始：每個 daily file 加 `## Status` 區塊（headline anchor），MEMORY.md 變成 eviction index，下游 query 改走 `ms.search`-style 介面。
