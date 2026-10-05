@@ -1,0 +1,1192 @@
+                                         ECHO: P RUNE TO ACT, T RACE TO L EARN
+                                         WITH S ELECTIVE T URN M EMORY IN AGENTIC RL
+
+                                         Zijun Xie1,2∗†                    Binbin Zheng2,3∗† Enlei Gong2∗ Jihua Liu2 Yuyang You1
+                                         Lingfeng Liu1                     Jiayao Tang1 Guanqun Zhao2 Aoqi Hu2 Zeyu Chen2‡
+                                         1                                                                                             2
+                                             School of Mathematical Sciences, Peking University                                            Baidu Inc.
+                                         3
+                                             University of Science and Technology of China
+                                             xiezijun714@gmail.com binbinzheng@mail.ustc.edu.cn
+
+
+                                                                                              § GitHub:xiezijun714-lang/Echo
+
+                                                                                                                           A BSTRACT
+arXiv:2606.31650v1 [cs.LG] 30 Jun 2026
+
+
+
+
+                                                                  Long-horizon language agents must repeatedly interact with tools, accumulate evidence, and
+                                                                  make decisions under bounded context windows. Existing context-management methods make
+                                                                  such rollouts feasible by truncating distant history, folding past turns into summaries, or se-
+                                                                  lecting compact memory states. However, these breakthroughs introduce two coupled limita-
+                                                                  tions. First, as the number of turns grows, historical observations are progressively removed
+                                                                  or collapsed into compressed states, making it harder for the policy to reuse fine-grained ev-
+                                                                  idence. Second, once the original turns are no longer source-addressable, outcome-based RL
+                                                                  loses an explicit path for aligning policy updates with the evidence that supported a success-
+                                                                  ful final answer. To this end, we propose ECHO, a selective turn-memory framework that
+                                                                  jointly addresses history collapse and traceable learning through source-indexed reconstruc-
+                                                                  tion. Specifically, ECHO compresses each completed environment turn into a compact memory
+                                                                  record, reconstructs bounded policy contexts by selecting from these records, and reuses the
+                                                                  selected source indices to route positive outcome credit to the evidence and selection actions
+                                                                  that support successful answers. On BrowseComp-Plus, ECHO reaches 43.4% held-out accu-
+                                                                  racy, outperforming GRPO (28.9%) and the rolling-summary baseline SUPO (36.1%), while
+                                                                  using fewer turns and lower trajectory volume than SUPO (Figure 1). Additionally, the trained
+                                                                  policy improves zero-shot generalization across multi-objective QA, code generation, and deep
+                                                                  information-seeking benchmarks on both dense and MoE backbones.
+
+
+                                                                                                                         GRPO      SUPO         ECHO
+
+                                                                      BrowseComp Plus                                           Turn Dynamics                                               Trajectory Volume
+                                                                                                                90                                                                5.0
+                                                       0.50
+                                                                                                                                                              Avg. Trajectories
+
+
+
+
+                                                                                                                                                                                  4.0
+                                          Acc Pass@1
+
+
+
+
+                                                                                                   Avg. Turns
+
+
+
+
+                                                       0.40
+                                                                                                                60
+                                                                                                                                                                                  3.0
+                                                       0.30
+                                                                                                                30
+                                                                                                                                                                                  2.0
+                                                       0.20
+
+                                                                                                                                                                                  1.0
+                                                       0.10                                                      0
+                                                              0       25    50    75     100 115                     0      25      50        75    100 115                             0   25   50    75     100 115
+                                                                        Training Steps                                          Training Steps                                               Training Steps
+
+
+                                         Figure 1: Held-out accuracy, tool-use turns per rollout, and trajectory volume over training on BrowseComp-Plus
+                                         with the Qwen3-32B-Instruct backbone for ECHO (purple), GRPO (orange), and SUPO (green). ECHO traces
+                                         the upper-left frontier: rising accuracy without the turn and volume growth seen for SUPO.
+
+
+                                         1              I NTRODUCTION
+                                         Large language models (LLMs) increasingly act as multi-turn agents that interleave reasoning, tool invocation,
+                                         and environment feedback (Yao et al., 2023; Schick et al., 2023). Recently, reinforcement learning (RL) from
+                                         verifiable final outcomes has become a central recipe for improving such agents in search, coding, function calling,
+                                                  ∗
+                                                    Equal contribution.
+                                                  †
+                                                    This work was done during an internship at Baidu.
+                                                  ‡
+                                                    Corresponding author.
+
+
+                                                                                                                                   1
+and deep-research settings (Jin et al., 2025; Qian et al., 2025; Li et al., 2025; Zheng et al., 2025). However, as
+horizons grow, interaction history becomes a bottleneck for both acting and learning. The agent needs to retain
+useful tool observations within a bounded context window, while the learner must identify which earlier turns
+should be reinforced from the final outcome signal.
+Context-management methods address the acting bottleneck by truncating, summarizing, retrieving, or editing
+history before the next decision (Li et al., 2024; Packer et al., 2023; Kang et al., 2025). These operations make
+long rollouts feasible, but they introduce two coupled limitations. First, as the number of turns grows, distant ob-
+servations are removed, compressed, or folded into collapsed states, making fine-grained evidence harder to reuse.
+Second, once the original turns are no longer source-addressable, outcome-based RL lacks an explicit route for
+aligning policy updates with the evidence turns that later decisions relied on. This issue is especially pronounced
+in collapsed-state methods such as rolling summarization, where the policy may condition on information de-
+rived from earlier observations, but the learner only sees the summary-generation tokens rather than the original
+evidence sources (Lu et al., 2025; Yu et al., 2026).
+The lack of source-level addressability directly affects how sparse outcome rewards are used for training. With
+final-outcome rewards, standard multi-turn RL often applies a trajectory-level advantage to many generated spans
+(Schulman et al., 2017; Shao et al., 2024). When the reconstructed context is not source-addressable, this dense
+assignment can reinforce redundant searches, incidental reasoning, or summary-generation behavior together with
+genuinely useful evidence-gathering steps. Our diagnostics show that a rolling-summary baseline can extend
+rollouts, but also leads to turn proliferation, larger trajectory volume, and slower training. Thus, making rollouts
+longer is not sufficient: long-horizon agentic RL also requires a reconstruction trace that records which evidence
+was selected and reused.
+In this paper, we propose ECHO, a selective turn-memory framework for traceable context reconstruction in
+agentic RL. After each completed tool-use turn, ECHO writes a compact memory record containing a local
+finding and a source-turn pointer. Distant history is maintained as a non-collapsing set of such records. When
+the context budget becomes binding, the policy selects useful memory records and reconstructs the next bounded
+context from those records plus recent interactions. The agent therefore acts with compact context, while the
+selected memories remain linked to their original environment turns.
+The same source indices also guide learning. Instead of spreading outcome advantages over every generated
+token, ECHO routes positive outcome credit through the final answer segment, selected historical source turns,
+their memory findings, and the memory-selection actions that constructed the reconstructed context. In this way,
+ECHO aligns context pruning for acting with outcome-credit routing for learning through a single source-indexed
+reconstruction trace. We formalize this idea through a context-managed multi-turn RL interface, under which
+different context managers can be compared by whether reconstructed information remains addressable at the
+level of original environment turns. Our main contributions are as follows:
+
+    • We formulate context-managed multi-turn RL with a unified reconstruction interface that separates history
+      state, bounded-context reconstruction, and source-level traceability. This view makes explicit how collapsed-
+      history methods can preserve context efficiency while losing the provenance needed for outcome-credit as-
+      signment.
+    • We introduce ECHO, a selective turn-memory reconstruction method that stores each completed turn as a
+      source-indexed memory and constructs bounded policy contexts through learned memory selection rather
+      than global history collapse.
+    • We propose provenance-guided token-level credit assignment, which reuses selected source indices to route
+      positive outcome advantage to final answers, selected historical evidence turns, memory findings, and
+      memory-selection actions.
+    • Experiments on BrowseComp-Plus and diverse zero-shot benchmarks show that ECHO improves accuracy
+      while reducing turn proliferation and trajectory volume relative to rolling-summary training, with consistent
+      gains across dense and MoE backbones.
+
+
+2     R ELATED W ORK
+
+2.1    RL FOR L ONG -H ORIZON L ANGUAGE AGENTS
+
+Language agents are often formulated as multi-turn decision makers that interleave reasoning, tool invocation,
+and environment feedback (Yao et al., 2023). Recent RL methods optimize such agents with outcome-based
+or verifiable rewards for search, function calling, coding, and deep-research tasks (Schulman et al., 2017; Shao
+et al., 2024; Guo et al., 2025; Jin et al., 2025; Song et al., 2025; Li et al., 2025; Qian et al., 2025; Zheng et al.,
+2025; Du et al., 2025). Long-horizon benchmarks further expose the need for agents that repeatedly search,
+compare evidence, and verify answers over many turns (Wei et al., 2025; Chen et al., 2025; Qiao et al., 2025).
+
+
+                                                          2
+These settings motivate bounded-context rollouts, but standard outcome-based RL does not specify how managed
+historical context should expose provenance for credit assignment from final outcome signals.
+
+2.2   C ONTEXT M ANAGEMENT AND AGENT M EMORY
+
+A broad line of work addresses long-context limitations through prompt compression, summarization, retrieval,
+and explicit memory modules (Li et al., 2023; 2024; Wang et al., 2024; Xu et al., 2024; Shen et al., 2025; Yang
+et al., 2025). Memory-augmented agents maintain external stores that can be written to and retrieved across
+interactions (Packer et al., 2023; Zhong et al., 2024; Chhikara et al., 2025; Xu et al., 2025; Shan et al., 2025;
+Wang & Chen, 2025), with recent systems structuring memory through dependency graphs, subgoal-oriented
+working memory, or optimized compression guidelines (Wu et al., 2026; Hu et al., 2024; Kang et al., 2025).
+Recoverable-memory methods such as SAM keep raw trajectory pages accessible through compact memory cues
+and recall them when needed (Hu et al., 2026). These methods improve acting under limited context, but retrieval
+or compression alone does not define how final outcome signals should be linked back to original source turns.
+Recent work has begun to make context management part of agentic RL. Some methods replace the distant prefix
+with a recursively updated summary, reasoning state, working memory, or compact internal state (Wu et al.,
+2025; Lu et al., 2025; Yu et al., 2026; Zhou et al., 2025). Other methods treat context management as explicit
+operations or actions, such as adding, updating, deleting, pruning, or omitting memory items (Yan et al., 2025;
+Zhang et al., 2025; Ning et al., 2026). Relatedly, MemPO optimizes self-generated memory spans with memory-
+level advantages (Li et al., 2026). ECHO differs from these approaches by keeping each completed turn source-
+indexed and reusing the same selected memories that reconstruct the policy context as provenance routes for
+outcome-credit assignment.
+
+2.3   C REDIT A SSIGNMENT IN L ONG -H ORIZON AGENTIC RL
+
+Credit assignment is a classical challenge when rewards are sparse and observed only after extended interactions
+(Williams, 1992; Sutton & Barto, 2018). In many outcome-supervised reinforcement learning methods for lan-
+guage agents, a trajectory- or response-level scalar advantage is reused across generated action tokens or action
+spans (Schulman et al., 2017; Shao et al., 2024; Yu et al., 2025). This dense assignment is simple, but can be noisy
+in long-horizon tool-use tasks where only a small subset of past observations supports final success.
+Recent work refines credit along temporal, uncertainty-based, or architectural axes. Turn-level methods estimate
+step-specific advantages for tool-use interactions (Zeng et al., 2025); hindsight methods rescore historical actions
+using outcome information (Tan et al., 2026); milestone-guided methods partition rollouts at subtask boundaries
+(Wang et al., 2026); and hierarchical methods separate credit between high-level planning and low-level execution
+(Peng et al., 2026). Survey work further organizes these methods across token-, step-, turn-, and segment-level
+credit assignment (Zhang, 2026). Orthogonal to these approaches, uncertainty-based methods such as AEM mod-
+ulate response-level advantages using entropy-derived signals (Zhao et al., 2026).
+These methods improve how final outcome rewards are distributed over time, uncertainty, or policy levels, but
+they are mostly independent of how the agent’s effective context was reconstructed. ECHO is complementary:
+rather than estimating a new temporal advantage, it uses the source indices exposed by context reconstruction to
+define a provenance-guided token mask for outcome-credit routing.
+
+3     P RELIMINARIES
+3.1   M ULTI -T URN GRPO FOR AGENTIC RL
+
+Let x denote an initial task prompt. At interaction step t, the language agent conditions on a policy context ct ,
+which contains x and a managed view of previous interactions, and samples an action at ∼ πθ (· | ct ). The action
+at may include reasoning tokens, a tool invocation, an internal context-management operation, or a final answer.
+When a tool is invoked, the environment returns an observation ot ; for final answers or internal operations, ot may
+be null. We denote one interaction turn, the history before step t, and the full trajectory by
+                        ut = (at , ot ),      Ht = (u1 , . . . , ut−1 ),   τ = (u1 , . . . , uT ),               (1)
+with sparse final outcome reward R(τ ). For each prompt x, GRPO (Shao et al., 2024) samples a group of N
+complete trajectories {τ (1) , . . . , τ (N ) }. The group-relative advantage of the n-th trajectory is
+                                              R(τ (n) ) − mean({R(τ (i) )}N
+                                                                          i=1 )
+                                     A(n) =                 (i) N
+                                                                                .                                (2)
+                                                   std({R(τ )}i=1 ) + ϵ
+We use a simplified policy-gradient skeleton and suppress implementation-specific surrogate terms, such as old-
+policy ratios, clipping/gating, token normalization, and optional KL penalties, since our focus is how context
+
+
+                                                             3
+Table 1: Context-managed rollout strategies under the (M, Φ) interface. Traceability indicates whether recon-
+structed context remains addressable at the level of original environment turns.
+
+   Strategy                 Managed History             Context Reconstruction          Traceability     Examples
+                                                                 loc
+   Append-only              HKj−1                       HKj−1 ⊕ Hj,t                    Explicit         Vanilla prompting
+                                                         loc
+   Truncation               Recent suffix or ∅          Hj,t                            Lost             Sliding window
+                                                                         loc
+   Recursive folding        zj = C(zj−1 , σj−1 )        Render(zj ) ⊕ Hj,t              Collapsed        SUPO, MemAgent
+                                                                     loc
+   Pruning / omission       Cj ⊆ HKj−1                  Render(Cj , Hj,t ; B)           Partial          Agent-Omit
+                                                                      loc
+   Memory actions           Bj                          Render(Bj , Hj,t  ; B)          Indirect         MemAct, Memory-R1
+                                                        Render(Mj [I bjsel ])
+   Selective turn memory    Mj = {ei }i≤Kj−1                       loc                  Source-indexed   Ours
+                                                        ⊕ Φlocal (Hj,t ; B)
+
+
+
+reconstruction interacts with the final outcome signal:
+                                               "    N Tn
+                                                                               #
+                                                 1 XX       (n)       (n)  (n)
+                             JMT (θ) = Ex∼D                A log πθ (at | ct ) .                                             (3)
+                                                 N n=1 t=1
+
+This simplified form is used only to make explicit the dependence on the policy context and the trajectory-level
+advantage. In token-level implementations, each action at is a generated token sequence, and log πθ (at | ct ) is ex-
+panded as the sum of token log probabilities, with all generated tokens sharing the same trajectory-level advantage
+A(n) . We distinguish the complete interaction history Ht from the policy context ct : Ht is the environment-side
+record of previous turns, whereas ct is the bounded textual input, or more generally the effective conditioning,
+provided to the language model policy.
+
+3.2   C ONTEXT-M ANAGED M ULTI -T URN ROLLOUTS
+
+In long-horizon tool-use tasks, the complete history Ht grows with the number of interaction turns and may exceed
+the context budget available during rollout and training. Let B denote the maximum allowed length of the policy
+context. A context-managed rollout requires |ct | ≤ B for every interaction step. We partition each trajectory τ (n)
+into bounded-context segments with boundaries
+                                               (n)           (n)                 (n)
+                                       0 = K0        < K1          < · · · < KJn = Tn .                                      (4)
+For the j-th segment, we denote the completed prefix before the segment and the local history within the segment
+before turn t as
+                        (n)        (n)       (n)          (n),loc     (n)             (n)
+                      H (n) = (u1 , . . . , u (n) ),    Hj,t      = (u (n) , . . . , ut−1 ),                 (5)
+                           Kj−1                    Kj−1                                Kj−1 +1
+       (n)               (n)
+where Kj−1    < t ≤     Kj .  A context manager maps the completed prefix into a managed history state and
+reconstructs a bounded policy context:
+                                                                             
+                          (n)          (n)        (n)           (n)   (n),loc
+                        zj = M H (n) ,           cj,t = x ⊕ Φ zj , Hj,t       ;B .                      (6)
+                                          Kj−1
+
+       (n)
+Here zj may take different forms, such as retained history, a summary, a compressed state, an edited memory,
+or a collection of memory units. The reconstruction function Φ combines this managed history with the local
+                                                                                                    loc
+within-segment history under the budget B. We use R(τ ) exclusively for rewards and reserve Hj,t        for local
+interaction history. The operator ⊕ denotes textual concatenation in prompt-based implementations, and more
+generally refers to the effective conditioning mechanism through which the task prompt and reconstructed history
+are provided to the policy.
+We keep M and Φ abstract so that the interface can cover a broad range of context managers, including determin-
+istic procedures, learned modules, and policy-generated context-management operations. When such operations
+are produced by the policy, their generated tokens are included in the trajectory and may receive credit in the same
+way as other action spans. For traceable methods, the reconstruction process may additionally expose metadata,
+such as the source indices of retained or selected history items, which can later be used for credit assignment.
+Substituting Eq. 6 into the simplified multi-turn objective gives
+                                                    (n)
+                                                                                                             
+                                 N Jn              Kj
+                             1 XX
+                                                                                                         
+                                                                                 (n)        (n)  (n),loc
+                                                   X
+             JCM (θ) = Ex∼D                                  A(n) log πθ       at | x ⊕ Φ zj , Hj,t     ;B .               (7)
+                                                                                                             
+                              N n=1 j=1              (n)
+                                             t=Kj−1 +1
+
+
+
+                                                                   4
+                                                                                  GRPO               SUPO
+
+                  Turn Proliferation                           Response Length                                 Generation Time                                  Trajectory Volume
+        100                                        40000                                           10000                                              6.0
+
+         80                                                                                         8000                                              5.0
+
+
+
+
+                                                                                                                                       Trajectories
+                                                   30000
+
+
+
+
+                                                                                         Seconds
+                                                                                                                                                      4.0
+
+
+
+
+                                          Tokens
+Turns
+
+
+
+
+         60                                                                                         6000
+                                                   20000                                                                                              3.0
+         40                                                                                         4000
+                                                                                                                                                      2.0
+                                                   10000
+         20                                                                                         2000                                              1.0
+
+          0                                            0                                               0                                              0.0
+              0   25   50    75     100                    0   25   50   75      100                       0   25   50   75      100                        0   25   50   75      100
+                   Training Steps                               Training Steps                                  Training Steps                                   Training Steps
+
+
+Figure 2: Training diagnostics on long-horizon search. Summarization-based context management enables longer
+rollouts, but leads to turn proliferation, longer responses, higher generation time, and increased trajectory volume.
+
+
+This expression preserves the trajectory-level learning signal while making the policy input depend explicitly on
+the context-management mechanism. Different long-context strategies can thus be represented by different choices
+of M and Φ. The interface abstracts the effective conditioning available to the policy, rather than implementation
+details of a specific context manager. It also allows us to examine whether reconstructed information remains
+source-addressable for policy learning.
+
+4         M ETHOD
+4.1           M OTIVATION : C ONTEXT R ECONSTRUCTION AND T RACEABILITY
+
+A context-reconstruction view. Eq. 6 defines a bounded-context rollout through two operations: a context
+manager M represents the completed prefix, and a reconstruction function Φ renders this representation into the
+policy context. This interface separates context efficiency for acting from source-level traceability for learning. A
+method may retain enough information for future decisions, but this does not imply that sparse outcome rewards
+can be routed back to the historical turns that supplied the useful evidence. Append-only prompting preserves
+explicit traceability but is not context efficient; truncation satisfies the budget by discarding distant history; and
+recursive folding compresses the prefix into a collapsed summary, which no longer directly exposes the original
+turns that contributed to later decisions. More generally, pruning, omission, and memory-action methods expose
+context-management decisions, but do not necessarily provide a shared source-indexed reconstruction trace for
+learning. Table 1 summarizes this source-traceability distinction under the (M, Φ) interface.
+
+Rolling summarization as a diagnostic. Rolling summarization illustrates the practical tension behind this dis-
+tinction. By repeatedly folding old history into a summary, it enables longer bounded-context rollouts, but the
+resulting context is no longer directly addressable at the level of original environment turns. Figure 2 shows
+that this collapsed-history baseline can lead to rapid growth in tool-use turns, response length, generation time,
+and trajectory volume. These diagnostics do not prove that turn proliferation is caused solely by lost prove-
+nance; rather, they reveal an empirical failure mode of collapsed-history context management: longer rollouts
+may improve access to distant information, but can also encourage redundant search and increasingly expensive
+trajectories. Together with the source-traceability gap above, this motivates a context manager that prunes history
+for bounded-context acting while preserving explicit reconstruction traces for credit assignment.
+
+4.2           P RUNE TO ACT: S ELECTIVE T URN -M EMORY R ECONSTRUCTION
+
+We instantiate this source-indexed reconstruction principle in ECHO. The goal is to construct bounded policy
+contexts without collapsing the distant prefix into a single untraceable state. ECHO separates local turn compres-
+sion from global context reconstruction: each completed turn is compressed independently into a source-indexed
+memory clue, while the active context is reconstructed by selecting from the resulting memory set.
+
+Source-indexed turn memory.                                After each completed tool-use turn ui = (ai , oi ), ECHO generates a compact
+local finding
+                                      si ∼ πθ (· | csum
+                                                    i   ),      mi = parse(si ),                                  (8)
+where csum
+        i  contains the latest turn u i and a summary    instruction x sum that asks the model to summarize only that
+turn. The memory record is
+                                            ei = (i, αi , mi ),               Mj = M(HKj−1 ) = {ei }i≤Kj−1 .                                                                            (9)
+Here i is the source-turn index, αi is a compact rendering of the action or tool call, and mi is the parsed last-turn
+finding. The finding is used as a lightweight clue for later selection and reconstruction, while the source index
+keeps the memory addressable. Unlike a rolling summary, Mj is a non-collapsing set: each memory remains
+individually linked to its original turn even after the raw observation falls outside the active context.
+
+
+                                                                                         5
+  ECHO: Turn-level Memory Selection
+
+                                      Sub-trajectory 1                                                                                                  Sub-trajectory 2                                                                                                Sub-trajectory K (Final)
+
+                   Turn 1               Turn 2                    Turn t1                                                  Turn t1 + 1                    Turn t1 + 2                     Turn t2                                                       Turn tK-1 + 1          Turn tK-1 + 2                  Turn T (Final)
+
+   prompt0    think1 tool1   o1   think2 m1 tool2   o2 ... think.. m.. tool..   o..   m..   select1     prompt1 think.. tool.. o..                 think.. m.. tool.. o.. ... think.. m.. tool.. o..        m..       select2     ...     promptK-1 think.. tool.. o..      think.. m.. tool.. o.. ... think.. m..        response
+
+
+
+
+                      Summary of last turn
+
+                                                                                                                                                        Selected history memory                Recent turn memory
+
+
+
+                                                                                                Sub-trajectory 1                                                                               Sub-trajectory 2                                                                 Sub-trajectory K (Final)
+         Credit Assignment Comparison                                                                                                                                                                                                                         ...
+                                                                            Turn 1                    Turn 2                         Turn t1                            Turn t1 + 1                 Turn t1 + 2                  Turn t2                            Turn tK-1 + 1         Turn tK-1 + 2               Turn T (Final)
+
+
+      GRPO / SUPO: Dense all-token credit assignment
+      (SUPO: including summary tokens)
+                                                                  prom. think tool     o      think    tool    o     ...     think    tool    o    ( sum. )     prom. think tool      o        think tool       o     ...   think tool         o   ( sum. ) ... prom. think tool    o      think tool     o     ...     think resp.
+
+
+
+      ECHO: Traceable credit to final sub-trajectory
+                                                                  prom. think tool     o    think m     tool       o ... think m       tool    o    m    sel.   prom. think tool      o      think m     tool       o ... think m       tool   o m     sel.   ... prom. think tool o     think m tool         o ... think m resp.
+      + selected source turns + memory selection
+
+
+                                                                                                                                                                                                All tokens                      Selected source turns                 Memory selection                  Final Sub-trajectory
+
+
+
+
+Figure 3: Overview of ECHO. ECHO stores completed turns as source-indexed memories, selects useful memo-
+ries for bounded context reconstruction, and reuses the same source trace for credit assignment.
+
+
+Autoregressive memory selection. Let S cap model-selected turns and K denote the latest turns retained au-
+tomatically. At a compression boundary before segment j, let Hjbd be the bounded local state available there.
+ECHO asks the policy to select historical memories useful for continuing the task:
+
+
+csel              bd
+                                                                               Ibjsel = ρB,S,K parse(asel                                                       asel         sel
+                                                                                                                                                                                
+ j = x ⊕ Φlocal (Hj ; B) ⊕ renderlist (Mj ) ⊕ xsel ,                                                   j ), Mj .                                                 j ∼ πθ · | cj     ,
+                                                                                                             (10)
+The selection instruction xsel asks the model to output source indices of reusable evidence, constraints, failed
+attempts, or planned next actions. The selection context abstracts the implementation: at a compression boundary,
+the selection instruction is appended to the current bounded segment state together with the rendered source-
+indexed memory list. The repair operator ρB,S,K removes malformed or out-of-range indices, deduplicates se-
+lections, keeps at most S model-selected turns, merges them with the latest K turns retained automatically, and
+enforces the context-budget constraint.
+
+Bounded context reconstruction.                                                               Selected source indices determine the memory used for reconstruction:
+                                                                                                       Mj [Ibjsel ] = {ei ∈ Mj | i ∈ Ibjsel }.                                                                                                                                                                                  (11)
+For any turn t in segment j, ECHO reconstructs the policy context as
+                                                    
+                       cj,t = x ⊕ render Mj [Ibjsel ] ⊕ Φlocal (Hj,t
+                                                                 loc
+                                                                     ; B),                                                                                                                                                              |cj,t | ≤ B.                                                                            (12)
+Here Φlocal renders the recent within-segment history, possibly as a budgeted suffix. Thus, ECHO prunes distant
+history for acting while preserving an explicit provenance set Ibjsel . These selected source indices are the trace used
+for learning in Section 4.3.
+
+4.3          T RACE TO L EARN : P ROVENANCE -G UIDED C REDIT A SSIGNMENT
+
+The source indices selected for context reconstruction also define a credit route. As illustrated in Figure 3, GRPO
+and SUPO apply the trajectory advantage densely to generated tokens in the rollout; in SUPO this also includes
+tokens used to produce rolling summaries. Such dense assignment does not distinguish evidence turns from
+redundant searches once the final outcome reward is observed. ECHO instead first identifies credit tokens from
+the reconstruction trace, and only then attaches an outcome-dependent advantage to those tokens.
+                                                    (n)                   (n),sel
+For trajectory n, let Isrc = IbJn                                                           be the source turns selected into the final reconstructed context. Let q index
+                                                                                                                                                                                                                                                                                                  (n)
+generated response-token positions across the saved rollout segments. For each token position, gq ∈ {0, 1}
+                                                                (n)
+indicates whether the token is in the final response segment, dq is the source turn id of a normal assistant/action
+         (n)                                                                     (n)
+token, fq is the source turn id of a generated last-turn finding token, and bq ∈ {0, 1} indicates whether the
+token belongs to a generated memory-selection span. ECHO constructs a token-level hard credit mask
+                                 n                                                        o
+                       µ(n)
+                        q   =  1   gq
+                                     (n)
+                                         =  1  ∨ d(n)
+                                                  q   ∈ I (n)
+                                                         src  ∨  fq
+                                                                   (n)
+                                                                       ∈ I (n)
+                                                                          src  ∨  b(n)
+                                                                                   q   = 1  ,                  (13)
+which marks final-segment tokens, action tokens from source turns selected into the final reconstructed context,
+                                                                                                  (n)
+their last-turn finding tokens, and all generated memory-selection spans as credit tokens. Here Isrc defines a prac-
+tical final-trace approximation: source-token credit is assigned only to turns selected into the final reconstructed
+
+
+                                                                                                                                                                6
+context, rather than to the full causal chain of all intermediate contexts. In contrast, selection-action credit is
+assigned to all memory-selection spans in positive-advantage rollouts, since these actions construct the available
+memory set during the trajectory. We then route an outcome-dependent advantage along this provenance trace.
+For binary verifier rewards R(τ ) ∈ {0, 1}, the credit term is
+                                  e(n)    (n)                 (n)
+                                  A q  = A+ µ(n)
+                                              q ,         A+ = max(A(n) , 0),                                   (14)
+where A(n) is the group-relative rollout advantage computed over valid rollouts for the same prompt. The choice
+                      (n)
+of the positive part A+ follows directly from what the selection trace means in each case.
+For a correct rollout, the verified final answer makes the source turns selected into the final context a practi-
+cal proxy for the historical evidence exposed to a successful decision. This trace routes positive credit to reused
+evidence paths, while screening off redundant searches and stale intermediate work not selected in the final re-
+construction. For an incorrect rollout, the trace is not reliable: selected turns may be useful but misused, irrel-
+evant, or misleading. Routing credit through such traces would introduce noisy supervision, so ECHO assigns
+traceable credit only to rollouts with positive group-relative advantage. Taking the positive part implements this
+rule: below-baseline and tied rollouts, including all-correct or all-incorrect groups, produce zero traceable update.
+Dense all-token credit is used only in the w/o Traceable CA ablation. The per-trajectory ECHO surrogate is
+                                    (n)                                    (n)
+                                                X
+                                  LECHO (θ) =       Ae(n)
+                                                       q log πθ (yq
+                                                                    (n)
+                                                                        | y<q , c(n)
+                                                                                 q ).                            (15)
+                                                 q
+
+The overall objective averages Eq. 15 over prompts and sampled trajectory groups. As in Section 3, we sup-
+press implementation-specific surrogate terms such as policy ratios, clipping or gating, token normalization, and
+optional KL penalties. Thus, ECHO routes outcome credit through the same source-indexed trace used to recon-
+struct the bounded context. Instead of assigning positive outcome credit to every generated token, it updates the
+final-segment tokens, the tokens attached to selected historical source turns, their memory clues, and the selection
+actions that exposed those memories to later decisions.
+
+5     E XPERIMENT
+5.1   E XPERIMENTAL S ETUP
+
+Benchmark and methods. We perform our primary evaluation on BrowseComp-Plus, a long-horizon tool-
+use QA benchmark requiring iterative search, evidence inspection, and answer verification. The training set
+contains 747 examples, and held-out validation contains 83 examples. Our main policy backbone is Qwen3-
+32B-Instruct, and we also evaluate transferability to the sparse MoE backbone Qwen3-30B-A3B-Instruct. We
+compare GRPO (Shao et al., 2024), SUPO-style rolling summarization (Lu et al., 2025), and ECHO under the
+same tool environment and verifier.
+
+Implementation details. All methods use a 32k-token context budget, sample 8 rollouts per prompt, and train
+with the same GRPO-style outcome objective. For SUPO and ECHO, compression is triggered when the working
+context reaches this budget. We allow at most 5 compression rounds per rollout; together with the initial 32k
+segment, this gives an effective interaction budget of up to 6 × 32k = 192k tokens before a rollout is treated
+as unsuccessful. ECHO summarizes each completed turn into a compact finding, retains the latest 3 turns auto-
+matically, and lets the policy select up to 8 additional historical turns during reconstruction. We report held-out
+pass@1 as the primary metric and track average turns, trajectory volume, response length, and generation time to
+characterize rollout behavior. Additional details are provided in Appendix C.1.
+
+Zero-shot evaluation benchmarks. To assess out-of-domain generalization, we compare different methods
+without any additional tuning across three diverse domains: Multi-Objective QA spanning 2–16 objectives (Zhang
+et al., 2025), Code Generation on CodeGym (Du et al., 2025) and LoCoBench-Agent (Qiu et al., 2025), and Deep
+Information Seeking on GAIA (Mialon et al., 2024), HLE (Phan et al., 2025), and Frames (Krishna et al., 2025).
+Detailed dataset descriptions are deferred to Appendix C.2.
+
+5.2   M AIN R ESULTS
+
+Figure 1 compares training dynamics under an identical backbone, verifier, rollout budget, and sampling config-
+uration. ECHO achieves a held-out accuracy of 43.4%, substantially outperforming both GRPO (28.9%) and
+SUPO (36.1%). GRPO keeps rollouts short, with 11.2 turns per rollout at the final step, but its accuracy plateaus
+early, suggesting that limited context exploration constrains long-horizon search. SUPO improves over GRPO by
+using rolling summaries to extend rollouts, but this gain comes with rapid turn proliferation: its final turn count
+reaches 62.5, with an 85.5% trajectory split rate and 4.18 trajectories per rollout on average. ECHO bridges this
+trade-off. It surpasses SUPO in accuracy while maintaining a more efficient rollout profile, ending with 45.3 turns,
+
+
+                                                          7
+                                              ECHO            + Top-k Selection        + Top-k Sel. w/o Last-turn Sum.
+
+                          BrowseComp Plus                                  Turn Dynamics                                               Trajectory Volume
+               0.50                                           60                                                             3.5
+
+
+
+
+                                                                                                              Trajectories
+  Acc Pass@1
+
+
+
+               0.40                                                                                                          3.0
+                                                              40
+
+
+
+
+                                                      Turns
+                                                                                                                             2.5
+               0.30
+                                                                                                                             2.0
+                                                              20
+               0.20                                                                                                          1.5
+
+                                                                                                                             1.0
+               0.10                                            0
+                      0   25   50    75     100 115                0     25       50        75     100 115                         0   25   50    75     100 115
+                           Training Steps                                  Training Steps                                               Training Steps
+
+                                                          (a) Memory component ablation.
+                                              ECHO            w/o Traceable CA         w/o Traceable CA + Turn-level
+
+                          BrowseComp Plus                                  Turn Dynamics                                               Trajectory Volume
+               0.50                                           90                                                             5.5
+
+
+
+
+                                                                                                              Trajectories
+  Acc Pass@1
+
+
+
+
+               0.40
+                                                              60                                                             4.0
+                                                      Turns
+
+
+
+
+               0.30
+
+                                                              30                                                             2.5
+               0.20
+
+                                                                                                                             1.0
+               0.10                                            0
+                      0   25   50    75     100 115                0     25       50        75     100 115                         0   25   50    75     100 115
+                           Training Steps                                  Training Steps                                               Training Steps
+
+                                                              (b) Credit assignment ablation.
+
+Figure 4: Ablation study on BrowseComp-Plus. (a) Learned source selection in ECHO outperforms semantic
+top-k retrieval, while compact last-turn findings perform comparably to full observations under the same retrieval
+rule. (b) Removing traceable credit routing reduces accuracy and stability, while turn-level IS further induces
+rapid turn growth and lower accuracy.
+
+
+a 57.8% trajectory split rate, and 3.13 trajectories per rollout on average. These results support our core hypothesis
+that source-indexed reconstruction and traceable credit routing enhance the utility of long-horizon search, rather
+than merely encouraging the policy to generate longer, redundant rollouts.
+
+5.3             A BLATION S TUDY
+
+Memory Component Ablation. We conduct ablations on two memory components of ECHO: memory selec-
+tion and retrieved memory format. Specifically, we replace learned selection with static semantic top-k retrieval,
+and compact last-turn findings with full tool observations under the same retrieval protocol. Figure 4a shows
+that learned selection is the main contributor to performance. Although semantic top-k retrieval keeps rollouts
+compact, it yields substantially lower accuracy than ECHO, suggesting that useful historical information depends
+on the current search state rather than static semantic similarity alone. Moreover, full observations bring no clear
+improvement over compact findings, indicating that ECHO’s gains primarily come from policy-driven source
+selection rather than more verbose retrieved content.
+
+Credit Assignment Ablation. We next ablate credit assignment while keeping ECHO’s reconstruction un-
+changed. ECHO w/o Traceable CA removes the traceable credit mask and falls back to a standard GRPO-style
+objective, assigning each rollout-level advantage to all generated tokens. ECHO w/o Traceable CA & Turn-level
+IS further replaces token-level importance-sampling ratios with turn-level ratios, computed by the geometric mean
+within each turn. As shown in Figure 4b, dense credit assignment reduces accuracy and stability: final outcome
+rewards are spread over useful evidence and redundant search, while turn-level IS treats each search or open-page
+turn as a coarse macro unit and can reinforce long continuation patterns. In contrast, ECHO routes credit only
+through final answers, selected source turns, and selection actions, better aligning updates with reused evidence.
+
+5.4             Z ERO - SHOT G ENERALIZATION C OMPARISON
+
+Table 2 evaluates whether the learned context-management behavior transfers beyond BrowseComp-Plus. On
+Qwen3-32B-Instruct, ECHO achieves the best average score of 40.2%, outperforming GRPO at 33.6% and SUPO
+at 34.8%. The gains are most pronounced in evidence-heavy settings such as 16-objective QA and Frames, where
+retaining addressable source evidence is especially useful. The same pattern holds under the MoE backbone,
+where ECHO reaches an average score of 30.5%, compared with 26.9% for SUPO. Moreover, the zero-shot
+
+
+                                                                                  8
+Table 2: Zero-shot generalization results across various benchmarks. Bold denotes the best performance and
+underlined denotes the second-best. CA denotes credit assignment, Traceable CA denotes source-indexed credit
+routing, and Turn-level IS denotes importance-sampling ratios aggregated at the turn level.
+
+                                                                   Multi-Objective QA                             Code Generation                         Deep Information Seeking
+  Method                                                                                                                                                                                Avg.
+                                               2-obj.         4-obj.           8-obj.    16-obj.   Avg.    CodeGym     LoCoBench-Agent                    GAIA    HLE     Frames
+                                                                            Backbone: Qwen3-32B-Instruct
+  GRPO                                         38.6                39.8      35.8     29.0   35.8     32.8                                    67.7        25.2     8.8        24.8      33.6
+  SUPO                                         40.9                36.4      36.4     34.7   37.1     35.4                                    68.1        25.2     9.2        26.8      34.8
+  ECHO w/ Top-K retrieval                      47.7                42.0      39.2     27.8   39.2     40.7                                    69.3        29.1    10.6        37.3      38.2
+  ECHO w/ Top-K retrieval & w/o turn summary   40.9                44.3      35.8     35.5   39.1     40.3                                    69.5        23.3    10.0        31.3      36.8
+  ECHO w/o traceable CA                        45.5                42.0      39.2     22.7   37.4     38.1                                    68.2        25.2     8.8        30.8      35.6
+  ECHO w/o Traceable CA & Turn-level IS        45.5                47.7      35.2     27.0   38.8     34.6                                    70.1        23.3    9.4         32.2      36.1
+  ECHO                                         47.7                45.5      41.5     36.1   42.7     41.4                                    70.4        29.1    11.4        39.1      40.2
+                                                                          Backbone: Qwen3-30B-A3B-Instruct
+  GRPO                                         27.3                26.1       27.3    16.2   24.2     20.3                                    65.7        23.3     7.8        19.1      25.9
+  SUPO                                         25.0                30.7       27.3    18.2   25.3     27.3                                    65.1        23.3     8.0        17.0      26.9
+  ECHO                                         34.1                36.4       30.1    18.8   29.9     29.7                                    66.8        24.3     9.2        25.0      30.5
+
+
+
+                                                                               GRPO          SUPO          ECHO
+
+                         BrowseComp Plus                                                Turn Dynamics                                                    Trajectory Volume
+                                                                   100
+              0.40
+
+
+
+
+                                                                                                                          Avg. Trajectories
+                                                                                                                                              5.0
+ Acc Pass@1
+
+
+
+
+                                                                    75
+                                                      Avg. Turns
+
+
+
+
+              0.30
+                                                                                                                                              4.0
+
+              0.20                                                  50
+                                                                                                                                              3.0
+
+              0.10                                                  25                                                                        2.0
+
+                                                                                                                                              1.0
+              0.00                                                   0
+                     0   25   50    75     100 115                         0        25        50          75   100 115                               0   25      50      75          100 115
+                          Training Steps                                                Training Steps                                                    Training Steps
+
+
+Figure 5: Training dynamics on BrowseComp-Plus with the Qwen3-30B-A3B-Instruct MoE backbone. SUPO is
+shown up to step 50, where the run enters a collapsed regime with sharply degraded accuracy and inflated average
+turns and trajectory volume.
+
+
+ablations are consistent with the training curves: replacing learned selection with semantic top-k retrieval lowers
+the average score to 38.2%, while removing traceable credit further reduces it to 35.6%. These results suggest
+that both policy-driven memory selection and provenance-guided updates contribute to transfer, rather than merely
+improving performance on the training benchmark.
+
+5.5             ROBUSTNESS TO BACKBONE A RCHITECTURE
+
+We repeat the BrowseComp-Plus training comparison with the sparse Qwen3-30B-A3B-Instruct MoE backbone,
+while keeping the tool environment, rollout budget, and evaluation protocol unchanged. This experiment tests
+whether the same source-indexed reconstruction and traceable-credit mechanisms remain effective under a differ-
+ent policy architecture. Figure 5 shows a similar method ranking to the dense-backbone setting. GRPO keeps
+turn counts lower but reaches only 22.9% accuracy. SUPO initially benefits from rolling summaries, but its turn
+count and trajectory volume grow rapidly as rollouts increasingly split and extend during training; by step 50, the
+resulting overlong trajectories reduce its accuracy to 13.3%. In contrast, ECHO remains stable after this point and
+finishes at around 35.0% accuracy. Although its turn count also increases, the additional search remains useful
+rather than merely inflating trajectory volume. Together with the MoE zero-shot results in Table 2, these findings
+suggest that the effectiveness of ECHO extends beyond the dense backbone.
+
+6              C ONCLUSION
+We presented ECHO, a selective turn-memory framework for training long-horizon language agents under
+bounded contexts. The central idea is to make context reconstruction serve both acting and learning. Instead
+of collapsing distant history into an untraceable summary, ECHO stores each completed turn as a source-indexed
+memory, reconstructs compact contexts by selecting useful memories, and reuses the same source trace to route
+positive outcome credit to the final answer, reused evidence turns, memory findings, and selection actions. This
+design aligns the evidence retained for future decisions with the evidence reinforced after successful rollouts.
+On BrowseComp-Plus, ECHO improves held-out accuracy over GRPO and the rolling-summary baseline SUPO
+
+
+                                                                                              9
+while using fewer turns and lower trajectory volume than SUPO. Ablations show that both learned source selec-
+tion and traceable credit routing are necessary for these gains, and zero-shot evaluations across multi-objective
+QA, code generation, and deep information-seeking benchmarks show that source-indexed reconstruction trans-
+fers beyond the training setting. These results suggest that preserving provenance during context management is
+a practical way to make long-horizon search more useful, not merely longer.
+
+7   L IMITATIONS
+
+We acknowledge two main limitations of the current study. First, ECHO adopts a final-trace approximation for
+credit assignment: it routes credit to the source turns selected into the final reconstructed context, but does not
+recursively follow the full dependency chain that produced those turns. A turn selected at the final step may
+itself have depended on earlier turns that the final trace no longer credits. This approximation is sufficient when
+the supporting evidence is shallow, but for very long-horizon tasks with deep nested dependencies it may under-
+cover the historical turns that ultimately enabled success. Resolving such dependencies recursively would yield
+more complete credit at the cost of additional provenance tracking, which we leave to future work. Second, our
+experiments mainly focus on text-based tool-use agents. Although ECHO shows strong zero-shot transfer across
+several domains, broader validation on GUI, embodied, and multi-agent settings remains future work. In addition,
+source-indexed memory selection introduces extra computation, and more efficient memory indexing and selection
+strategies could further reduce training and rollout overhead.
+
+R EFERENCES
+Zijian Chen, Xueguang Ma, Shengyao Zhuang, Ping Nie, Kai Zou, Andrew Liu, Joshua Green, Kshama Patel,
+  Ruoxi Meng, Mingyi Su, Sahel Sharifymoghaddam, Yanxi Li, Haoran Hong, Xinyu Shi, Xuye Liu, Nandan
+  Thakur, Crystina Zhang, Luyu Gao, Wenhu Chen, and Jimmy Lin. BrowseComp-Plus: A more fair and trans-
+  parent evaluation benchmark of deep-research agent. arXiv preprint arXiv:2508.06600, 2025.
+
+Prateek Chhikara, Dev Khant, Saket Aryan, Taranjeet Singh, and Deshraj Yadav. Mem0: Building production-
+  ready AI agents with scalable long-term memory. arXiv preprint arXiv:2504.19413, 2025.
+
+Weihua Du, Hailei Gong, Zhan Ling, Kang Liu, Lingfeng Shen, Xuesong Yao, Yufei Xu, Dingyuan Shi, Yim-
+ ing Yang, and Jiecao Chen. Generalizable end-to-end tool-use RL with synthetic CodeGym. arXiv preprint
+ arXiv:2509.17325, 2025.
+
+Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi
+  Wang, Xiao Bi, et al. DeepSeek-R1: Incentivizing reasoning capability in LLMs via reinforcement learning.
+  arXiv preprint arXiv:2501.12948, 2025.
+
+Xanh Ho, Anh-Khoa Duong Nguyen, Saku Sugawara, and Akiko Aizawa. Constructing a multi-hop qa dataset
+  for comprehensive evaluation of reasoning steps. In Proceedings of the 28th International Conference on
+  Computational Linguistics, pp. 6609–6625, 2020.
+
+Mengkang Hu, Tianxing Chen, Qiguang Chen, Yao Mu, Wenqi Shao, and Ping Luo. Hiagent: Hierarchical
+ working memory management for solving long-horizon agent tasks with large language model. arXiv preprint
+ arXiv:2408.09559, 2024.
+
+Yuyang Hu, Hongjin Qian, Shuting Wang, Jiongnan Liu, Ziliang Zhao, Jiejun Tan, Zheng Liu, and Zhicheng Dou.
+  SAM: State-adaptive memory for long-horizon reasoning agent. arXiv preprint arXiv:2605.24468, 2026.
+
+Bowen Jin, Hansi Zeng, Zhenrui Yue, Wang Dong, Hamed Zamani, and Jiawei Han. Search-R1: Training LLMs
+  to reason and leverage search engines with reinforcement learning. arXiv preprint arXiv:2503.09516, 2025.
+
+Minki Kang, Wei-Ning Chen, Dongge Han, Huseyin A. Inan, Lukas Wutschitz, Yanzhi Chen, Robert Sim, and
+ Saravan Rajmohan. Acon: Optimizing context compression for long-horizon llm agents. arXiv preprint
+ arXiv:2510.00615, 2025.
+
+Satyapriya Krishna, Kalpesh Krishna, Anhad Mohananey, Steven Schwarcz, Adam Stambler, Shyam Upadhyay,
+  and Manaal Faruqui. Fact, fetch, and reason: A unified evaluation of retrieval-augmented generation. In Pro-
+  ceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational
+  Linguistics: Human Language Technologies (Volume 1: Long Papers), pp. 4745–4759, 2025.
+
+Ruoran Li, Xinghua Zhang, Haiyang Yu, Shitong Duan, Xiang Li, Wenxin Xiang, Chonghua Liao, Xudong Guo,
+  Yongbin Li, and Jinli Suo. MemPO: Self-memory policy optimization for long-horizon agents. arXiv preprint
+  arXiv:2603.00680, 2026.
+
+
+                                                        10
+Xuefeng Li, Haoyang Zou, and Pengfei Liu. ToRL: Scaling tool-integrated RL. arXiv preprint arXiv:2503.23383,
+  2025.
+Yucheng Li, Bo Dong, Frank Guerin, and Chenghua Lin. Compressing context to enhance inference efficiency
+  of large language models. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language
+  Processing, 2023.
+Zongqian Li, Yinhong Liu, Yixuan Su, and Nigel Collier. Prompt compression for large language models: A
+  survey. arXiv preprint arXiv:2410.12388, 2024.
+Miao Lu, Weiwei Sun, Weihua Du, Zhan Ling, Xuesong Yao, Kang Liu, and Jiecao Chen. Scaling LLM multi-turn
+ RL with end-to-end summarization-based context management. arXiv preprint arXiv:2510.06727, 2025.
+Grégoire Mialon, Clémentine Fourrier, Thomas Wolf, Yann LeCun, and Thomas Scialom. Gaia: a benchmark for
+  general ai assistants. In International Conference on Learning Representations, volume 2024, pp. 9025–9049,
+  2024.
+Yansong Ning, Jun Fang, Naiqiang Tan, and Hao Liu. Agent-omit: Adaptive context omission for efficient llm
+  agents. arXiv preprint arXiv:2602.04284, 2026. doi: 10.48550/arXiv.2602.04284.
+Charles Packer, Sarah Wooders, Kevin Lin, Vivian Fang, Shishir G. Patil, Ion Stoica, and Joseph E. Gonzalez.
+  MemGPT: Towards LLMs as operating systems. arXiv preprint arXiv:2310.08560, 2023.
+Jiangweizhi Peng, Yuanxin Liu, Ruida Zhou, Charles Fleming, Zhaoran Wang, Alfredo Garcia, and Mingyi Hong.
+   Hiper: Hierarchical reinforcement learning with explicit credit assignment for large language model agents.
+   arXiv preprint arXiv:2602.16165, 2026.
+Long Phan, Alice Gatti, Ziwen Han, Nathaniel Li, Josephina Hu, Hugh Zhang, Chen Bo Calvin Zhang, Mohamed
+  Shaaban, John Ling, Sean Shi, et al. Humanity’s last exam. arXiv preprint arXiv:2501.14249, 2025.
+Ofir Press, Muru Zhang, Sewon Min, Ludwig Schmidt, Noah A Smith, and Mike Lewis. Measuring and narrowing
+  the compositionality gap in language models. In Findings of the Association for Computational Linguistics:
+  EMNLP 2023, pp. 5687–5711, 2023.
+Cheng Qian, Emre Can Acikgoz, Qi He, Hongru Wang, Xiusi Chen, Dilek Hakkani-Tür, Gokhan Tur, and Heng
+  Ji. ToolRL: Reward is all tool learning needs. arXiv preprint arXiv:2504.13958, 2025.
+Zile Qiao, Guoxin Chen, Xuanzhong Chen, Donglei Yu, Wenbiao Yin, Xinyu Wang, Zhen Zhang, Baixuan Li,
+  Huifeng Yin, Kuan Li, et al. WebResearcher: Unleashing unbounded reasoning capability in long-horizon
+  agents. arXiv preprint arXiv:2509.13309, 2025.
+Jielin Qiu, Zuxin Liu, Zhiwei Liu, Rithesh Murthy, Jianguo Zhang, Haolin Chen, Shiyu Wang, Ming Zhu, Liang-
+   wei Yang, Juntao Tan, et al. Locobench-agent: An interactive benchmark for llm agents in long-context software
+   engineering. arXiv preprint arXiv:2511.13998, 2025.
+Timo Schick, Jane Dwivedi-Yu, Roberto Dessı̀, Roberta Raileanu, Maria Lomeli, Eric Hambro, Luke Zettlemoyer,
+  Nicola Cancedda, and Thomas Scialom. Toolformer: Language models can teach themselves to use tools.
+  Advances in neural information processing systems, 36:68539–68551, 2023.
+John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization
+  algorithms. arXiv preprint arXiv:1707.06347, 2017.
+Lianlei Shan, Shixian Luo, Zezhou Zhu, Yu Yuan, and Yong Wu. Cognitive memory in large language models.
+  arXiv preprint arXiv:2504.02441, 2025.
+Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang,
+  Y. K. Li, Y. Wu, et al. DeepSeekMath: Pushing the limits of mathematical reasoning in open language models.
+  arXiv preprint arXiv:2402.03300, 2024.
+Weizhou Shen, Chenliang Li, Fanqi Wan, Shengyi Liao, Shaopeng Lai, Bo Zhang, Yingcheng Shi, Yuning Wu,
+ Gang Fu, Zhansheng Li, et al. QwenLong-CPRS: Towards ∞-LLMs with dynamic context optimization. arXiv
+ preprint arXiv:2505.18092, 2025.
+Huatong Song, Jinhao Jiang, Yingqian Min, Jie Chen, Zhipeng Chen, Wayne Xin Zhao, Lei Fang, and Ji-Rong
+  Wen. R1-Searcher: Incentivizing the search capability in LLMs via reinforcement learning. arXiv preprint
+  arXiv:2503.05592, 2025.
+Richard S. Sutton and Andrew G. Barto. Reinforcement Learning: An Introduction. MIT Press, 2 edition, 2018.
+
+
+                                                       11
+Hui-Ze Tan, Xiao-Wen Yang, Hao Chen, Jie-Jing Shao, Yi Wen, Yuteng Shen, Weihong Luo, Xiku Du,
+  Lan-Zhe Guo, and Yu-Feng Li. Hindsight credit assignment for long-horizon llm agents. arXiv preprint
+  arXiv:2603.08754, 2026.
+Harsh Trivedi, Niranjan Balasubramanian, Tushar Khot, and Ashish Sabharwal. Musique: Multihop questions via
+  single-hop question composition. Transactions of the Association for Computational Linguistics, 10:539–554,
+  2022.
+Xiangfeng Wang, Zaiyi Chen, Zheyong Xie, Tong Xu, Yongyi He, and Enhong Chen. In-context former:
+  Lightning-fast compressing context for large language model. In Findings of the Association for Computa-
+  tional Linguistics: EMNLP 2024, 2024.
+Yu Wang and Xi Chen. MIRIX: Multi-agent memory system for LLM-based agents.                      arXiv preprint
+  arXiv:2507.07957, 2025.
+Zixuan Wang, Yuchen Yan, Hongxing Li, Teng Pan, Dingming Li, Ruiqing Zhang, Weiming Lu, Jun Xiao, Yuet-
+  ing Zhuang, and Yongliang Shen. Milestone-guided policy learning for long-horizon language agents. arXiv
+  preprint arXiv:2605.06078, 2026.
+Jason Wei, Zhiqing Sun, Spencer Papay, Scott McKinney, Jeffrey Han, Isa Fulford, Hyung Won Chung,
+  Alex Tachard Passos, William Fedus, and Amelia Glaese. BrowseComp: A simple yet challenging benchmark
+  for browsing agents. arXiv preprint arXiv:2504.12516, 2025.
+Ronald J. Williams. Simple statistical gradient-following algorithms for connectionist reinforcement learning.
+  Machine Learning, 8:229–256, 1992.
+Xixi Wu, Kuan Li, Yida Zhao, Liwen Zhang, Litu Ou, Huifeng Yin, Zhongwang Zhang, Yong Jiang, Pengjun
+  Xie, Fei Huang, Minhao Cheng, Shuai Wang, Hong Cheng, and Jingren Zhou. Resum: Unlocking long-horizon
+  search intelligence via context summarization. arXiv preprint arXiv:2509.13313, 2025.
+Yating Wu, Yuhao Zhang, Sayan Ghosh, Sourya Basu, Anoop Deoras, Jun Huan, and Gaurav Gupta. Con-
+  textweaver: Selective and dependency-structured memory construction for llm agents. arXiv preprint
+  arXiv:2604.23069, 2026.
+Wujiang Xu, Zujie Liang, Kai Mei, Hang Gao, Juntao Tan, and Yongfeng Zhang. A-MEM: Agentic memory for
+ LLM agents. arXiv preprint arXiv:2502.12110, 2025.
+Yang Xu, Yunlong Feng, Honglin Mu, Yutai Hou, Yitong Li, Xinghao Wang, Wanjun Zhong, Zhongyang Li,
+  Dandan Tu, Qingfu Zhu, et al. Concise and precise context compression for tool-using language models. In
+  Findings of the Association for Computational Linguistics: ACL 2024, pp. 16430–16441, 2024.
+Sikuan Yan, Xiufeng Yang, Zuchao Huang, Ercong Nie, Zifeng Ding, Zonggen Li, Xiaowen Ma, Hinrich Schütze,
+  Volker Tresp, and Yunpu Ma. Memory-R1: Enhancing large language model agents to manage and utilize
+  memories via reinforcement learning. arXiv preprint arXiv:2508.19828, 2025.
+Chenxiao Yang, Nathan Srebro, David McAllester, and Zhiyuan Li. PENCIL: Long thoughts with short memory.
+  In Proceedings of the 42nd International Conference on Machine Learning, volume 267 of Proceedings of
+  Machine Learning Research, 2025.
+Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Bengio, William Cohen, Ruslan Salakhutdinov, and Christopher D
+  Manning. Hotpotqa: A dataset for diverse, explainable multi-hop question answering. In Proceedings of the
+  2018 conference on empirical methods in natural language processing, pp. 2369–2380, 2018.
+Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. ReAct: Syn-
+  ergizing reasoning and acting in language models. In International Conference on Learning Representations,
+  2023.
+Hongli Yu, Tinghong Chen, Jiangtao Feng, Jiangjie Chen, Weinan Dai, Qiying Yu, Ya-Qin Zhang, Wei-Ying Ma,
+  Jingjing Liu, Mingxuan Wang, and Hao Zhou. MemAgent: Reshaping long-context LLM with multi-conv
+  RL-based memory agent. In International Conference on Learning Representations, 2026.
+Qiying Yu, Zheng Zhang, Ruofei Zhu, Yufeng Yuan, Xiaochen Zuo, Yu Yue, Tiantian Fan, Gaohong Liu, Lingjun
+  Liu, Xin Liu, et al. DAPO: An open-source LLM reinforcement learning system at scale. arXiv preprint
+  arXiv:2503.14476, 2025.
+Siliang Zeng et al. Reinforcing multi-turn reasoning in llm agents via turn-level credit assignment. OpenReview,
+   2025.
+
+
+                                                      12
+Chenchen Zhang. From reasoning to agentic: Credit assignment in reinforcement learning for large language
+  models. arXiv preprint arXiv:2604.09459, 2026.
+Yuxiang Zhang, Jiangming Shu, Ye Ma, Xueyuan Lin, Shangxi Wu, and Jitao Sang. Memory as action: Au-
+  tonomous context curation for long-horizon agentic tasks. arXiv preprint arXiv:2510.12635, 2025.
+Haotian Zhao, Songlin Zhou, Yuxin Zhang, Stephen S.-T. Yau, Wenyu Zhang, Lun Tian, Tianshu Zhu, Yifeng
+  Huang, Yucheng Zeng, Jingnan Gu, Daxiang Dong, and Jianmin Wu. AEM: Adaptive entropy modulation for
+  multi-turn agentic reinforcement learning. arXiv preprint arXiv:2605.00425, 2026.
+Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin, Zhuohan
+  Li, Dacheng Li, Eric Xing, et al. Judging llm-as-a-judge with mt-bench and chatbot arena. Advances in neural
+  information processing systems, 36:46595–46623, 2023.
+Yuxiang Zheng, Dayuan Fu, Xiangkun Hu, Xiaojie Cai, Lyumanshan Ye, Pengrui Lu, and Pengfei Liu. Deep-
+  Researcher: Scaling deep research via reinforcement learning in real-world environments. arXiv preprint
+  arXiv:2504.03160, 2025.
+Wanjun Zhong, Lianghong Guo, Qiqi Gao, He Ye, and Yanlin Wang. MemoryBank: Enhancing large language
+ models with long-term memory. In Proceedings of the AAAI Conference on Artificial Intelligence, 2024.
+Zijian Zhou, Ao Qu, Zhaoxuan Wu, Sunghwan Kim, Alok Prakash, Daniela Rus, Jinhua Zhao, Bryan Kian Hsiang
+  Low, and Paul Pu Liang. MEM1: Learning to synergize memory and reasoning for efficient long-horizon agents.
+  arXiv preprint arXiv:2506.15841, 2025.
+
+
+
+
+                                                     13
+A          C ONTEXT R ECONSTRUCTION S TRATEGIES
+Figure 6 compares context reconstruction strategies under bounded-context agentic RL. The top pipeline shows
+the rollout loop, where the policy generates tool calls, receives observations, and triggers reconstruction once
+history exceeds the budget. The lower panels show how different methods reconstruct the next policy context.
+Append-only prompting preserves all turns but quickly exceeds the budget, while truncation, pruning, recursive
+folding, and memory-action methods shorten context by removing, compressing, or editing history. Although
+these strategies enable long-horizon rollouts, they often weaken the link between reconstructed context and orig-
+inal evidence turns. In contrast, ECHO stores completed turns as source-indexed memories and selects relevant
+ones for reconstruction, preserving explicit provenance for traceable credit routing.
+
+
+                                     Prompt               Policy Generates                                                                  Tool Execution                                                    Append to                                              No               Continue in
+                                                                                                       Tool Call                                                                Observation                                                 Context Budget
+                                  + Tool Schema              (Thinking)                                                                     (Environment)                                                 Interaction History                                                        same Context
+                                                                                                                                                                                                                                              Exceeded
+
+                                                                                                                                                                                                                                                       Yes
+
+                                                                                                                                                                                                                                     Trigger Context Reconstruction
+
+
+
+
+      (a) Vanilla Prompting                                                                  (b) Existing Context Reconstruction Strategies: Partially traceable                                                                                                     (c) ECHO: Fully Traceable
+
+                    Append-only                                Truncation                                 Pruning / Omission                                 Recursive folding                        Memory Actions                                                        Selective turn memory
+             Explicit but over-budget                         Lost earlier turns                           Drop irrelevant parts                             Collapse distant turns           Operate on memory (Indirect trace)                                 Source-Indexed Memory Reconstruction
+
+      t1       t2      t3    t4      t5      t6   t1     t2       t3     t4        t5   t6        t1       t2      t3   X     X        t6            t1      t2      t3   t4    t5    t6      t1     t2    t3    t4    t5       t6               t1     t2      t3     t4      t5    t6
+
+                                                                                                                                                                                                                                                                                                          Turn Memory
+                                                                                                                                                                                                   Memory Bank
+                                                                                                                                                       Summary1                                                                                                                                 Turn ID     Finding   Action
+                                                                                                                                                                                              M1     M2   M3     M4                           Recent turns Selected turns
+                                                                                                                                                                                                                                                                                                   1          o1        a1
+
+                                                                                                                                                                                                                                                  M4             M1       M3                       2          o2        a2
+                                                                                                                                                                  Summary2      t5    t6
+                                                                                                                                                                                                                                                                                Policy Select      3          o3        a3
+                    Current Context                                    Current Context                          Current Context                                                               Add Edit Delete                                                                                     ...         ...       ...
+                                                                                                                                                                    Current Context                   Current Context                                        Current Context                                  oT        aT
+      t1       t2      t3    t4     t5       t6                          t4        t5   t6        t1       t2      t3                  t6                                                                                                                                                         T
+
+                                                                                                                                                                  Summary2      t5    t6      M1     M2                 t5      t6               M1     M3       M4            t5    t6
+           All turns are retained in order             Recent turns are retained                        Irrelevant parts are omitted
+
+
+
+
+Figure 6: Existing context reconstruction strategies reduce context length but often lose full traceability. ECHO
+uses source-indexed selective memory to preserve evidence traceability for outcome-credit routing.
+
+
+B          ECHO AGENT L OOP
+Algorithm 1 summarizes the rollout-time control flow used by ECHO. The agent maintains a working context
+C, a set of source-indexed memories M , and generated token segments G. After each tool response, the policy
+writes a compact finding for the completed turn; when the context budget is exceeded, it selects relevant memory
+records, reconstructs a bounded continuation context, and records the provenance masks that will later be used for
+traceable credit assignment.
+
+C          E XPERIMENTAL D ETAILS
+C.1           I MPLEMENTATION S ETUP
+
+Each BrowseComp-Plus rollout has access to search, open page, and finish. The search tool queries a
+local dense retrieval service using Qwen3-Embedding-8B and returns the top-5 documents by default. Each search
+result contains a document id, score metadata, and a snippet truncated to about 512 tokens. The open page tool
+retrieves a document by docid and returns at most 16,000 characters. We allow at most 5 parallel tool calls per
+assistant turn, and finish terminates the rollout for BrowseComp-Plus verifier scoring.
+All runs use the same fully asynchronous rollout-training pipeline on 4 nodes with 8 GPUs per node. Partial
+rollouts are enabled with staleness threshold 0.5. As described in Section 5.1, compression-based methods use
+a 32k-token context budget and at most 5 compression rounds, yielding an effective interaction budget of up to
+192k tokens. Saved rollout segments share the rollout-level advantage; method-specific training masks determine
+which generated tokens receive nonzero updates.
+
+C.2           E VALUATION B ENCHMARKS
+
+In this section, we provide detailed descriptions of the evaluation protocols and dataset characteristics for the
+zero-shot generalization experiments.
+
+Multi-Objective QA. To evaluate the agent’s long-range reasoning and context management capabilities under
+varying cognitive loads, we construct a multi-objective QA benchmark (Zhang et al., 2025). This benchmark
+challenges the agent to resolve multiple independent sub-questions within a single extended rollout to synthesize
+
+
+                                                                                                                                                                   14
+Algorithm 1 ECHO rollout-time agent loop
+Require: Task prompt x, policy πθ , tools T , context budget B, recent-turn budget K, selection cap S
+ 1: C ← x
+ 2: M ← ∅; G ← ∅; G ← ∅; p ← ∅; i ← 0
+ 3: while rollout is not terminated do
+ 4:     Sample at ∼ πθ (· | C)
+ 5:     Append at to C and append its trainable tokens to G
+ 6:     if p ̸= ∅ then
+ 7:         (ip , αip ) ← p
+ 8:         mip ← parse ∗sum(at )
+ 9:         M ← M ∪ e ∗ ip = (ip , αip , mip )
+10:         Tag the summary tokens in G as finding tokens for source turn ip
+11:         p←∅
+12:     end if
+13:     Parse tool calls from at
+14:     if no tool call remains then
+15:         Mark terminal-answer tokens in G as final
+16:         G ← G ∪ G; break
+17:     end if
+18:     αi ← render ∗act(at )
+19:     Tag the non-summary action tokens in G as action tokens for source turn i
+20:     Execute tool calls with T and obtain observations oi
+21:     Append observations oi to C
+22:     p ← (i, αi ); i ← i + 1
+23:     Append the <sum last turn> hint to C
+24:     if |C| > B then
+25:         csel
+              j ← C ⊕ render ∗list(M ) ⊕ xsel
+26:         asel            sel
+              j ∼ πθ (· | cj )
+                        sel
+27:         Append aj to G and tag its tokens as selection tokens
+28:         I ← ρB,S,K (parse(aselj ), M )
+29:         Record selected-turn, finding-token, and selection-token masks
+30:         Mark G as non-final; G ← G ∪ G
+31:         C ← x ⊕ render(M [I]) ⊕ xcont
+32:         G←∅
+33:     end if
+34: end while
+35: return G with credit-token masks
+
+
+
+a final answer. We synthesize these multi-objective queries using seed instances from HotpotQA (Yang et al.,
+2018), 2WikiMultihopQA (Ho et al., 2020), Bamboogle (Press et al., 2023), and Musique (Trivedi et al., 2022).
+We scale the task difficulty by aggregating questions to form test sets requiring 2, 4, 8, and up to 16 distinct
+objectives. Performance is measured using an LLM-as-a-Judge (Zheng et al., 2023) protocol. The evaluator
+assesses the semantic consistency between the agent’s final answer and the ground truth, computing the average
+success rate across all sub-objectives within a given multi-objective prompt.
+
+Code Generation. We evaluate interactive programming capabilities using CodeGym (Du et al., 2025) and
+LoCoBench-Agent (Qiu et al., 2025). CodeGym frames tasks as synthetic interactive environments where agents
+invoke problem-specific APIs, together with observe() and done(), rather than writing raw code. Since
+many CodeGym tasks are either too easy or too difficult for meaningful comparison, we construct a medium-
+difficulty subset using the original Qwen3-32B-Instruct policy before agentic RL training. Specifically, we
+first run the base policy four times per instance, retain instances solved exactly once, and then randomly sample
+128 examples from this candidate pool. This filtering is performed once before evaluating any trained method,
+and the same subset is used for all methods. For authentic software-engineering scenarios, we further evaluate on
+128 Python instances from LoCoBench-Agent. These tasks operate on real codebases of up to 1 million tokens
+and require agents to manage cross-file dependencies, investigate bugs, and perform architectural refactoring with
+tools for file operations and semantic search.
+
+Deep Information Seeking. Deep information seeking benchmarks measure the agent’s proficiency in orches-
+trating complex reasoning, multi-step tool use, and long-horizon fact aggregation. We evaluate on GAIA (Mialon
+et al., 2024), which reflects real-world assistant tasks demanding rigorous execution and robust fact-checking.
+To test the limits of domain expertise, we use Humanity’s Last Exam (HLE) (Phan et al., 2025), a frontier-level
+
+
+                                                       15
+benchmark featuring expert-vetted questions that require deep reasoning rather than surface-level internet retrieval.
+Finally, we incorporate Frames (Krishna et al., 2025) to assess the agent’s capacity to resolve multi-hop queries,
+integrate conflicting evidence, and maintain critical factual anchors across extensive retrieval trajectories without
+experiencing history collapse.
+
+
+D     P ROMPT D ETAILS
+
+D.1     BASE P ROMPT FOR B ROWSE C OMP -P LUS
+
+    System and User Prompt
+
+    We use the same BrowseComp-Plus tool-agent prompt setting as the SUPO baseline. The system and user prompts
+    follow the same multi-step research protocol for query decomposition, iterative search, evidence synthesis, and final
+    verification. The tool interface is formatted with the Hermes-style <tool call>...</tool call> protocol.
+
+
+
+D.2     ECHO-S PECIFIC P ROMPTS AND H INTS
+
+    ECHO Extra System Prompt
+
+    After receiving a tool/function response, your next assistant message must include exactly one
+    <sum last turn>...</sum last turn> block before any new tool/function call.
+    The block should be one concise factual sentence summarizing only the latest tool/function result.
+    After the block, continue in the same assistant message with the next tool/function call, or call finish if the final
+    answer is ready. Do not stop after the summary.
+
+
+
+    Sum Last Turn Hint
+    Briefly record the latest tool result in <sum last turn>...</sum last turn>, then continue with the next ac-
+    tion.
+
+
+
+    Selection Prompt
+
+    System:
+    Your operational context is full. Select prior interaction turns that are necessary to continue solving the task.
+    Rules:
+     • Output exactly one <selection>...</selection> block.
+     • Do not call any function/tool in this turn.
+     • Do not answer the original task.
+     • Do not include <think>, tool calls, markdown fences, or text outside the selection tags.
+     • Select only turns that contain reusable evidence, constraints, failed attempts, or the next planned action.
+     • Prefer older turns that are not already covered by automatically retained recent turns.
+     • If no older turn is necessary, return an empty <selection></selection> block.
+    Valid turns:
+    {turn list}
+
+      <selection>[zero or more lines, each formatted as turn N: reason]
+      </selection>
+
+
+
+    Selection Hint
+    Valid selection indices: turn 0 ∼ turn {n hist-1}.
+    Select at most {selection max turns} historical turns; output an empty selection if the automatically retained
+    recent turns are enough.
+    The latest turns turn {recent start} ∼ turn {n hist-1} will be retained automatically; select any additional
+    older turns that are still needed.
+
+
+
+                                                                16
+In our BrowseComp-Plus experiments, selection max turns = 8 and echo recent turns = 3.
+
+
+
+
+                                              17
+
