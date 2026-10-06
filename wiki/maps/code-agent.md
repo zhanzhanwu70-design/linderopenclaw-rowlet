@@ -440,3 +440,40 @@ CompactionRL 與其他 training-time 方法的差異：
 - 現在補齊：Scroll (long-trajectory) vs LessContext (tool-heavy) 形成「**two-axis context management spectrum**」
 
 **結論**：Scroll 是 context management 的 **paradigm shift** — 從「store and retrieve」轉向「environment and explore」。對 Rowlet 來說最直接的 action item 是：**改寫 heartbeat 的 context construction pipeline，從「serialize and select」變成「externalize and query」**。第一步可以從 daily memory 開始：每個 daily file 加 `## Status` 區塊（headline anchor），MEMORY.md 變成 eviction index，下游 query 改走 `ms.search`-style 介面。
+
+### [[memagent-wei-2026]] — Heterogeneous Memory Provider Routing（2026-10-06 深讀）
+
+**論文**：[MemAgent: Learning to Manage Heterogeneous Memory Providers for LLM Agents](https://arxiv.org/abs/2609.32521)（arXiv:2609.32521v1, 2026-09-26, Wei/Zhao/Cheng/Chen/Yuan/Wang/Yan/Li）
+**詳細 source 條目**：`wiki/sources/memagent-wei-2026.md`
+
+**核心主張**：Agent memory 不是「要選哪一種 representation」的問題，而是「**要如何 routing**」的問題。實證評估 **13 種 memory method** 後發現：**沒有任何單一方法能跨 benchmark generalize** — 這個 negative result 直接證成 heterogeneous routing 的正當性。
+
+**三個 orthogonal routing decisions**（paper 的清晰設計切分）：
+1. **Content-aware probing（pre-retrieval）**：在花 retrieval budget 之前，先 inspect incoming query 判斷哪些 provider 可能有幫助 — "probe before you fetch"。
+2. **Short-term memory gating（during execution）**：每 step 決定 **要不要** inject scratchpad — 不是 always-on infra，而是 per-step action。
+3. **Selective multi-provider storage（post-execution）**：step 完成後把 experience **路由** 到一個或多個 provider（reflection → reflection store / successful skill → skill library / structured fact → KG），storage 是 **content-aware** 的。
+
+**訓練 pipeline**：phase-specific supervision — 不同階段（probing / gating / storage）用不同 synthesized supervision，而非單一 end-to-end loss。與 [[memory-r2-yan-2026]] 的 chunk-wise + global/local 雙分支同源，但這裡是 routing actions 而非 memory R/W。
+
+**核心數字**：
+- GAIA / WebWalkerQA / xBench-DS 平均 **+10.0% accuracy**
+- **擊敗所有 13 種 individual memory method**（heterogeneous router 統治 best single-provider baseline）
+- **<0.3% routing overhead** — meta-agent 不增加可量測成本
+- **平均 task steps -12%** — 更好的記憶 → 少做無用 action
+
+**對 Rowlet / OpenClaw 的直接啟發**：
+1. **三層記憶是 single-representation**：目前 SOUL.md / daily / MEMORY.md 本質是 append-only markdown，與 paper 實證的「single-representation 不通用」正對位。
+2. **Heartbeat ingestion 應該做 routing**：不同 memory type（user preference / per-session observation / tooling fix / Linder directive）應路由到不同 layer — 可借鑒 paper 的 provider set。
+3. **對位 [[agentic-context-mgmt-dadhich-2026]]**：Dadhich 的 5 primitives（Architecting / Ingesting / Scoping / Anticipating / Compacting）正好是 routing 框架的更高階抽象 — MemAgent 是其中三個 primitives 的具體實作。
+4. **對位 [[sirin-belikova-2026]]**：probing 階段可以加 SIRIN-style 的 faithfulness probe（不只是選 provider，還能 flag "this query 任何 provider 都不會給 good answer"）。
+5. **Trade-off**：paper 假設 multi-store harness 已存在 — 對只有單一 MEMORY.md 的 agent 沒有幫助。OpenClaw 目前的層次剛好夠搭 routing，但需要先定義每層的 content type schema。
+
+**對堆疊的補充**：
+- 之前九篇 + LeanMem + LessContext = 12 篇，第 13 篇 MemAgent 補上 **heterogeneous multi-provider routing** 這個最大缺口
+- 之前堆疊每篇都在「**把 single memory method 做得更好**」，MemAgent 是第一篇直接說「**別再選 single method 了，去 route**」
+- 與 [[organize-then-retrieve-2026-hsu]] (HORMA) 的差異：HORMA 在 single hierarchy 內做 navigation；MemAgent 在 **multiple parallel providers 之間** 做 routing — 兩個方向的 orthogonal 設計
+
+**Open question（值得未來深挖）**：
+1. Router 超過 13 個 provider 時 routing accuracy 還能 hold 嗎？
+2. Phase-specific supervision 需要 rollout access；沒有 simulator 時如何達到同等 quality？
+3. Storage routing 假設 multi-store 已存在 — 對 single-LLM-agent 不適用，paper 沒處理這個 cold-start case。

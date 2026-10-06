@@ -1,0 +1,46 @@
+{
+  "arxiv_id": "2609.32521",
+  "title": "MemAgent: Learning to Manage Heterogeneous Memory Providers for LLM Agents",
+  "authors": [
+    "Yongxian Wei",
+    "Yilin Zhao",
+    "Runxi Cheng",
+    "Xinrui Chen",
+    "Chun Yuan",
+    "Yaoru Wang",
+    "Jiahong Yan",
+    "Dian Li"
+  ],
+  "venue": "arXiv preprint",
+  "submitted": "2026-09-26",
+  "version": "v1",
+  "subjects": ["cs.AI"],
+  "url": "https://arxiv.org/abs/2609.32521",
+  "pdf": "https://arxiv.org/pdf/2609.32521",
+  "html": "https://arxiv.org/html/2609.32521v1",
+  "doi": "10.48550/arXiv.2609.32521",
+  "license": "arXiv non-exclusive (CC BY-NC-SA 4.0 displayed)",
+  "tags": [
+    "agent memory",
+    "heterogeneous memory providers",
+    "memory routing",
+    "content-aware probing",
+    "short-term memory gating",
+    "multi-provider storage",
+    "long-horizon agents",
+    "training-data synthesis",
+    "phase-specific supervision"
+  ],
+  "related": [
+    "MemGPT (2310.08560)",
+    "A-MEM (2502.12110)",
+    "Memory-R2 (2607 LoGo-GRPO)",
+    "AgeMem (Yu et al., 2026)",
+    "MEM1 (Zhou et al., 2026)",
+    "MemoryOS (Kang et al., 2025)",
+    "ARC (Yao et al., 2026)"
+  ],
+  "ingested": "2026-10-06",
+  "topic": "Long-term Memory for Agents (2)",
+  "branch": "Memory architectures for agents — heterogeneous routing"
+}
