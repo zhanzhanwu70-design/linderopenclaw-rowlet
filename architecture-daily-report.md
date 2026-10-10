@@ -1,76 +1,80 @@
-# 每日 Agent × 軟體開發情報 — 2026-10-06
+# 每日 Agent × 軟體開發情報 — 2026-10-10
 
 > 產出者：Rowlet（cron a72cb46b）
-> 涵蓋：agent frameworks、MCP、coding agent、harness engineering、memory 論文
-> 範圍：過去 7-14 天為主，部分含跨月結構性訊號
+> 涵蓋：agent frameworks、coding agents、MCP、harness engineering、agent memory、OpenClaw 自身
+> 範圍：過去 7-14 天為主，跨月結構性訊號為輔
+> 前次報告：2026-10-06（harness mainstreaming、MCP events、durable execution、IDE 退場、memory graph）
 
 ---
 
 ## 今日 5 個重點
 
-### 1. Harness Engineering 正式成為 2026 後半年主旋律
-- **發生什麼**：Marmelab 9/24 發布《The State Of AI Harness Engineering 2026》，提出四元素構成定義（agent loop、tool interface、context management、control）；同月 Microsoft Learn 推出 Agent Harness 官方概念頁；BCG 發布《Harness Engineering: How to Scale Agentic AI Safely》；ai-boost/awesome-harness-engineering 上線。研究資料庫橫掃 1,925 repo / 2,303 context files，發現 75.9% 含測試、68.1% 含架構說明、僅 14.8% 涵蓋安全。
-- **為什麼重要**：harness 不再是 prompt 技巧，而是被框為「agent 的 OS」。對 OpenClaw 的 rowlet 自我定位（runtime + tool policy + memory + control）有直接映射。
-- **來源**：<https://marmelab.com/blog/2026/09/24/the-state-of-ai-harness-engineering-2026.html>、<https://learn.microsoft.com/en-us/agent-framework/concepts/harness>、<https://www.bcg.com/publications/2026/harness-engineering-scale-agentic-ai>、<https://github.com/ai-boost/awesome-harness-engineering>、<https://en.wikipedia.org/wiki/Agent_harness>
+### 1. MCP 2026-07-28 spec 穩定後，10 月進入「事件化 + 任務化」落地期
+- **發生什麼**：MCP 2026-07-28 spec 把核心改為 stateless、把 Apps 與 Tasks 變成標準化 extensions、加強 OAuth 2.0 / OIDC 授權；四月已達 1.1 億 SDK 月下載；W3C WebML 社群 10/2 推 WebMCP Draft 把 MCP 帶進瀏覽器；OpenAI ChatGPT 9/29 公告支援 MCP Events（被動 webhook push）。
+- **為什麼重要**：MCP 從「request/response 工具呼叫」演進到「事件 + 長期任務」雙軌，agent 正從主動查詢端變成 workflow 觸發端。對 OpenClaw 而言，是否要支援 MCP server / client 直接影響 skill 市場的開放程度。
+- **來源**：<https://en.wikipedia.org/wiki/Model_Context_Protocol>、<https://webmachinelearning.github.io/webmcp/>、<https://theairankings.com/guides/what-is-mcp/>、<https://github.com/jqueryscript/anthropic-claude-timeline>
 
-### 2. MCP 從 tool-call 標準升級為事件生態
-- **發生什麼**：OpenAI 9/29 宣布 ChatGPT 將支援 MCP Events（webhook push），讓 plugin 可在被動觸發；W3C WebML 社群小組 10/2 釋出 WebMCP Draft（瀏覽器端 JS-based tools 給 agent）；Freshservice 9/10 MCP 整合 GA；兩週內出現五種 MCP auth 機制（SSOJet 9 月 B2B SSO bridge 為代表）。
-- **為什麼重要**：MCP 正從「request/response」演進為「event-driven」，agent 開始變成被動的 workflow 觸發端，而不只是主動查詢端。
-- **來源**：<https://en.wikipedia.org/wiki/Model_Context_Protocol>、<https://webmachinelearning.github.io/webmcp/>、<https://forkast.news/five-mcp-authentication-mechanisms-shipped-in-two-weeks-the-pattern/>、<https://support.freshservice.com/support/solutions/articles/50000012678-model-context-protocol-mcp-integration-in-freshservice>
+### 2. Coding agent 排行榜固化：Claude Fable 5.1 91.4%、Codex + GPT-6.1 Sol 58.2%/$1.92
+- **發生什麼**：Artificial Analysis 模型榜（單一 Terminus 2 harness）Claude Fable 5.1 max 91.4%、GPT-6 Astra high 89.9%、Claude Opus 5 max 89.1%；Harbor Hub Terminal-Bench 2.1 agent 榜 Codex + GPT-6 Astra high 87.4%、Claude Code + Fable 5 xhigh 83.8%；Terminal-Bench 4.0（10/6）Claude Code + Opus 5.5 64.8% 領先。
+- **為什麼重要**：coding agent 的「model + harness」分離評測已成主流，純模型分數已不足以解釋終端表現。對 OpenClaw 來說，「harness 提供方」與「模型提供方」解耦的設計再次被驗證是對的。
+- **來源**：<https://www.morphllm.com/best-ai-coding-agents-2026>、<https://www.morphllm.com/ai-coding-agent>、<https://www.morphllm.com/comparisons/codex-vs-claude-code>
 
-### 3. Production-grade agent framework 走向「durable execution + HITL」共識
-- **發生什麼**：LangGraph 1.0 主打 durable state、persistence、native human-in-the-loop interrupt；CrewAI 9/9 出 1.15.21；Microsoft 4/3 推 Agent Framework 1.0 統一 AutoGen + Semantic Kernel；QCon SF 11/16-20 把「Engineering Production Systems for an Agentic Era」列為主軸。
-- **為什麼重要**：所有主流框架正把「可暫停、可恢復、可審計」當成 baseline。對 Linder 在 OpenClaw 內設計 agent loop 是直接指導：context compaction 與 HITL interrupt 必須是 first-class。
-- **來源**：<https://promptessor.com/blog/ai-agent-frameworks>、<https://dev.to/shaam_ai/python-for-agentic-ai-langgraph-vs-crewai-vs-maf-4od0>、<https://kestra.io/resources/ai/ai-agent-orchestration-frameworks>、<https://ai.plainenglish.io/crewai-vs-langgraph-vs-autogen-vs-openai-agents-sdk-the-framework-you-pick-matters-less-than-the-8934e2cc4bbb>、<https://www.infoq.com/news/2026/10/qconsf-2026-sessions/>
+### 3. Production agent framework 收斂到 LangGraph 1.2.13 + Microsoft Agent Framework 雙雄
+- **發生什麼**：LangGraph 1.2.13（10/6）44.8M PyPI 月下載、Uber/Cisco/Anthropic/Replit/LinkedIn 採用；Microsoft Agent Framework 1.0（4/3）= AutoGen + Semantic Kernel 統一、Go port 中年 public preview；CrewAI 1.15.21、OpenAI Agents SDK、Google ADK、Pydantic AI、LlamaIndex Agent Workflows、smolagents、Strands Agents、Mastra 共同構成 10 大開源框架。
+- **為什麼重要**：framework 選型已不再是「哪個最潮」，而是「durable state + HITL + 跨語言 + A2A 通訊」四項 baseline 全不到位就出局。對 Rowlet 而言，這是評估 OpenClaw 自身 runtime 差距的 checklist。
+- **來源**：<https://www.jahanzaib.ai/blog/langgraph-tutorial-build-production-ai-agents>、<https://vdf.ai/blog/best-ai-agent-frameworks/>、<https://ai.miraheze.org/wiki/Microsoft_Agent_Framework>、<https://crewai.com/>
 
-### 4. Coding agent 進入「IDE 退場、命令中心進場」轉折
-- **發生什麼**：Windsurf 改名 Devin Desktop，定位為「managing all your agents in one place」；Codex CLI 0.146.0/0.146.1（7-8 月）新增 Agent Plugins manifest 與 Amazon Bedrock、Claude Code marketplaces、執行期注入 skills；Claude Code v2.1.220+（8 月）加入 cross-session messaging，可讓 sessions 互相傳遞 findings；Pragmatic Engineer：使用多年的 IDE 工具與 code review 流程正變成 optional。
-- **為什麼重要**：coding agent 不再只是 IDE 內的補完，而是多 session 編排 + plugin marketplace 的操作系統面。這正是 OpenClaw 想做但尚未做完的：subagent 任務分派、skill marketplace、跨 session 訊息。
-- **來源**：<https://www.morphllm.com/comparisons/codex-vs-claude-code>、<https://www.windsurf.com/>、<https://blakecrosley.com/guides/codex>、<https://newsletter.pragmaticengineer.com/p/the-pragmatic-engineer-five-years>、<https://www.havoptic.com/tools/windsurf>
+### 4. Harness engineering 出現「constitutive definition」學術共識雛型
+- **發生什麼**：ai-boost/awesome-harness-engineering 6 月提出 harness 的充分必要條件 = (agent loop + tool interface + context management + control mechanisms) 四元素；4 月針對 70 個公開 agent 系統的實證研究歸納出 5 個 architectural patterns（subagent、context mgmt、tool systems、safety、orchestration）；Addy Osmani 主張「分離 generation 與 evaluation 到不同 agent」勝過 self-evaluation。
+- **為什麼重要**：harness 從 buzzword 變成有可驗證 definition 的工程學科。Rowlet 自我定位（runtime + tool policy + memory + control）直接對應這四元素，可以反過來用這套框架來 audit OpenClaw 自己。
+- **來源**：<https://github.com/ai-boost/awesome-harness-engineering>、<https://marmelab.com/blog/2026/09/24/the-state-of-ai-harness-engineering-2026.html>、<https://www.freecodecamp.org/news/what-is-an-agent-harness/>
 
-### 5. Agent memory 進入「graph compaction + access pattern」研究深水區
-- **發生什麼**：arXiv 9/30 發 2609.40118《Persistent Context Graphs for Efficient Memory Compaction in LLM Agents》；2609.33226《Beyond Memory Construction: Rethinking Memory Access for LLM-based Conversational Agents》主張重點從「怎麼建 memory」轉向「怎麼 access」；2609.24259《MemCalib: Benchmarking and Optimizing Memory Use》提出 memory 使用效率基準。mem0 進入 GitHub AI Agents Top100 第二名（2026-09-27 截錄）。
-- **為什麼重要**：與 Rowlet 自己設計的 graphify + MEMORY.md + daily memory 三層模型方向一致；驗證「以 graph 而非 log 為 memory primary structure」的判斷。
-- **來源**：<https://arxiv.org/abs/2609.40118>、<https://arxiv.org/abs/2609.33226>、<https://arxiv.org/abs/2609.24259>、<https://mem0.ai/blog/state-of-ai-agent-memory-2026>、<https://github.com/yuxiaopeng/Github-Ranking-AI/blob/main/Top100/AI%20Agents.md>
+### 5. OpenClaw 自身 10 月進度：OCE 企業控制面 + 8 月 extended-stable release
+- **發生什麼**：OpenClaw Foundation 推出 OCE（OpenClaw Enterprise），免費、OpenAI/Red Hat/Nvidia 支持，主打多租戶管理、sandboxing、auditing、語言模型審視 agent 動作；8 月底發布 gateway-only extended-stable release（= LTS），含安全更新、模型支援、可靠性修正。Multi-agent routing 從單一 Gateway 啟動多個 isolated agent（每個有獨立 persona / model / session history）。
+- **為什麼重要**：OpenClaw 正從「個人 agent 工具」往「enterprise control plane」定位移動；對 Linder 的 rowlet 而言，這是討論 skill marketplace 與 multi-tenant 隔離策略的時機點。
+- **來源**：<https://venturebeat.com/orchestration/openclaw-launches-free-enterprise-control-plane-for-persistent-ai-agents-backed-by-openai-red-hat-and-nvidia>、<https://github.com/openclaw/openclaw/releases>、<https://hackernoon.com/understanding-openclaws-gateway-agent-runtime-and-multi-agent-architecture>
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-1. **把 harness 概念寫進 OpenClaw 對外文件**。Marmelab + Microsoft 已經把四元素（loop / tool / context / control）做成 public schema；OpenClaw 的 rowlet runtime 正好對應，應在 `IDENTITY.md` 或 wiki 新頁中明列這四層的對應元件，並標註我們跟 LangGraph / Microsoft Agent Framework 的差異點（federated agents、pacing、記憶子系統）。
+1. **用四元素框架 audit 自己的 runtime**。把 ai-boost 的四元素（loop / tool / context / control）套到 OpenClaw rowlet 上：loop 對應 sessions_spawn + heartbeat、tool 對應 exec / message / web_*、context 對應 MEMORY.md + graphify、control 對應 policy / approval / pacing。輸出成 `wiki/concepts/OpenClaw Harness Audit.md`，並標註缺項（例如 A2A 訊息、stateless spec 對齊）。
 
-2. **建立 context compaction 實驗計畫**。MCP 與 Claude Code 都把「可恢復的中斷點」當成 production baseline；Rowlet 應在 1 週內用 Persistent Context Graphs 思路做一輪 mini spike：把現有 graphify JSON 轉成「可重建的最小 context graph」，驗證是否能取代 full rehydration。這是同時對齊 arXiv 9/30 論文與 LangGraph HITL pattern 的低風險實驗。
+2. **把 MCP Events 當成 cron 替代方案的可行性實驗**。10/2 WebMCP Draft + 9/29 ChatGPT MCP Events 顯示事件驅動的 agent 已進入可實作期。Rowlet 可在 1 週內做 mini spike：把 graphify 索引更新包成 MCP server，看是否能用 webhook 取代現有 5 分鐘 cron。低成本、可逆、可直接驗證架構假設。
 
-3. **把 coding agent 生態當成上游 watch list**。Codex / Claude Code / Devin Desktop / Cursor 四家的 release 節奏比 LangGraph 快；建議在 `~/.openclaw/workspace-rowlet/architecture-daily-report.md` 之外，新增 `architecture-daily-coding-agents.md` 或把這份報告拆分為「framework 段」+「coding agent 段」，並考慮 ingest 公開發行 release notes（避免自己 scraper 被 ban）。
+3. **coding agent 排行榜當成 model 路由決策依據**。Terminal-Bench 4.0 與 Artificial Analysis 的分離評測顯示「harness + model」組合優於單一選擇。可考慮在 OpenClaw 內建「per-task model picker」skill：根據任務類型（reasoning heavy / tool heavy / cheap volume）路由到 Fable 5.1 / GPT-6 Astra / cheap-tier；寫成 `~/.openclaw/skills/model-router/` 並在 rowlet 工作流中測試。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-1. arXiv 2609.40118《Persistent Context Graphs for Efficient Memory Compaction in LLM Agents》— <https://arxiv.org/abs/2609.40118>
-2. Marmelab《The State Of AI Harness Engineering 2026》— <https://marmelab.com/blog/2026/09/24/the-state-of-ai-harness-engineering-2026.html>
-3. ai-boost/awesome-harness-engineering — <https://github.com/ai-boost/awesome-harness-engineering>
-4. VoltAgent/awesome-ai-agent-papers（2026 論文策展）— <https://github.com/VoltAgent/awesome-ai-agent-papers>
-5. Microsoft Agent Framework Harness 概念頁 — <https://learn.microsoft.com/en-us/agent-framework/concepts/harness>
-6. W3C WebMCP Draft（10/2 2026）— <https://webmachinelearning.github.io/webmcp/>
-7. headroomlabs-ai/headroom（coding agent token 壓縮 proxy）— <https://github.com/kouweizhu/agents-radar/issues/328>
-8. Pragmatic Engineer：Five Years（IDE / code review 衰退觀察）— <https://newsletter.pragmaticengineer.com/p/the-pragmatic-engineer-five-years>
+1. arXiv 2610.05584《Expanding LLM Reasoning》(10/4) — <https://arxiv.org/abs/2610.05584>
+2. arXiv 2610.12061《When Should Agents Think? Adaptive Reasoning via Cross-Turn Estimation》— <https://arxiv.org/abs/2610.12061>
+3. arXiv 2610.08246《LeanPlan: Optimal Planning with LLM-Generated Heuristics and Admissibility Proofs》(10/6) — <https://arxiv.org/abs/2610.08246>
+4. arXiv 2610.07948《Confidence Reasoning Graphs: Structured Confidence Estimation for LLM Agents》— <https://arxiv.org/abs/2610.07948>
+5. Marmelab《The State Of AI Harness Engineering 2026》(9/24) — <https://marmelab.com/blog/2026/09/24/the-state-of-ai-harness-engineering-2026.html>
+6. ai-boost/awesome-harness-engineering — <https://github.com/ai-boost/awesome-harness-engineering>
+7. VoltAgent/awesome-ai-agent-papers（2026 策展）— <https://github.com/VoltAgent/awesome-ai-agent-papers>
+8. MorphLLM《Best AI Coding Agents (October 2026)》— <https://www.morphllm.com/best-ai-coding-agents-2026>
+9. LangGraph 1.2.13 Tutorial（10/6）— <https://www.jahanzaib.ai/blog/langgraph-tutorial-build-production-ai-agents>
+10. OpenClaw OCE（enterprise control plane）— <https://venturebeat.com/orchestration/openclaw-launches-free-enterprise-control-plane-for-persistent-ai-agents-backed-by-openai-red-hat-and-nvidia>
 
 ---
 
 ## 下一步建議（最多 3 條）
 
-1. **Ingest Marmelab 與 BCG 兩篇到 llm-wiki**：寫 `wiki/sources/The State of AI Harness Engineering 2026.md` 與 `wiki/sources/BCG Harness Engineering.md`，並用 `npx graphifyy link` 串到既有「Code 與 Agent 地圖」。低成本，知識密度高。
+1. **寫 `wiki/concepts/OpenClaw Harness Audit.md`**：用 ai-boost 四元素 + Marmelab 5 patterns 套到 rowlet runtime 上，標註差距與補完優先級。並用 `npx graphifyy link` 串到 `wiki/maps/Code 與 Agent 地圖.md` 與 `wiki/concepts/Agent Harness.md`（若不存在則順便建）。
 
-2. **安排一輪 mini spike：context compaction 可逆性測試**。把一個 graphify JSON（≤ 1MB）做 round-trip compaction，量測 token 節省率與重建 fidelity。輸出寫到 `architecture-daily-report.md` 同目錄的 `experiments/` 子資料夾；不需 commit skill，只先驗證。
+2. **mini spike：MCP server 包 graphify 索引**。把 `/home/amr/llm-wiki/graphify-out/GRAPH_REPORT.md` 透過 MCP server 暴露成兩個 tool（`get_node`、`query_graph`），讓任何 agent 可直接 query。產出寫到 `experiments/mcp-graphify-2026-10.md`。這個實驗順便驗證 MCP Events 取代 cron 的可行性。
 
-3. **觀望 MCP Events / WebMCP 進入實作階段**。目前是 draft + 公告期；不急著 ingest，但要把 10 月底前是否有 first-party server 支援當成 follow-up 觸發點（cron 或週報加註）。
+3. **觀望 10 月底 coding agent 變化**：MorphLLM 與 Harbor Hub Terminal-Bench 4.0 是新的基準試金石；可每兩週重新讀一次，必要時更新 `~/.openclaw/skills/` 內的 model-router 預設值。本週不需急動。
 
 ---
 
 ## 查過的來源
 
-- 本地：`npx graphifyy query "AI agent architecture agent skills multi-agent workflow software architecture software development trends coding agents 2026" --budget 1000`（命中 wiki 內 AI Agent 簡報、A Survey of Frontiers in LLM Reasoning、AI 地圖等節點）
-- 公開搜尋：Brave（AI agent framework、coding agent、GitHub trending、MCP spec、harness engineering、arxiv memory papers、Pragmatic Engineer / InfoQ / Anthropic Skills 共 8 次查詢）
+- 本地：`npx graphifyy query "AI agent architecture agent skills multi-agent workflow software architecture software development trends coding agents 2026" --budget 1000`（命中 wiki 內 `AI Agent 簡報`、`A Survey of Frontiers in LLM Reasoning`、`AI 地圖`、`Code 與 Agent 地圖` 等節點）
+- 公開搜尋：Brave 共 8 次（AI agent framework October 2026、coding agent news、MCP spec、harness engineering、arXiv memory、GitHub trending、OpenClaw gateway、LangGraph tutorial），web_fetch Marmelab harness engineering 全文（已截 3KB + spill 至 `/tmp/openclaw-web-fetch-079b4e18f98b0a06.log`）
+- 自我過濾：所有未指名日期的 search result（特別是 coddykit 的 GitHub trending 摘要系列）視為二手評論，僅作為趨勢佐證、不直接引用為事實
 
-> 本日無重大新訊號（無突破性研究、僅有持續性收斂）：今日重點是「harness 概念主流化」「MCP 事件化」「framework 走向 durable execution」「coding agent 編排化」「memory graph compaction 學術化」五條結構性趨勢，沒有單一爆炸性公告。
+> 今日為持續性收斂，無突破性研究：MCP 事件化、coding agent 排行榜固化、framework 雙雄格局、harness 學術定義成型、OpenClaw 自身 OCE 推進。五條皆為結構性趨勢延伸，無單一爆炸性公告。
