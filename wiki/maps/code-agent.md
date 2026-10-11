@@ -477,3 +477,70 @@ CompactionRL 與其他 training-time 方法的差異：
 1. Router 超過 13 個 provider 時 routing accuracy 還能 hold 嗎？
 2. Phase-specific supervision 需要 rollout access；沒有 simulator 時如何達到同等 quality？
 3. Storage routing 假設 multi-store 已存在 — 對 single-LLM-agent 不適用，paper 沒處理這個 cold-start case。
+
+### [[muscle-memory-agents-2608-08995]] — Compile not Merely Retrieve（2026-10-11 重讀 + 正式入庫）
+
+**論文**：[Muscle Memory for Agents: Compile not Merely Retrieve](https://arxiv.org/abs/2608.08995)（arXiv:2608.08995v2, 2026-09-09, Google Cloud FDE 團隊：Pouya Ghiasnezhad Omran / Soujanya Lanka / Qin Zhang / Tanya Dixit）
+**詳細 source 條目**：`wiki/sources/muscle-memory-agents-2608-08995.md`
+**狀態**：seed（2026-10-11 完成 deep-read + metadata 補完 v2 + wiki/sources 落地）
+
+**Position（paper 對全場的挑戰）**：
+> Memory for LLM agents has converged on a single architectural pattern: store experience as text, embeddings, reflections, or rules; retrieve at inference time; let a general-purpose orchestrator interpret what to do. **This paper argues the pattern is the wrong default for personalization.**
+
+→ 過去十四篇（MemGPT / A-MEM / ContextWeaver / TrajWiki / LeanMem / ACE / Scroll / MemAgent / ...）**全部**接受「retrieved chunks 注入 context、被 general agent 解釋」這個基底假設。Muscle Memory 是第一篇直接攻擊這個共識的 paper — 主張對 recurring user intent 來說，**compilation（編譯成 specialist agents）才是正確的記憶單位**，不是 retrieval。
+
+**三個 Principles（paper 的清晰設計切分）**：
+- **P1: Compilation over retrieval** — 記憶應該是 executable specialist，不是 retrievable chunk
+- **P2: Specialists over generalists** — 每個 recurring task class 編譯成自己的 specialist agent
+- **P3: Tested before deployment** — 編譯出來的 specialist 必須在 held-out user history 上**先測過**才上線
+
+**四階段 Pipeline**：
+1. **History Harvest** — 從對話歷史中分出 behavioral patterns（style/depth/format）vs task patterns（recurring intents）
+2. **Pattern Analysis & Swarm Generation** — 對 recurring intents 做 cluster，產出 candidate specialist swarm
+3. **Runtime Augmentation** — 兩階段 trigger matching：cheap classifier 判斷要不要 invoke，真正 invoke 才是 LLM call
+4. **Evaluation Protocol** — 每個 candidate specialist 在 held-out set 上 pre-deployment test，過 quality gate 才留下
+
+**核心數字**（90 held-out scenarios, 5 personas）：
+- 觸發 specialist：36/90
+- Specialist win：32/36 = **88.9% win rate when fires**
+- **Personalization gain: +2.05**（1–4 scale）
+- **Accuracy cost: -0.28**（1–4 scale）— 幾乎是免費的 trade-off
+
+**與其他方法的根本差異**（memory unit 維度）：
+
+| Paper | Memory unit | Decision point |
+|-------|-------------|----------------|
+| MemGPT | paged text blocks | runtime (self-paging) |
+| A-MEM | linked notes (Zettelkasten) | runtime (retrieval) |
+| ContextWeaver | dependency graph | runtime (selection) |
+| TrajWiki | trajectory + wiki | runtime (routing) |
+| ACE | raw + abstract layers | runtime (orchestration) |
+| MemAgent | multiple providers | runtime (router) |
+| **Muscle Memory** | **specialist agents** | **build-time (compile) + runtime (trigger)** |
+
+→ 唯一一篇把 heavy lifting 放在 **build time** 而非 runtime，artifact 是 **executable** 而非 retrievable。
+
+**對 OpenClaw / Rowlet 的直接啟發**：
+
+1. **重新審視 Rowlet 的 task taxonomy**：3 principles map 到我們的現狀：
+   - **P1（compilation）**：SOUL.md / daily memory 是 text 形式，沒編譯過任何 specialist。問題是是否有 recurring task class（例如「ingest paper + 寫 wiki source + 更新 map」）值得編譯成 specialist？
+   - **P2（specialists）**：目前是 single specialist（Rowlet）處理所有事情，specialist 分解是 implicit（skill files）而非 explicit（deployed sub-agents）。
+   - **P3（tested before deployment）**：**完全沒有** pre-deployment test gate。新的 skill / prompt pattern 上線前沒跑過 regression test。
+2. **最直接 action item**：audit 最近 30 天 Rowlet 的 task 分布，找出佔 >50% 工作量的 3–5 個 task class（candidate：paper ingestion / graphify query / daily memory write / skill update / cron delivery），對每個問：compiled specialist 是否比 general-agent-with-prompt 更好？若 ≥2 個答案是 yes，就真的有 Muscle Memory opportunity。
+3. **對位 [[ace-liao-2026]]**：ACE 解決 per-turn「context 怎麼 render」的問題，Muscle Memory 解決「整個 task class 是否該獨立成 specialist」的問題。**互補**：ACE 是 runtime 動態分配，Muscle Memory 是 build-time 編譯決策。
+4. **對位 [[memagent-wei-2026]]**：MemAgent routing 在多個 memory provider 之間選，Muscle Memory 完全 off 掉 routing 問題 — specialist 不搶 context budget，有自己的 LLM call。**正交**：Muscle Memory 是 routing 之上的更高階 decision（要不要造 specialist），MemAgent 是 routing 內部的 decision（用哪個 provider）。
+5. **對位 [[memgpt-packer-2024]]**：MemGPT 保留 general agent + paging context；Muscle Memory **直接換掉** general agent（至少在 recurring task class 上）。**根本分歧**：MemGPT 認為 context 是稀缺資源所以要 paging；Muscle Memory 認為 specialist 是正確單位所以根本不需要 paging。
+
+**Open question（paper 自己提出但沒解答）**：
+1. 什麼算「recurring intent」？trigger stage 需要區分真正的 recurrence 跟偶然相似，paper 沒給 principled thresholding
+2. **Specialist lifecycle**：什麼時候 retire？user intent drift 怎麼辦？paper 完全沒處理 staleness
+3. **Cold start**：compile 需要 history 來 detect pattern，新 user / 新 agent 沒歷史時 benefit = 0
+4. **Cost economics**：每個 specialist = 完整 LLM call，low-traffic task class 的 compile cost 可能超過省下的 cost。**沒成本分析**
+5. **Multi-tenant generalization**：specialist 是 per-user，但有些 pattern 是 per-team / per-organization。**沒處理 multi-tenant 編譯**
+
+**十五篇壓縮 / memory / retrieval / tool-use 的互補堆疊新增**：
+- 之前十四篇都在「**優化 retrieval 流程**」（怎麼 retrieve 更好、怎麼 route 更好、怎麼壓縮更好、怎麼驗證更好）
+- Muscle Memory 是第一篇直接說「**retrieval 是錯的 abstraction — 對 recurring intent 來說，executable specialist 才是對的 unit**」
+- 這是 context processing 領域的 **paradigm-level 補充**，不是 technique-level
+- 對堆疊的整體意義：現在我們有 retrieval-based（14 篇）+ compilation-based（1 篇 = Muscle Memory）兩條 route，可針對不同 task 類型選不同 route
+- 真正的 open question：**怎麼在 build time 自動判斷某個 task class 該走 retrieval 還是 compilation？** — 這可能是下一個值得追的 paper 方向

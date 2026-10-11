@@ -1,4 +1,5 @@
 {
+  "arxiv_id": "2608.08995",
   "title": "Muscle Memory for Agents: Compile not Merely Retrieve",
   "authors": [
     "Pouya Ghiasnezhad Omran",
@@ -7,20 +8,51 @@
     "Tanya Dixit"
   ],
   "institution": "Google Cloud FDE",
-  "date": "2026-08-10",
-  "arXiv": "2608.08995",
+  "venue": "arXiv preprint (cs.MA)",
+  "submitted": "2026-08-10",
+  "revised": "2026-09-09",
+  "version": "v2",
   "subjects": ["cs.MA"],
+  "url": "https://arxiv.org/abs/2608.08995",
+  "pdf": "https://arxiv.org/pdf/2608.08995",
+  "html": "https://arxiv.org/html/2608.08995v2",
+  "doi": "10.48550/arXiv.2608.08995",
+  "license": "arXiv non-exclusive (nonexclusive-distrib/1.0)",
   "tags": [
     "agent-memory",
     "personalization",
     "context-processing",
     "compiled-memory",
+    "procedural-memory",
     "multi-agent",
+    "specialist-agents",
+    "mini-agent-swarms",
+    "position-paper",
     "RAG-alternative"
   ],
-  "paper_path": "raw/references/papers/ai/muscle-memory-agents-2026/paper.pdf",
+  "keywords": [
+    "procedural memory",
+    "compiled memory",
+    "position paper",
+    "LLM personalization",
+    "multi-agent systems",
+    "conversational memory",
+    "mini-agent swarms",
+    "pattern extraction"
+  ],
+  "related": [
+    "MemGPT (2310.08560)",
+    "A-MEM (2502.12110)",
+    "ACE (2606.31564)",
+    "MemAgent (2609.32521)",
+    "Multi-agent systems literature"
+  ],
+  "ingested": "2026-08-14",
+  "deep_read": "2026-10-11",
   "wiki_source": "wiki/sources/muscle-memory-agents-2608-08995.md",
+  "topic": "Long-term Memory for Agents (2)",
+  "branch": "Memory architectures for agents — compiled specialists (paradigm alternative to retrieval)",
   "status": "seed",
   "processed_by": "rowlet",
-  "processed_date": "2026-08-13"
+  "processed_date": "2026-10-11"
 }
