@@ -544,3 +544,86 @@ CompactionRL 與其他 training-time 方法的差異：
 - 這是 context processing 領域的 **paradigm-level 補充**，不是 technique-level
 - 對堆疊的整體意義：現在我們有 retrieval-based（14 篇）+ compilation-based（1 篇 = Muscle Memory）兩條 route，可針對不同 task 類型選不同 route
 - 真正的 open question：**怎麼在 build time 自動判斷某個 task class 該走 retrieval 還是 compilation？** — 這可能是下一個值得追的 paper 方向
+
+### [[rate-distortion-compaction-2026-colaco]] — rate–distortion unification of memory compaction (2026-10-13)
+
+**核心主張**：KV eviction、prompt compression、bounded recurrent state、agent long-term memory 是**一個 rate–distortion 問題**穿四件外衣。Survey 提供**單一最佳化目標 + 跨 layer 通用下界**，並把這些社群從未互聯的方法放在同一張圖上。
+
+**Single objective (Eq. 1)**：
+```math
+min_θ E[ℓ(U(C_θ(H), Q), Y)]   s.t.   rate(Z) ≤ B
+```
+
+**Layer-agnostic 下界 (Eq. 2)**：
+```math
+P_e ≥ (H(Y|Q) − B − 1) / log|Y|   whenever   B < I*(Q)
+```
+其中 `I*(Q) = I(Y; H|Q)` 是 task-conditioned information content。**三個直接推論**：
+1. 在 task 資訊需求以下，每個 layer 都會以同樣速率出錯，無架構逃脫
+2. 固定品質下壓縮比 `∝ 1/I*(Q)` — exact-recall 任務壓不下來，gist 任務能壓
+3. **Query-agnostic** operator 付出 `H(Q)` bits/query 的具體代價 — 「不知道 query」的精確價格
+
+**三個 first-class properties（P-rev / P-q / P-fid）**：
+- **P-rev (Reversibility)**：被丟棄的內容能 re-derive 嗎？archival paging 可，eviction/summarization 不可
+- **P-q (Query-conditioning)**：C 做保留決定時看得到 Q 嗎？LongLLMLingua / Quest 是；offline gisting / attention-score evictor 不是
+- **P-fid (Fidelity profile)**：lossless / near-lossless / uniformly lossy / multi-fidelity？MIRIX typed modules、Compressive Transformer dual tier 走 multi-fidelity
+
+**四個 falsifiable predictions（Sec. 14 跑了兩個）**：
+1. **KV**：attention-score eviction 的 needle recall 在 budget 跌到 needle 注意力以下就崩；崩潰點追蹤 answer 位置的 entropy（mid-context 最差）
+2. **Prompt**：query-aware compression 把 accuracy-vs-ratio 曲線右移 `H(Q)`
+3. **Architectural**：`s` bits 狀態無法回答需要 `>s` bits 的 query → SSM/linear-attention 在 multi-key recall 有 hard cliff
+4. **Agent**：**重複 irreversible summarization 之下，end-task error 超線性成長**；reversible retrieval-backed memory 維持平坦 ← **這是 Rowlet 三層記憶最直接受威脅的失敗模式**
+
+**七軸 taxonomy**：granularity / lifecycle stage / lossiness / query adaptivity / learnability / mechanism / storage substrate。**Decisive axes**：granularity, lifecycle, adaptivity — 這三個能預測失敗模式。
+
+**Memory hierarchy 三 tier**：
+| Tier | Substrate | Timescale | P-rev | 代表方法 |
+|---|---|---|---|---|
+| KV cache | on-GPU keys/values | μs | mostly no | H2O, Quest, KIVI, Palu |
+| Working context | in-window tokens | ms–s | partly | MemGPT, ACON, MEM1, ReSum |
+| Long-term store | external semantic | hr–day | partial | Mem0, A-MEM, RAPTOR, Zep |
+
+三個 tier 共用同樣五個 design knobs（importance signal / forgetting / P-q / P-rev / budget alloc + stop rule），機制可在 tier 間 port：**MemoryBank Ebbinghaus 衰減曲線 → KV prior**；**Quest no-evict → agent 設計**；**Ada-KV output-error bound → summarization stop rule**。
+
+**五個 Compaction-Aware 設計原則**（直接適用於 Rowlet）：
+- **P1. 不可逆丟棄不可 re-derive 的東西** — reversible operator 弱支配 irreversible；差別只在 query 剛好需要被丟的證據時浮現
+- **P2. 對 query 分佈做 conditioning，不只對當下 query** — `H(Q)` 罰款
+- **P3. 分離 cheap reversible episodic tier 與 lossy semantic tier**，有明確的 promotion/demotion
+- **P4. 把 compaction 做成 asynchronous + learnable** — RL-learned policies (Context-Folding, MemAct) + sleep-time consolidation 移出 critical path
+- **P5. 按 marginal task-utility 配置 budget，不是 uniform ratio** — `I*(Q)` 在 head/layer/item 之間不均
+
+**Reference experiment (Qwen2.5-1.5B, 8GB GPU, 1395 generations)**：
+- **Exp 1**：六個 KV 壓縮方法（SnapKV / StreamingLLM / TOVA / Knorm / ExpectedAttn / random）在**單一 BPT 軸**上 — 全部在 ~25% budget 以下崩潰，Eq. 2 的 Fano floor 實證
+- **Exp 2**：12 個 key-value facts 散佈，agent 重複 compaction：
+  - Irreversible (summarize)：recall 0.33–0.56，隨 compaction 頻率下降
+  - Reversible (retrieve)：固定 ~0.95
+  - **單一輪 NIAH 測不出差別** — 分歧只在 agentic 重複 compaction regime 浮現
+
+**對 Rowlet 三層記憶的具體威脅**：
+- **SOUL.md / MEMORY.md 寫入路徑完全 irreversible**（prediction 4 命中點）。若某次 heartbeat 把細節記錯，後續 session 基於錯誤記憶推理 — 自我強化錯誤，正是 paper 第 7 節「reflexion over-generalizes」的 agent 級類比
+- **缺 P-rev 機制**：目前 MEMORY.md 沒有「原始 daily 檔案的 archival link」。應保留 daily memory 的可重建路徑（已部分成立 — `memory/YYYY-MM-DD.md` 即是 archive），但需要在寫入時強化 audit
+- **缺 P-q**：當前 compaction 不知道未來 query 分布。紙上 P2 建議把「未來 session 會問什麼」也寫成 explicit signal（最簡單的近似：保留 LLM-judged salience 而非 perplexity）
+- **缺 P-fid**：沒有 cheap reversible episodic tier 對 lossy semantic tier 的雙層。daily 檔是 raw archive（episodic tier），MEMORY.md 是 abstracted semantic tier — **雛形已具備，但 promotion/demotion 規則是 ad-hoc**。應該把「什麼時候從 daily 摘要進 MEMORY」的規則明確化
+- **無 stop rule**：compaction 沒有「再做就超過 budget」的信號。Ada-KV 的 output-error bound 概念可以借用 — 寫 MEMORY.md 之前做一次**自我 consistency check**（簡化版：把要寫入的事實問 LLM 「這與 raw daily 一致嗎？」）
+
+**重要性 heuristics 統一觀**：H2O 注意力、LLMLingua perplexity、QUITO-X 互信息、Ada-KV 輸出誤差、Mem0 LLM-judged salience — **全是 `D(θ)` 的 estimator**。命名它們為同一個量的 estimator 就是它們變得**跨 layer 可比、可移植**的原因。
+
+**與 [[agentic-context-mgmt-dadhich-2026]] 互補**：
+- Dadhich 把 context management 拆成 5 primitives (Architecting/Ingesting/Scoping/Anticipating/Compacting)
+- Colaco 提供**那 5 個 primitives 共同遵守的 lower bound** + **為何 5 primitives 是必要的（各自對應不同的 P-rev/P-q/P-fid 取捨）**
+- 兩者合讀：DadHich 給框架、Colaco 給底層數學
+
+**Sinks 細節**（Sec. 12）：softmax 強制把注意力堆在前幾個 token。Ran-Milo et al. 證明 trigger-conditional tasks 下，任何 softmax model 必須發育出 sink。**對 Rowlet 啟示**：每天第一個寫入 MEMORY 的「今天最重要」事實可能就是 attention sink，刪它等於 budget feasibility violation，不是 lossy compression。
+
+**Open problems（Sec. 15，依 impact × tractability 排序）**：
+1. Query-conditioned + reversible + multi-fidelity compaction at every layer
+2. **Information-loss attribution + calibrated compaction confidence** — 每個 decision 發出「compaction confidence」對應 residual `I*(Q)`
+3. **Operator composition map** — quant × low-rank × evict × KV × prompt × agent 哪些組合 synergistic/redundant/destructive
+4. **Predictive compression scaling law** — `I*(Q)` 對 model size / context length / head-layer 結構 / task type 的 closed-form
+5. Episodic→semantic consolidation bridge + stop rule（Ada-KV bound 移植到 agent summarization）
+6. Cheap, asynchronous, RL-stable agent self-curation
+7. Multimodal × multi-agent shared-memory compaction
+8. Adaptivity with guarantees — 不是 empirical sweep 而是 distortion bound
+9. Safety / auditability / rollback of evolving memory（AgentPoison, MINJA 攻擊面）
+
+**Total count in this map**：十六篇 context/memory 系列 — MemGPT / A-MEM / ContextWeaver / TrajWiki / LeanMem / ACE / Scroll / MemAgent / Sirin / Context Engineering / Muscle Memory / CompactionRL / Agentic Context Mgmt / Organize-then-Retrieve / Memory-R2 / **Rate-Distortion (this)**。Rate-Distortion 是第一篇給出**共同 objective + 跨 layer 數學下界**的，後續 agentic compaction 設計都會引用它的 Eq. 1/2 與 P-rev/P-q/P-fid 框架。
