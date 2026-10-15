@@ -627,3 +627,31 @@ P_e ≥ (H(Y|Q) − B − 1) / log|Y|   whenever   B < I*(Q)
 9. Safety / auditability / rollback of evolving memory（AgentPoison, MINJA 攻擊面）
 
 **Total count in this map**：十六篇 context/memory 系列 — MemGPT / A-MEM / ContextWeaver / TrajWiki / LeanMem / ACE / Scroll / MemAgent / Sirin / Context Engineering / Muscle Memory / CompactionRL / Agentic Context Mgmt / Organize-then-Retrieve / Memory-R2 / **Rate-Distortion (this)**。Rate-Distortion 是第一篇給出**共同 objective + 跨 layer 數學下界**的，後續 agentic compaction 設計都會引用它的 Eq. 1/2 與 P-rev/P-q/P-fid 框架。
+
+### [[pair-2026-min]] — counterfactual-adjusted compression for frozen long-horizon agents (2026-10-15)
+
+**PAIR (Prompt Adaptation using Interventional Rollouts)** — Min et al. (UVA + Nokia), arXiv:2609.36526, 2026-09-29。
+
+**核心主張**：ACON 那一代用 trajectory-level 對比訊號做 prompt optimization 太粗，因為 long-horizon run 會經歷多次 compression boundary，而 terminal outcome 無法定位是哪一次害的。PAIR 改用 **matched counterfactual continuations** — 對每個 boundary ξₜ，從同樣的 environment state 出發跑「with compression」與「without compression」兩條 rollout（後續 compression 都關掉），得到 boundary-level 的 (ΔR, ΔL)。
+
+**關鍵發現**：
+1. **Reliability degrades before solvability** — Pass3 永遠比 Pass@3 掉得快。Compression 不只是把任務變難，是**把任務變 flaky**。
+2. **Severe degradation concentrated at isolated boundaries** — catastrophic failure 集中在少數 boundary，**長尾分佈**。Causal attribution 必要性由此證成。
+
+**PAIR 三步**：Detect bad boundaries（ΔR 顯著負、ΔL 顯著正）→ Diagnose（LLM-as-judge 看 post 漏什麼）→ Revise **只改固定 sectioned template 的對應段**（不整段重生）。
+
+**形式化亮點** — **Performance-Difference Identity**：boundary-level Q-value 差 = compressor policy objective 差。讓「修哪段 prompt」有理論根據。
+
+**結果**（AppWorld / OfficeBench / τ²-Bench Retail）：
+- Pass3 全面贏 ACON 2.1%–10.0%，是壓縮路線首次系統性提升 reliability metric。
+- AppWorld history-only：PAIR 84.7% acc / 79.8% Pass3 **超過 no-compression**（84.1 / 78.6）— 壓縮過頭反而更穩，因為去掉 distraction。
+- **Zero-shot cross-model transfer**（GPT-5.6 Luna → MiniMax-M3）仍 work，證明學到的是「什麼該留」而非「怎麼對某模型說話」。
+- Token 開銷：4/6 benchmark×scope 組合 token 用量下降；例外都是 compressor overhead 蓋過 agent 端省下的。
+
+**與 ACON 互補**（同路線兩代）：ACON = trajectory-level 整段 prompt optimize；PAIR = boundary-level section-level surgical edit。PAIR 還**完整保留 ACON 的 prompt candidate generator** 作為內部組件。可以 chain 起來用：ACON 收斂出 section 結構 → PAIR 用 counterfactual 在每個 section 上精修。
+
+**與 [[agentic-context-mgmt-dadhich-2026]] 對應**：是 lifecycle 中 **Compacting & Consolidation** 階段的更精細實作 — 不只驗證 fidelity，還 **causally 驗證每個 boundary**。可以視為 dadhich 五 primitives 中 Compacting primitive 的**演算法實例**。
+
+**對 OpenClaw 的 meta 註記**：PAIR 論文在 Related Work 引用了 **OpenClaw Contributors 2026a / 2026b** 作為「structured prompts 系統」的代表範例之一 — **我們在文獻裡被 cite 了** 🎉。意味著 OpenClaw 的 structured-compression design 已是 community baseline。
+
+**Total count in this map**：十七篇 context/memory 系列（新增 **PAIR**）。PAIR 與 Rate-Distortion 互補：Rate-Distortion 給下界與共同 objective，PAIR 給 causal attribution 演算法。兩者合讀 = 「為何要 attribution」+「怎麼做 attribution」。
