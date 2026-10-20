@@ -655,3 +655,42 @@ P_e ≥ (H(Y|Q) − B − 1) / log|Y|   whenever   B < I*(Q)
 **對 OpenClaw 的 meta 註記**：PAIR 論文在 Related Work 引用了 **OpenClaw Contributors 2026a / 2026b** 作為「structured prompts 系統」的代表範例之一 — **我們在文獻裡被 cite 了** 🎉。意味著 OpenClaw 的 structured-compression design 已是 community baseline。
 
 **Total count in this map**：十七篇 context/memory 系列（新增 **PAIR**）。PAIR 與 Rate-Distortion 互補：Rate-Distortion 給下界與共同 objective，PAIR 給 causal attribution 演算法。兩者合讀 = 「為何要 attribution」+「怎麼做 attribution」。
+
+### [[sjc-min-2026]] — Source-Judged Compaction：commit 前的最後一關 fidelity gate（2026-10-20 深讀）
+
+**SJC (Source-Judged Compaction)** — Min & Chen (UVA), arXiv:2610.20927, 2026-10-14。
+
+**核心診斷**：compaction prompt 從不只要事實，也要 decision / next step，導致 summary 同時夾帶「環境事實」與「compressor 推理」。Compaction 後 agent 無法分辨，把 compressor 寫的計畫當事實執行。在 OpenClaw structured compressor 跑 AppWorld 訓練切 90 task×3 runs：**26,881 entries 中 17.9% unsupported**；Open TODOs section 67.7% unsupported、Pending user asks section 86.1% unsupported；35 個失敗 run 中 **29 of 35（83%）追溯到一個 specific summary entry**。失敗模式分四類：rewritten constraints（15）、invented deliverables（5）、contradicted state（3）、partial-as-complete（6）。
+
+**解法 = 三階段 plug-in**（不改 agent / 不改 compressor / 不改 runtime）：
+1. **Generate**：host compressor 一樣產結構化 summary `M̃t`
+2. **Judge Sources**：拆 entries、retrieval 各 entry 相關 environment output 組成 pooled evidence `E_t`、一次 judge request 問全部「這個 entry 是否有 source」，回 `[0,1]` calibrated probability
+3. **Prune & Commit**：`g_t,k = 1[p_t,k ≥ τ]`（τ=0.5），unsupported 整個移除，保留的字字不動，維持 section structure
+
+**Judge 用 Jev**（TypeSafe AI）— non-generative decision model，回 calibrated probability 而非 free-form text。關鍵：用 compressor 自己當 self-judge 重複跑 5 次改 8.6% entries 答案，Jev 只改 2.1%；Jev score 是 bimodal（73.9% ≥0.8、10.6% <0.2、只有 8.1% 中間），τ 從 0.3 動到 0.7 改變 prune fraction 不超過 10.2%。
+
+**主要結果**（AppWorld 168 + OfficeBench 95，GPT-5.6 Luna + MiniMax-M3 × 3 runs）：
+- **Pass3 全面贏 underlying compressor**：4 個 setting +2.1% 到 +8.9%（AppWorld GPT-5.6 64.3→73.2；MiniMax-M3 55.4→62.5；OfficeBench GPT-5.6 68.4→73.7；MiniMax-M3 74.7→76.8）
+- Hard / multi-app gain 最大：AppWorld GPT-5.6 hard Pass3 39.7%→52.4%；OfficeBench 3-APP Pass3 41.9%→54.8%
+- **Token 反而省**：summary token -13% 到 -27%、entries -13% 到 -21%；Jev 一次 request 最大 29K input、$1.2–$1.5 per 1000 tasks
+- Pruning 集中在第一 boundary（後續 inherits pruned state）：第一 boundary -29.9%–39.6%，後續 -8.8%–17.7%
+
+**驚艷三點**：
+1. Observation sections 幾乎全 supported、forward-looking sections 70–86% unsupported — fidelity gate 要分 section 設計，不能 uniform threshold
+2. Plug-in 不改 compressor，只在 commit 前最後一關 — 工程摩擦極低
+3. 每 round compressor 重新生 unsupported reasoning（只有 20.5% 撐到下個 boundary），gate 要在每個 boundary 執行
+
+**與本家族其它 paper 的定位**：
+- 補強 [[acon-2025-kang]]：ACON 改 compressor prompt、SJC 不改 compressor 只在 commit 前 prune。**互補而非競爭**。
+- 補強 [[agentic-context-mgmt-dadhich-2026]] 的 Compacting & Consolidation primitive：Dadhich 強調 validated compaction，SJC 就是 production-grade instantiation — external judge 做 fidelity check。
+- 跟 [[sirin-belikova-2026]] 同信念家族（外部 probe 驗 faithfulness、別讓 generator 自審），一個攻 compaction step、一個攻 retrieval/output step。**組合 = 完整 faithfulness pipeline**。
+- 跟 [[trace-2608.06503-min-2026]] 同作者群（Min et al. UVA），都在 boundary 做事：Trace 用 training-free boundary-local verifier、SJC 用 Jev 做 prune。
+- 對照 [[pair-2026-min]]：PAIR 給「為何要 attribution」+「怎麼 attribution」，SJC 給「最小可做 fidelity gate」 — 可 chain：PAIR 找出哪 boundary 有害 → SJC 在該 boundary 做 fidelity prune。
+
+**對 Rowlet 自身的三條啟發**：
+1. HEARTBEAT 寫入前 fidelity gate — 已用 SIRIN-style NLI check 啟動；可學 SJC 分 section 設計：observation 類全保留、forward-looking 類從嚴
+2. MEMORY.md distilled 內容要追溯 source — 之前 [[sirin-belikova-2026]] 提到的「anchor each distilled fact to raw evidence」，SJC 證明在壓縮 / 摘要場景的具體可行性
+3. Open TODOs / Pending user asks 類條目要帶警告 — 進 memory 之前先問「這個 TODO 真的有 source 嗎？還是 compiler 自己推的？」
+
+**Total count in this map**：十八篇 context/memory 系列（新增 **SJC**）。SJC 是 compression 路線的「最小可做 fidelity gate」，門檻低、可立即接上現有 compressor。
+

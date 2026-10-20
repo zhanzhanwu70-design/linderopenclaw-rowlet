@@ -1,0 +1,1083 @@
+                                                                 Prune the Summary, Not the History:
+                                                          Source-Judged Compaction for Long-Horizon Agents
+
+                                                             Guanghui Min                                   Chen Chen*
+                                                      Department of Computer Science               Department of Computer Science
+                                                           University of Virginia                       University of Virginia
+                                                          jjm8vr@virginia.edu                          zrh6du@virginia.edu
+
+
+
+                                                                 Abstract                        information degrades with context length (Liu et al.,
+                                                                                                 2024; Hsieh et al., 2024). Context compaction is
+                                              Long-horizon LLM agents rely on context            therefore essential for scalable long-horizon agents.
+arXiv:2610.20927v1 [cs.CL] 14 Oct 2026
+
+
+
+
+                                              compaction: when the interaction history out-
+                                                                                                    General compaction methods select or rewrite
+                                              grows the context window, a compressor re-
+                                              places it with a natural-language summary. We      tokens from static prompts and documents (Jiang
+                                              show that these summaries contain more than a      et al., 2023; Pan et al., 2024), but do not directly
+                                              record of what happened. Compaction prompts        account for subsequent agent execution. Agent-
+                                              ask for decisions and next steps, so each sum-     specific methods such as ReSum, SUPO, and ACM
+                                              mary mixes facts established by the environ-       instead modify or post-train the agent to man-
+                                              ment with reasoning written by the compres-        age compressed contexts (Wu et al., 2025; Lu
+                                              sor, and the agent cannot tell the two apart
+                                                                                                 et al., 2025; Li et al., 2026). In many deployed
+                                              afterwards. In an analysis of a widely used
+                                              structured compressor, 83% of failed runs trace
+                                                                                                 systems, however, the agent is fixed or accessi-
+                                              back to an action that carries out a specific      ble only through an API. OpenClaw, DeepSeek
+                                              summary entry, most of which no environ-           Harness, and Codex therefore invoke a separate
+                                              ment output supports. We propose Source-           compressor that replaces older interactions with a
+                                              Judged Compaction (SJC), a training-free post-     natural-language checkpoint (OpenClaw Contribu-
+                                              processing step that scores each summary entry     tors, 2026a; DeepSeek-AI, 2026; OpenAI, 2026a),
+                                              for whether it has a source in the environment     while ACON and PAIR improve the compres-
+                                              outputs or the previous summary, and removes
+                                                                                                 sion prompt without modifying the downstream
+                                              the entries that do not. It changes neither the
+                                              agent nor the compressor and adds one inexpen-     agent (Kang et al., 2026; Min et al., 2026b).
+                                              sive judge request per compaction. The judge          Such checkpoints do more than shorten his-
+                                              is Jev, a non-generative decision model that       tory: they periodically reconstruct the state from
+                                              answers the source question with a calibrated      which the agent continues, including its progress,
+                                              probability instead of text. On AppWorld and       constraints, and future actions. Errors in this re-
+                                              OfficeBench with two agent models, SJC im-         construction can therefore alter subsequent execu-
+                                              proves cross-run reliability over the underlying
+                                                                                                 tion (Min et al., 2026a,b). For example, when a
+                                              compressor by 2.1%–8.9% without increasing
+                                              the agent’s token usage. Our code is available
+                                                                                                 user asks to reply to a friend with movie titles “as
+                                              at https://github.com/GuanghuiMin/sjc.             per their request”, the compressor records the next
+                                                                                                 step as sending the comma-separated movie list;
+                                         1    Introduction                                       the agent then sends every title it found, includ-
+                                                                                                 ing those the friend did not ask for. The compres-
+                                         Long-horizon agentic tasks require LLMs to plan,        sor wrote this plan itself, but after compaction the
+                                         use tools, and adapt to environmental feedback          agent cannot tell it from a fact the environment
+                                         across extended interactions (Xu et al., 2026; Wang     established. Such cases are common: in our analy-
+                                         et al., 2024). During execution, tool outputs, failed   sis of a widely used structured compressor, 67.7%
+                                         attempts, intermediate results, and reasoning traces    of the pending work it records has no source in
+                                         continually accumulate, making the context in-          the environment outputs, and 29 of 35 failed runs
+                                         creasingly expensive to process and difficult to nav-   trace back to an action that carries out a specific
+                                         igate. This problem persists even with large nomi-      summary entry. This suggests filtering summary
+                                         nal context windows, whose effective use of distant     entries by their provenance. Whether an entry is
+                                             * Corresponding author.                             supported by an environment output or by the pre-
+vious summary can be checked against the history         Method                     Summary Train-Free Drop-in
+at compaction time, without knowing how the rest         ACE (Zhang et al., 2026)       ✗          ✓          ✗
+of the task will unfold.                                 Mem1 (Zhou et al., 2025)       ✗          ✗          ✗
+   We introduce SJC (Source-Judged Compaction),          ACM (Li et al., 2026)          ✗          ✗          ✗
+                                                         Fast-Jev (Tran, 2026)          ✗          ✓          ✓
+a lightweight plug-in that prunes unsupported en-
+tries from generated summaries. Given a structured       ReSum1 (Wu et al., 2025)      ✓           ✗          ✗
+                                                         SUPO (Lu et al., 2025)        ✓           ✗          ✗
+natural-language summary, SJC splits it into entries,    ACON (Kang et al., 2026)      ✓           ✓          ✗
+retrieves relevant environment outputs, and asks a
+                                                         SJC (Ours)                    ✓           ✓          ✓
+probabilistic judge whether each entry contains in-
+formation that came from those outputs or from the       Table 1: Comparison of context-management ap-
+previous summary, as opposed to only plans, deci-        proaches. Summary denotes a natural-language
+sions, or interpretations of the task. Entries without   history checkpoint; Train-Free requires no context-
+such a source are removed as complete units, while       management policy training; and Drop-in requires nei-
+retained entries remain identical to the compres-        ther agent modification nor task-specific adaptation.
+sor’s output. The pruned summary is then shown
+to the agent and used as the previous summary at         prompt P , which contains the system prompt and
+the next compaction. SJC requires no modification        the task instruction and is never compressed. At
+to the agent, the compressor prompt, or the run-         step i, the agent takes an action ai and receives an
+time, and adds no summary-generation call. Our           environment output oi ; only oi is produced by the
+contributions are threefold:                             environment, whereas ai and any accompanying
+                                                         reasoning are produced by the agent. A rollout
+• Analysis of Compaction Summaries: We sur-
+                                                         is ρ = (a1 , o1 , . . . , aT , oT ), and S(ρ) ∈ {0, 1}
+  vey 29 compaction prompts from widely used
+                                                         indicates whether it solves the task. We write |x|
+  agent systems and find that most ask the com-
+                                                         for the token length of x and ⊕ for concatenation.
+  pressor for decisions and next steps. Analyzing
+  the resulting summaries, we show that much of             Because the interaction history grows with ev-
+  this reasoning has no source in the environment        ery step, agent systems compact it whenever the
+  outputs, that it is regenerated at every compres-      context exceeds a budget B. We index these com-
+  sion boundary, and that most failed runs follow a      pression boundaries by t = 1, 2, . . .. At boundary t,
+  specific summary entry.                                the context consists of the fixed prompt P , the pre-
+• Source-Judged Compaction: We develop a                 vious summary Mt−1 (with M0 = ∅), the history
+  training-free post-processing step that decom-         span Ht accumulated since the last boundary, and
+  poses a structured summary into entries, retrieves     the most recent interaction Rt , which is retained
+  relevant environment evidence, and removes the         verbatim. A compressor C replaces Mt−1 and Ht
+  entries that a source judge finds unsupported. The     with a new summary Mt , and the agent continues
+  method preserves the natural-language summary          from P ⊕ Mt ⊕ Rt . We focus on structured natural-
+  interface and attaches to existing agent systems       language summaries, in which Mt is a list of short
+  without modifying them.                                entries grouped under section headings.
+• Empirical Effectiveness:              Across Ap-
+  pWorld (Trivedi et al., 2024) and Of-                  Problem Definition. Compaction is recurrent: af-
+  ficeBench (Wang et al., 2024), using both              ter boundary t, the summary Mt is the only record
+  GPT-5.6 Luna (OpenAI, 2026b) and MiniMax-              of Ht available to the agent, and it is also the input
+  M3 (MiniMax, 2026), SJC improves cross-run             from which Mt+1 is produced. Any content written
+  reliability over the underlying prompting-based        into a summary is therefore treated as established
+  compressor in all four settings, with the largest      by all later steps, whether or not the environment
+  gains on hard and multi-application tasks,             ever produced it. We study how to improve an ex-
+  without increasing the agent’s token usage.            isting compressor without changing it. Let M    ft =
+                                                         C(P, Mt−1 , Ht , Rt ) be the candidate summary of
+2   Preliminary                                          a host compressor and B(·) the set of entries in
+                                                         a summary. We seek a post-processing operator
+Notations. We consider an LLM agent π that               G that commits Mt = G(M    ft ; P, Mt−1 , Ht , Rt ) in
+solves a task by interacting with an environment
+over multiple steps. The agent is given a fixed             1
+                                                                We consider the GRPO-trained ReSum variant.
+place of M
+         ft so as to maximize task success,            Table 2: Entries of OpenClaw summaries on the App-
+                                                       World training split, by section. An entry is unsupported
+        max Eρ∼pπ,C,G [S(ρ)]                           when Jev finds no environment output or previous sum-
+         G
+                                                (1)    mary that establishes it.
+          s.t.   B(Mt ) ⊆ B(M
+                            ft )   for all t,
+                                                            Section             Entries   Unsupported (%)
+where pπ,C,G is the rollout distribution induced            Exact identifiers   14,444                3.4
+by the agent, the environment, the host compres-            Constraints/Rules    4,183               11.1
+                                                            Decisions            4,270               21.0
+sor, and G. The constraint restricts G to delet-            Open TODOs           2,600               67.7
+ing entries: it may not rewrite or add content, so          Pending user asks    1,384               86.1
+|Mt | ≤ |Mft | and every retained entry is exactly          All                 26,881               17.9
+what the host compressor wrote. We further re-
+quire G to leave π and C unchanged and to use          Much of this reasoning is unsupported. Table 2
+no training or task-specific adaptation, so that it    breaks down the 26,881 entries of 667 summaries
+can be attached to any compressor that produces        by section. Sections that record observations are
+structured summaries.                                  almost entirely supported, whereas 67.7% of open
+                                                       TODOs and 86.1% of pending user asks have no
+3     Why Summary Needs Source Judgment                source. Among the entries under Decisions and
+We analyze the summaries written by a widely           Open TODOs, which we call reasoning entries,
+used structured compressor, OpenClaw (OpenClaw         38.7% are unsupported, and 54.9% at the first com-
+Contributors, 2026a), on the training split of App-    pression boundary.
+World (Trivedi et al., 2024) (90 tasks, three runs,    Unsupported reasoning is regenerated at every
+GPT-5.6 Luna). We call a summary entry sup-            boundary. These entries are not simply carried
+ported if its content is established by an environ-    from one summary to the next: only 20.5% of
+ment output or by the previous summary, and un-        unsupported reasoning entries reappear in the fol-
+supported otherwise. To label entries at scale,        lowing summary, and 5.3% three summaries later.
+we ask Jev (TypeSafe AI, 2026) whether each en-        Yet every summary contains about four of them,
+try contains information from either source and        whether it is the first (4.3), the second (3.9), or a
+treat entries scoring below 0.5 as unsupported (Ap-    later one (3.8). The compressor writes unsupported
+pendix C). Against annotated labels, Jev separates     reasoning anew at each boundary, so removing it
+the two with an AUROC of 0.905; it is conserva-        once is not enough.
+tive at this threshold, so the unsupported shares we
+report are upper bounds (Appendix G).                  3.2 Unsupported Reasoning Can Derail Agent
+                                                           Execution
+3.1    Summary as Periodic Reasoning                   After compaction, the agent cannot tell which en-
+A compaction prompt asks for more than a record        tries the environment established and which the
+of what happened. We collected 29 compaction           compressor inferred; it treats both as facts. Devel-
+prompts from the official repositories of widely       opers have met this problem in deployment: Her-
+used agent systems (Appendix B). Of these, 21 ask      mes prepends to every summary a notice telling
+the compressor for decisions or next steps: 18 re-     the agent to “treat it as background reference, NOT
+quest the decisions made and 17 request the remain-    as active instructions” (Nous Research, 2026). To
+ing work, in instructions such as “What remains to     see what the problem costs, we trace every failed
+be done (clear next steps)” in Codex CLI and “The      run in our analysis back from the failed evaluation
+current plan and the IMMEDIATE next step” in           check to the action that caused it (Appendix D). Of
+Gemini CLI. OpenClaw requires sections for Deci-       the 44 failed runs, nine belong to a scenario whose
+sions, Open TODOs, and Pending user asks. Each         reference solution is inconsistent with its environ-
+compression boundary is therefore also a reason-       ment data and that no method solves; we analyze
+ing step: the compressor re-derives where the task     the remaining 35.
+stands and where it should go next. If environment     Most failures follow a summary entry. In 29 of
+outputs describe the state of the task, this reason-   the 35 failed runs, the failing action carries out a
+ing describes its direction, which the environment     specific summary entry; two independent rounds of
+never reported.                                        annotation agree on every run. Read against the en-
+    1    GENERATE                                                                                2     JUDGE SOURCES                                       3     PRUNE & COMMIT
+                                     " You are a context                                                              " Does the entry contain
+                                                                                                                        information that came from
+                                        summarization assistant..."                              Summary Entries
+         INPUTS                                                                                                         an environment_output in               ✓ Supported     OUTPUT
+                                                                                                                        span or from
+                                                                                                                        previous_checkpoint ?"
+                                    Host                          Candidate
+    Fixed Prompt P
+                                  Compressor                     Summary \( widetilde{M}_{t}\)                                                                                  Committed
+                                                                                                                                                                               Summary Mt
+                                                                                                                                           Source
+                                                                                                                                           Judge
+    Previous Summary\(M_{t-1}\)
+                                                                             ···
+                                                                                                                          Evidence                             ✕ Unsupported
+                                                                                                                                                                 Reasoning
+    History Span Ht                                                                              Evidence Retrieval
+                                  \(a_1\) \(o_1\) \(a_2\) \(o_2\) \(a_3\) \(o_3\)                                                                                                  ···
+
+
+
+
+Figure 1: Overview of SJC. (1) A host compressor produces a structured candidate summary. (2) SJC splits it into
+entries, retrieves relevant environment evidence from the history span, and scores all entries with a source judge in a
+single request. (3) Supported entries are retained unchanged, while unsupported entries are removed before the
+committed summary is shown to the agent and passed to the next compression boundary.
+
+vironment outputs that preceded them, 22 of these                                                                     outputs a committed summary Mt , which serves as
+entries are supported by no output and 3 contradict                                                                   the agent’s checkpoint: it is shown to the agent and
+one; only 4 are supported. The failed runs span                                                                       passed to the compressor at the next boundary.
+10 task scenarios; counted once per scenario and                                                                      Stage 1: Generate. The host compressor C sum-
+failure pattern, 15 of 19 cases follow an entry.                                                                      marizes the history span as a structured natural-
+The failures fall into a few recurring patterns.                                                                      language candidate summary:
+Rewritten constraints (15 runs) restate the task with
+a different meaning. In one task, the user asks to                                                                                     ft = C(P, Mt−1 , Ht , Rt ).
+                                                                                                                                       M                                                    (2)
+reply to a friend with movie titles “as per their
+request”; the summary records the TODO “Send                                                                          Unlike methods that directly select raw history
+Leslie the comma-separated movie list by text mes-                                                                    chunks, SJC retains this summary interface because
+sage”, and the agent sends every title in the note,                                                                   it provides the agent with a compact and readable
+including those the friend did not ask for. Invented                                                                  description of the current task state.
+deliverables (5) tell the agent to report a result,                                                                   Stage 2: Judge sources. SJC parses the candidate
+which it then submits as an answer the task does not                                                                  summary into entries Bt = {bt,1 , . . . , bt,Nt } while
+expect. Contradicted state (3) asserts something an                                                                   preserving their section headings. For each entry, it
+environment output refutes. The remaining 6 carry                                                                     retrieves a small set of relevant passages from the
+forward an earlier choice of the agent or present a                                                                   environment outputs in Ht and pools them into a
+partial result as complete.                                                                                           shared evidence set:
+   Both observations point to the same remedy:                                                                                                   Nt
+check each summary entry against its source, and
+                                                                                                                                                 [
+                                                                                                                                      Et =             Retrieve(bt,k , Ht ).                (3)
+do so at every compression boundary.                                                                                                             k=1
+
+4       SJC: Our Proposed Method                                                                                      The pooled evidence is much shorter than Ht , so
+                                                                                                                      the judge never needs to read the full history. Re-
+Figure 1 illustrates SJC (Source-Judged Com-                                                                          trieval affects only the evidence shown to the judge;
+paction), a training-free post-processing method                                                                      it does not directly determine which entries are kept.
+for structured natural-language compaction. A host                                                                    A source judge J then receives all entries together
+compressor first produces a summary in its original                                                                   with the pooled evidence in a single request and
+format. SJC then judges the source of each sum-                                                                       returns one score per entry:
+mary entry and removes entries without an identifi-
+able source. It neither rewrites retained entries nor                                                                  (pt,1 , . . . , pt,Nt ) = J(Bt | P, Rt , Mt−1 , Et ) , (4)
+changes the agent or the host compressor.
+Setup. At compression boundary t, let P denote                                                                        where pt,k is the judge’s confidence that entry bt,k
+the fixed prompt retained verbatim, Ht the history                                                                    contains information that came from an environ-
+span being compressed, Rt the most recent interac-                                                                    ment output or from the previous committed sum-
+tion retained verbatim, and Mt−1 the previous com-                                                                    mary. SJC thus adds one judge request per bound-
+mitted summary. SJC proceeds in three stages and                                                                      ary, however many entries there are.
+   The judgment concerns provenance rather than          input length (Peak), measured in thousands of to-
+general reasoning quality. Values, names, observed       kens. For efficiency, we report cumulative agent
+results, and established environment behavior can        and compressor tokens, including all inputs and
+be traced to environment outputs or the previous         outputs, and report the API cost of Jev separately.
+summary. In contrast, plans, intentions, and in-
+terpretations produced only by the agent or the          Models. We use GPT-5.6 Luna (OpenAI, 2026b)
+compressor lack such support. The fixed prompt P         (with medium reasoning effort) and MiniMax-
+is given to the judge as context but does not count      M3 (MiniMax, 2026) as both the agent and the com-
+as a source: it remains visible to the agent after       pressor. For each configuration, the agent and com-
+compaction, so entries that only restate or interpret    pressor use the same model, following the standard
+the task need not be committed to the summary.           design of current agent systems. The source judge
+Stage 3: Prune and commit. SJC retains an entry          is Jev-1.13 (TypeSafe AI, 2026), a non-generative
+when its source score reaches a fixed threshold τ :      decision model that answers a typed question with
+                                                         a calibrated probability rather than free-form text.
+                 gt,k = 1[pt,k ≥ τ ] .            (5)    We pose the source question in Figure 1 as a yes-
+                                                         or-no decision and use the returned probability of
+The committed summary is                                 “yes” as pt,k in Eq. (4). We access GPT-5.6 Luna
+                                                         and MiniMax-M3 through the official OpenAI and
+      Mt = Render ({bt,k ∈ Bt : gt,k = 1}) .      (6)    MiniMax APIs, respectively, and Jev through the
+                                                         OpenRouter API.
+Unsupported entries are removed as complete units.
+Supported entries remain identical to the host com-      Baselines. We use No Compression, which re-
+pressor’s output, and the summary structure is pre-      tains the full interaction history, as the uncom-
+served. After compaction, the agent receives             pressed reference. We compare against five com-
+                                                         pression baselines: (1) FIFO retains the most re-
+                Xt = P ⊕ Mt ⊕ Rt .                (7)    cent history within the context budget; (2) LLM-
+                                                         Lingua (Jiang et al., 2023) and (3) LLMLingua-
+The same Mt is used as the previous summary at
+                                                         2 (Pan et al., 2024) perform token-level pruning us-
+the next compression boundary. Because the com-
+                                                         ing learned importance models; (4) Fast-Jev (Tran,
+pressor writes unsupported entries anew at each
+                                                         2026) uses Jev to select raw tool calls and outputs
+boundary (Section 3.1), SJC applies this gate at
+                                                         for retention, without producing a summary; and
+every boundary rather than once. It preserves the
+                                                         (5) Prompting uses the original OpenClaw struc-
+natural-language summary produced by the host
+                                                         tured compaction prompt (OpenClaw Contributors,
+compressor while keeping unsupported content out
+                                                         2026a). Our method, Prompting + SJC, uses the
+of the context the agent sees.
+                                                         same Jev model to prune unsupported entries from
+5     Experiments                                        the summaries produced by Prompting.
+
+5.1    Experimental Setup                                Compression          Scope. Following         Open-
+                                                         Claw (OpenClaw Contributors, 2026a), com-
+Datasets. We evaluate on two long-horizon agent
+                                                         paction retains a configurable number of messages
+benchmarks. AppWorld (Trivedi et al., 2024) con-
+                                                         from the beginning and recent interactions from the
+tains stateful API-use tasks across simulated appli-
+                                                         end of the context, while pruning or summarizing
+cations and users; we use its 168-task test-normal
+                                                         the intervening history. For simplicity, our
+split. OfficeBench covers multi-application office
+                                                         experiments retain one item from each side: the
+workflows involving documents, spreadsheets, and
+                                                         first user message and the most recent agent
+email (Wang et al., 2024); we use the 95-task test
+                                                         action–observation interaction. Context windows,
+set of ACON (Kang et al., 2026).
+                                                         retrieval settings, and the judge configuration are
+Metrics. Following Min et al. (2026b), we evalu-         given in Appendix F.
+ate each method over three independent runs. Acc.
+denotes the mean task success rate, while Pass3          5.2   Main Results
+denotes the fraction of tasks solved in all three runs   SJC achieves the highest Pass3 among compressed
+and measures cross-run reliability. We also report       methods in all four benchmark–model settings, im-
+the mean number of interaction Steps and the peak        proving over Prompting by 2.1%–8.9% without
+Table 3: Results on the AppWorld test-normal split by difficulty, over three independent runs. Acc.: mean task
+success, with the across-run standard deviation as a subscript. Pass3 : fraction of tasks solved in all three runs.
+Steps and Peak: mean number of interaction steps and peak input length (103 tokens). No compression is the
+uncompressed reference. SJC post-processes the summaries of Prompting with Jev as the source judge. Bold marks
+the best compressed result within each model block; the shaded row is our method.
+                              Average (168)                            Easy (57)                        Medium (48)                         Hard (63)
+ Method
+                  Acc. ↑     Pass3 ↑   Steps ↓   Peak ↓   Acc. ↑       Pass3 ↑     Steps ↓   Acc. ↑       Pass3 ↑     Steps ↓   Acc. ↑       Pass3 ↑     Steps ↓
+                                               Agent: GPT-5.6 Luna / Compressor: GPT-5.6 Luna
+ No compression   84.1±0.9    78.6      12.1      12.53   97.7 ±1.0      93.0        9.6     86.8±2.4       81.2       12.2     69.8±0.0      63.5        14.4
+ FIFO             53.2±1.2    45.2      30.0       7.14   95.9±2.0       93.0        9.6     47.9±4.2       37.5       33.7     18.5±3.3       9.5        42.8
+ LLMLingua        39.5±1.9    29.2      34.1       8.59   83.6±2.7       68.4       16.9     25.7±4.3       12.5       38.9     10.1±1.8       6.3        46.0
+ LLMLingua-2      71.4±2.3    61.3      19.2      10.53   97.7±2.7       94.7       8.7      77.8±2.4       66.7       17.6     42.9±6.3      27.0        30.0
+ Fast-Jev         74.8±1.4    61.9      22.4       9.63   98.2±1.8       94.7       11.2     79.2±3.6       62.5       22.8     50.3±7.8      31.7        32.3
+ Prompting        76.8±1.6    64.3      18.6      9.63    95.9±2.0       89.5       10.7     79.9±3.2       66.7       17.6     57.1±3.2      39.7        26.5
+     +SJC (Jev)   82.1±1.8    73.2      17.9      9.16    97.7±1.0       93.0       10.9     86.1±3.2       77.1       17.4     65.1±1.6      52.4        24.7
+                                                 Agent: MiniMax-M3 / Compressor: MiniMax-M3
+ No compression   85.3±3.0    73.8      22.0      13.84   95.9±2.7       87.7       14.0     84.0±6.0       66.7       21.7     76.7 ±4.0     66.7        29.5
+ FIFO             62.7±1.5    45.2      28.6      7.04    94.2±4.1       84.2       15.7     61.1±2.4       37.5       30.1     35.4±3.3      15.9        39.2
+ LLMLingua        41.7±2.1    26.8      33.3      8.31    84.8±3.7       66.7       16.4     30.6±6.4       8.3        37.6     11.1±4.2       4.8        45.4
+ LLMLingua-2      66.5±2.9    48.8      23.9      8.48    94.2±2.7       82.5       13.9     66.7±8.3       39.6       22.5     41.3±4.2      25.4        34.0
+ Fast-Jev         60.9±1.4    35.1      28.3      8.14    85.4±5.4       66.7       15.5     59.7±8.4       25.0       29.4     39.7±5.7      14.3        39.1
+ Prompting        74.8±1.9    55.4      23.6      8.04    91.8±2.7       77.2       14.4     73.6±3.2       47.9       24.0     60.3±3.2      41.3        31.5
+     +SJC (Jev)   78.0±1.0    62.5      23.7      7.98    93.6±3.7       82.5       14.6     79.2±2.1       58.3       23.7     63.0±4.0      47.6        31.9
+
+
+Table 4: Results on OfficeBench, grouped by the number of applications involved in each task. Metrics and notation
+follow Table 3.
+                              Average (95)                            1-APP (42)                         2-APP (22)                         3-APP (31)
+ Method
+                  Acc. ↑     Pass3 ↑   Steps ↓   Peak ↓   Acc. ↑       Pass3 ↑     Steps ↓   Acc. ↑       Pass3 ↑     Steps ↓   Acc. ↑       Pass3 ↑     Steps ↓
+                                               Agent: GPT-5.6 Luna / Compressor: GPT-5.6 Luna
+ No compression   82.1±4.8    75.8      11.2      7.02    92.9±4.1       88.1       7.6      81.8±4.5       77.3       10.9     67.7 ±8.5      58.1       16.2
+ FIFO             62.1±1.8    54.7      23.2      3.48    81.7±1.4       73.8       10.3     56.1±2.6       50.0       28.2     39.8±3.7       32.3       37.0
+ LLMLingua        58.2±2.2    46.3      20.2      4.16    75.4±6.0       61.9       9.8      59.1±4.5       45.5       20.0     34.4±4.9       25.8       34.4
+ LLMLingua-2      76.1±1.2    68.4      14.4      4.14    89.7±1.4       83.3       8.0      81.8±0.0       77.3       14.0     53.8±4.9       41.9       23.2
+ Fast-Jev         74.7±1.1    61.1      18.0      4.95    90.5±0.0       85.7       8.3      72.7±7.9       50.0       22.2     54.8±6.5       35.5       28.1
+ Prompting        78.9±1.1    68.4      13.7      3.98    91.3±3.6       83.3       8.7      83.3±2.6       77.3       14.6     59.1±6.7       41.9       19.8
+     +SJC (Jev)   80.0±2.8    73.7      13.5      4.07    89.7±2.7       85.7       8.8      81.8±2.6       77.3       12.9     64.5±5.6       54.8       20.3
+                                                 Agent: MiniMax-M3 / Compressor: MiniMax-M3
+ No compression   82.1±1.8    72.6      13.4      9.04    92.9±4.1       85.7       8.8      80.3±6.9       68.2       13.5     68.8±1.9       58.1       19.5
+ FIFO             68.8±2.6    55.8      14.4      3.48    83.3±6.3       73.8       9.6      66.7±11.4      50.0       16.5     50.5±4.9       35.5       19.4
+ LLMLingua        60.0±4.6    47.4      17.4      4.51    76.2±4.1       66.7       12.8     59.1±4.5       36.4       18.2     38.6±9.7       29.0       23.2
+ LLMLingua-2      76.5±1.6    63.2      16.8      4.43    88.1±4.1       78.6       10.2     80.3±5.2       68.2       20.0     58.1±3.2       38.7       23.5
+ Fast-Jev         76.5±0.6    66.3      14.2      4.22    89.7±1.4       78.6       8.8      80.3±2.6       72.7       14.8     55.9±3.7       45.2       21.0
+ Prompting        84.2±0.0    74.7      12.8      4.23    95.2±4.1       90.5       8.7      83.3±2.6       72.7       11.7     69.9±3.7       54.8       19.1
+     +SJC (Jev)   83.2±2.8    76.8      12.9      4.14    91.3±3.6       88.1       7.9      87.9±5.2       81.8       12.8     68.8±6.7       58.1       19.7
+
+
+
+adding interaction steps or context length (Tables 3                             and by 5.3% and 2.1% on OfficeBench. Accu-
+and 4). The gains concentrate on hard and multi-                                 racy rises by 1.1%–5.3% in three settings; on Of-
+application tasks, where compaction degrades ex-                                 ficeBench with MiniMax-M3 it falls by 1.0%.
+ecution the most. Fast-Jev uses the same judge                                   The gains are largest where compaction hurts
+model to select raw history and falls below Prompt-                              most. On AppWorld, Pass3 improves by 10.4%
+ing in three of four settings, so the gain comes from                            and 12.7% on medium and hard tasks with GPT-
+what the judge is asked and where it is applied, not                             5.6 Luna, and by 10.4% and 6.3% with MiniMax-
+from the judge itself. All differences are reported                              M3. On OfficeBench 3-APP tasks with GPT-5.6
+in absolute terms.                                                               Luna, Pass3 rises from 41.9% to 54.8% and ac-
+SJC improves cross-run reliability in every set-                                 curacy from 59.1% to 64.5%. Across the twelve
+ting. Pass3 rises over Prompting by 8.9% and 7.1%                                benchmark–model–subset groups, Pass3 improves
+on AppWorld (GPT-5.6 Luna and MiniMax-M3)                                        in ten, is unchanged in one, and decreases in one
+Table 5: Overhead of SJC. LLM tokens are means per                           No compression                             FIFO                     LLMLingua-2
+task; ∆ is relative to Prompting. Summary length is the                      Prompting                                  LLMLingua                Fast-Jev
+                                                                             Prompting + SJC (ours)
+change in summary tokens after pruning.                                        AppWorld · GPT-5.6 Luna                           AppWorld · MiniMax-M3
+                                                                        80
+                            AppWorld       OfficeBench
+
+
+
+
+                                                          Pass3 (%)
+                           GPT     M3      GPT    M3                    60
+
+ Prompting tokens (K)      112.8   142.6   51.0   57.5
+ SJC tokens (K)            103.8   138.5   50.4   53.5                  40
+ ∆ (%)                     −8.0    −2.9    −1.3   −7.0
+ Entries pruned (%)         18.5  13.6  21.3  13.0                      20
+                                                                               100         150        200                            150     175   200
+ Summary length (%)        −22.9 −13.7 −26.7 −17.3
+                                                                              OfficeBench · GPT-5.6 Luna                        OfficeBench · MiniMax-M3
+ Max judge input (K)       22.5    25.9    28.4   29.0                  80
+ Judge cost ($/1K tasks)   1.24    1.39    1.19   1.52
+
+
+
+
+                                                          Pass3 (%)
+                                                                        60
+
+
+(OfficeBench 1-APP with MiniMax-M3, 90.5% to                            40
+
+88.1%), where Prompting is near saturation.
+                                                                        20
+The gains require neither longer contexts nor ad-                                 50       60                                    40   60     80    100
+ditional interaction. Relative to Prompting, SJC                              LLM tokens per task (K)                           LLM tokens per task (K)
+
+adds at most 0.1 interaction steps on average and         Figure 2: Pass3 versus mean cumulative LLM tokens
+changes peak input length by at most 0.47K tokens.        per task (agent plus LLM compressor). The dotted line
+Its peak input remains 27%–54% below uncom-               marks the cost of uncompressed execution. Jev calls are
+pressed execution. Section 5.3 reports the addi-          excluded and reported in Table 5.
+tional cost of the judge.                                                       Facts, decisions, rules                                AW, GPT       OB, GPT
+                                                                                TODOs, pending asks                                    AW, M3        OB, M3
+
+
+
+
+                                                                                                           Entries pruned (%)
+                                                                        40
+                                                                                       τ                                        60
+                                                          Entries (%)
+
+
+
+
+5.3   Efficiency
+                                                                                                                                40
+                                                                        20
+SJC does not increase the cumulative LLM tokens                                                                                 20
+of Prompting in any setting, and its judge costs
+                                                                        0                                                       0
+under $0.002 per task (Figure 2, Table 5).                               0.0          0.5           1.0                          0.0           0.5       1.0
+                                                                                  Source score                                             Threshold τ
+SJC is no more expensive than the summaries it
+prunes. Cumulative agent and compressor tokens            Figure 3: Left: distribution of Jev source scores, with
+change by −8.0% and −2.9% on AppWorld and                 forward-looking sections highlighted. Right: fraction
+by −1.3% and −7.0% on OfficeBench relative to             of entries pruned as τ varies (AW: AppWorld; OB: Of-
+Prompting. The savings come from shorter sum-             ficeBench). Dotted lines mark τ = 0.5.
+maries: pruning removes 13%–21% of entries and
+shortens each summary by 14%–27%.                         5.4                 Sensitivity Analysis
+The judge is cheap and its input is bounded.              SJC is insensitive to its threshold and prunes selec-
+SJC issues one Jev request per compaction, cover-         tively rather than by section; a binary self-judge is
+ing all entries of the candidate summary with their       a less reliable substitute for Jev.
+retrieved evidence. No request exceeds 29.0K in-          Pruning decisions are stable across thresholds.
+put tokens, within Jev’s 32K context window. At           Jev scores are bimodal: 73.9% of entries score at
+$0.042 per million input tokens, the judge costs          least 0.8, 10.6% score below 0.2, and only 8.1%
+$1.2–$1.5 per 1,000 tasks.                                fall between 0.3 and 0.7. Moving τ from 0.3 to 0.7
+Compaction is cheaper than full history in three          therefore changes the pruned fraction by at most
+of four settings. Relative to uncompressed execu-         10.2% in any setting. We use τ = 0.5 throughout.
+tion, SJC uses 34%, 12%, and 46% fewer tokens on          Pruning targets forward-looking entries with-
+AppWorld with MiniMax-M3 and on OfficeBench               out removing them wholesale. SJC keeps 92.8%–
+with both models. On AppWorld with GPT-5.6                97.4% of exact identifiers and 84.2%–92.5% of
+Luna it uses 6.9% more, because compaction adds           decisions, but only 28.5%–64.9% of open TODOs
+5.8 steps per task; SJC recovers more than half of        and 2.0%–12.8% of pending user asks. These two
+the 16.1% overhead of Prompting there.                    sections hold 15.2% of all entries and 59.5% of
+Table 6: Pass3 (%) with the compressor itself as the         TASK
+source judge (Self) and with Jev.                            “Add a new habit tracking log note for today in my Simple Note
+                                                             account. It should be the same as yesterday, except I did not
+                     AppWorld OfficeBench                    meditate today.”
+
+                     GPT M3 GPT       M3                     ENVIRONMENT OUTPUT yesterday’s note
+
+                                                              practiced_meditation:        yes
+         Prompting 64.3 55.4 68.4     74.7
+         +SJC (Self) 75.6 50.0 60.0   70.5
+         +SJC (Jev) 73.2 62.5 73.7    76.8
+                                                             Prompting                                ✗ fails in 2 of 3 runs
+
+                                                             SUMMARY AFTER COMPACTION                              no source
+pruned ones. Pruning is also concentrated at the             “The new note should copy yesterday’s content except medita-
+first compaction, which removes 29.9%–39.6% of               tion should be omitted.”
+entries against 8.8%–17.7% at later ones, since              NEXT ACTION
+
+entries carried over from the previous checkpoint             .replace(’practiced_meditation:          yes\n’, ’’)
+
+have already passed the judge.                               ✗ The line is deleted; the checker expects the habit to be
+                                                             recorded as not done.
+A calibrated non-generative judge is more re-
+peatable than a generative self-judge. Replac-               Prompting + SJC                     ✓ succeeds in 3 of 3 runs
+ing Jev with the compressor itself gives the best            SUMMARY AFTER PRUNING
+Pass3 on AppWorld with GPT-5.6 Luna but falls be-             0.15 pruned “Base it on yesterday’s habit log, omitting medita-
+low Prompting in the other three settings (Table 6).         tion for today.”
+The two judges prune similar fractions of entries            0.94 kept   “Yesterday’s matching note was identified as note
+                                                             2578, titled Habit Tracker Log for 2023-05-17.”
+(14.6%–18.6% against 13.0%–21.3%), so the gap
+                                                             NEXT ACTION
+does not come from pruning more. They differ                  .replace(’practiced_meditation: yes’,
+in repeatability: when the same 40 judge requests                     ’practiced_meditation: no’)
+
+(1,598 entries) from AppWorld with GPT-5.6 Luna              ✓ The habit is recorded as not done, as the checker expects.
+are issued five times, the self-judge changes its an-
+swer on 8.6% of entries and Jev on 2.1%. Jev’s           Figure 4: An AppWorld task with GPT-5.6 Luna. The
+changes fall near the threshold, whereas the self-       compressor rewrites “did not meditate” as an instruction
+judge changes its answer on 23.4% of the entries         to omit the line, and the agent follows it after com-
+that Jev scores below 0.2.                               paction. SJC prunes the corresponding entry.
+
+                                                         6      Related Work
+5.5   Case Study
+                                                         General-purpose context compression. Prior
+Figure 4 shows an entry that the compressor in-          work compresses context through token selection,
+vents and SJC prunes. The user asks for a copy of        textual rewriting, or latent representations. Selec-
+yesterday’s habit log “except I did not meditate to-     tive Context and the LLMLingua family prune to-
+day”. Under Prompting, the summary restates this         kens according to estimated importance (Li et al.,
+as a decision to omit meditation, although no envi-      2023; Jiang et al., 2023, 2024; Pan et al., 2024),
+ronment output says so: the retrieved note records       while TACO–RL learns task-aware selection from
+each habit as a yes-or-no answer. The agent’s next       downstream rewards (Shandilya et al., 2025). RE-
+action deletes the line, and the task fails in two of    COMP studies abstractive rewriting (Xu et al.,
+three runs. SJC assigns the corresponding entry a        2024), and AutoCompressor, Gist tokens, and
+source score of 0.15 and prunes it, while keeping        ICAE encode long inputs into compact latent repre-
+entries grounded in the retrieved note. The agent        sentations (Chevalier et al., 2023; Mu et al., 2023;
+then reads the original instruction, sets the habit to   Ge et al., 2024). These methods primarily com-
+no, and succeeds in all three runs.                      press a fixed input, whereas long-horizon agents
+   The unsupported entry raises the chance of the        require recurrent compaction whose outputs be-
+error rather than determining it: the third Prompt-      come persistent working memory and influence
+ing run carries the same entry and still succeeds.       subsequent actions.
+Among the ten AppWorld tasks with GPT-5.6 Luna           Context management for long-horizon agents.
+that SJC solves in every run and Prompting fails at      Modern agent systems such as Claude Code,
+least twice, we trace the failure to an unsupported      Codex, OpenClaw, and Hermes Agent periodically
+summary entry in four.                                   compact accumulated interactions into natural-
+language checkpoints that serve as the agent’s          Limitations
+working context for subsequent actions (Anthropic,
+                                                        SJC filters by provenance, not correctness, and the
+2024; OpenAI, 2025; OpenClaw Contributors,
+                                                        two are largely independent: supported and unsup-
+2026a,b; Nous Research, 2026). ReSum and SUPO
+                                                        ported entries are correct at similar rates (92.2%
+train agents to consolidate and reason over com-
+                                                        against 90.6%; Appendix G). An entry that cites a
+pressed histories (Wu et al., 2025; Lu et al., 2025),
+                                                        real observation but draws a wrong conclusion from
+while ACON adapts compression guidelines using
+                                                        it has a source and is kept: in our analysis of failed
+task-specific trajectories (Kang et al., 2026). Be-
+                                                        runs, four of the 29 entries that the agent acted
+yond summary replacement, Mem1 learns a recur-
+                                                        on were supported by environment outputs, and
+rent internal memory through reinforcement learn-
+                                                        no source-based filter would remove them. Con-
+ing (Zhou et al., 2025); ACM post-trains agents to
+                                                        versely, SJC removes entries that are correct and
+invoke context-editing tools and retrieve discarded
+                                                        sometimes entries that help. At our threshold the
+content from external memory (Li et al., 2026);
+                                                        judge errs toward pruning and recovers 64.2% of
+and ACE incrementally evolves task-specific play-
+                                                        supported entries. On one AppWorld task it prunes
+books from execution feedback without updating
+                                                        a compressor-written note restricting a text mes-
+model weights (Zhang et al., 2026). Fast-Jev-
+                                                        sage to newly registered recipients; GPT-5.6 Luna
+Compaction provides a training-free plug-in that
+                                                        recovers the restriction from the task instruction,
+uses Jev to retain, truncate, or remove raw tool
+                                                        but MiniMax-M3 does not and fails in two of three
+interactions without rewriting them into a sum-
+                                                        runs.
+mary (Tran, 2026). In contrast, SJC preserves
+                                                           Our evaluation covers two benchmarks, two
+the conventional natural-language summary inter-
+                                                        agent models, and one host compressor, with com-
+face and operates as a training-free, drop-in post-
+                                                        paction triggered at small context windows so that
+processing layer. It judges each generated sum-
+                                                        it occurs within each task. In both benchmarks
+mary entry by whether its information originates
+                                                        the task is a single instruction that stays visible
+from environment outputs or previously commit-
+                                                        after compaction, which is what makes it safe to
+ted memory, and removes unsupported reasoning
+                                                        remove entries that only restate it. In multi-turn
+before committing the summary to the agent.
+                                                        settings, earlier user messages are themselves a
+7   Conclusion                                          source and would need to be treated as one; we
+                                                        have not evaluated that case. SJC also depends on
+We presented SJC, a training-free post-processing       an external judge model accessed through an API,
+step for structured context compaction. Com-            whose scores are not fully deterministic, and replac-
+paction summaries mix facts that the environment        ing it with the compressor itself was less reliable
+established with reasoning that the compressor          in our experiments. Finally, the failure analysis in
+wrote, and after compaction the agent can no longer     Section 3 relies on annotations produced by LLM
+tell the two apart. SJC scores each summary entry       annotators under a written protocol.
+for whether it has a source in the environment out-
+puts or the previous summary, and removes the en-
+tries that do not, at every compression boundary. It    References
+changes neither the agent nor the host compressor,      Anthropic. 2024.  Claude code.   https://www.
+rewrites nothing it keeps, and adds one inexpensive       anthropic.com/claude-code. Software, accessed
+judge request per compaction. Across two bench-           October 2026.
+marks and two agent models, SJC raises Pass3 over       Alexis Chevalier, Alexander Wettig, Anirudh Ajith, and
+the underlying compressor by 2.1%–8.9%, with              Danqi Chen. 2023. Adapting language models to
+the largest gains on harder tasks, while leaving the      compress contexts. In The 2023 Conference on Em-
+agent’s token usage unchanged or lower.                   pirical Methods in Natural Language Processing.
+                                                        DeepSeek-AI. 2026. DeepSeek Harness: Basic com-
+                                                          paction engine. Accessed: 2026-09-12.
+                                                        Tao Ge, Hu Jing, Lei Wang, Xun Wang, Si-Qing Chen,
+                                                          and Furu Wei. 2024. In-context autoencoder for con-
+                                                          text compression in a large language model. In The
+                                                          Twelfth International Conference on Learning Repre-
+                                                          sentations.
+Cheng-Ping Hsieh, Simeng Sun, Samuel Kriman, Shan-         MiniMax. 2026. Minimax m3: Frontier coding, 1m
+  tanu Acharya, Dima Rekesh, Fei Jia, and Boris Gins-        context, native multimodality — all in one model.
+  burg. 2024. RULER: What’s the real context size of
+  your long-context language models? In First Confer-      Jesse Mu, Xiang Lisa Li, and Noah Goodman. 2023.
+  ence on Language Modeling.                                  Learning to compress prompts with gist tokens. In
+                                                             Thirty-seventh Conference on Neural Information
+Huiqiang Jiang, Qianhui Wu, Chin-Yew Lin, Yuqing              Processing Systems.
+  Yang, and Lili Qiu. 2023. LLMLingua: Compressing
+  prompts for accelerated inference of large language      Nous Research. 2026.           Hermes Agent
+  models. In Proceedings of the 2023 Conference on           Documentation:       Context    compression
+  Empirical Methods in Natural Language Process-             and caching.         https://hermes-agent.
+  ing, pages 13358–13376, Singapore. Association for         nousresearch.com/docs/developer-guide/
+  Computational Linguistics.                                 context-compression-and-caching. Accessed:
+                                                             2026-10-01.
+Huiqiang Jiang, Qianhui Wu, Xufang Luo, Dong-
+  sheng Li, Chin-Yew Lin, Yuqing Yang, and Lili Qiu.       OpenAI. 2025. Codex CLI: A lightweight coding agent
+  2024. LongLLMLingua: Accelerating and enhanc-              that runs in your terminal. https://github.com/
+  ing LLMs in long context scenarios via prompt com-         openai/codex. Software, accessed October 2026.
+  pression. In Proceedings of the 62nd Annual Meeting
+  of the Association for Computational Linguistics (Vol-   OpenAI. 2026a. Codex: Context compaction implemen-
+  ume 1: Long Papers), pages 1658–1677, Bangkok,             tation. Accessed: 2026-09-12.
+  Thailand. Association for Computational Linguistics.     OpenAI. 2026b. GPT-5.6 Luna model. Accessed: 2026-
+                                                             09-06.
+Minki Kang, Wei-Ning Chen, Dongge Han, Huseyin A
+  Inan, Lukas Wutschitz, Yanzhi Chen, Robert Sim,          OpenClaw Contributors. 2026a. OpenClaw Documen-
+  and Saravan Rajmohan. 2026. ACON: Optimizing               tation: Compaction. https://docs.openclaw.ai/
+  context compression for long-horizon LLM agents.           concepts/compaction. Accessed: 2026-10-01.
+  In Forty-third International Conference on Machine
+  Learning.                                                OpenClaw Contributors. 2026b. OpenClaw Documen-
+                                                             tation: Session pruning. https://docs.openclaw.
+Xiaochuan Li, Ryan Ming, Meng Chu, Shuai Shao,               ai/concepts/session-pruning. Accessed: 2026-
+  Rong Jin, and Chenyan Xiong. 2026. Acm: Agentic            10-01.
+  context management for long horizon tasks. arXiv
+  preprint arXiv:2607.23809.                               Zhuoshi Pan, Qianhui Wu, Huiqiang Jiang, Menglin Xia,
+                                                             Xufang Luo, Jue Zhang, Qingwei Lin, Victor Rühle,
+Yucheng Li, Bo Dong, Frank Guerin, and Chenghua Lin.         Yuqing Yang, Chin-Yew Lin, H. Vicky Zhao, Lili Qiu,
+  2023. Compressing context to enhance inference ef-         and Dongmei Zhang. 2024. LLMLingua-2: Data dis-
+  ficiency of large language models. In Proceedings of       tillation for efficient and faithful task-agnostic prompt
+  the 2023 Conference on Empirical Methods in Natu-          compression. In Findings of the Association for Com-
+  ral Language Processing, pages 6342–6353, Singa-           putational Linguistics: ACL 2024, pages 963–981,
+  pore. Association for Computational Linguistics.           Bangkok, Thailand. Association for Computational
+                                                             Linguistics.
+Nelson F. Liu, Kevin Lin, John Hewitt, Ashwin Paran-
+  jape, Michele Bevilacqua, Fabio Petroni, and Percy       Shivam Shandilya, Menglin Xia, Supriyo Ghosh,
+  Liang. 2024. Lost in the middle: How language mod-         Huiqiang Jiang, Jue Zhang, Qianhui Wu, Victor
+  els use long contexts. Transactions of the Association     Rühle, and Saravan Rajmohan. 2025. Taco-rl: Task
+  for Computational Linguistics, 12:157–173.                 aware prompt compression optimization with rein-
+                                                             forcement learning. In Findings of the Association
+Miao Lu, Weiwei Sun, Weihua Du, Zhan Ling, Xuesong           for Computational Linguistics: ACL 2025, pages
+  Yao, Kang Liu, and Jiecao Chen. 2025. Scaling              1582–1597.
+  llm multi-turn rl with end-to-end summarization-
+  based context management.         arXiv preprint         Tamara Tran. 2026. fast-jev-compaction. GitHub repos-
+  arXiv:2510.06727.                                          itory.
+Guanghui Min, Liang Wu, Mayank Darbari, Chen Chen,         Harsh Trivedi, Tushar Khot, Mareike Hartmann, Ruskin
+  and Liangjie Hong. 2026a. Toward reliable context          Manku, Vinty Dong, Edward Li, Shashank Gupta,
+  compression for long-horizon agents: An empiri-            Ashish Sabharwal, and Niranjan Balasubramanian.
+  cal study of execution instability. arXiv preprint         2024. Appworld: A controllable world of apps and
+  arXiv:2608.06503.                                          people for benchmarking interactive coding agents.
+                                                             In Proceedings of the 62nd Annual Meeting of the
+Guanghui Min, Liang Wu, Mingjia Shi, Yinhan He,              Association for Computational Linguistics (Volume
+  Mayank Darbari, Liangjie Hong, and Chen Chen.              1: Long Papers), pages 16022–16076.
+  2026b. Adapting context compression for long-
+  horizon agents with counterfactual continuations.        TypeSafe AI. 2026. Introducing system one models &
+  arXiv preprint arXiv:2609.36526.                           jev. TypeSafe AI Blog. Accessed: 2026-10-05.
+Zilong Wang, Yuedong Cui, Li Zhong, Zimin Zhang,            A    Notations and Symbols
+   Da Yin, Bill Yuchen Lin, and Jingbo Shang. 2024.
+   Officebench: Benchmarking language agents across
+   multiple applications for office automation. arXiv       We summarize the mathematical notations used
+   preprint arXiv:2407.19056.                               throughout the paper in Table 7.
+Xixi Wu, Kuan Li, Yida Zhao, Liwen Zhang, Litu
+  Ou, Huifeng Yin, Zhongwang Zhang, Xinmiao Yu,
+  Dingchu Zhang, Yong Jiang, et al. 2025. Resum: Un-        B Compaction Prompts of Existing Agent
+  locking long-horizon search intelligence via context        Systems
+  summarization. arXiv preprint arXiv:2509.13313.
+Fangyuan Xu, Weijia Shi, and Eunsol Choi. 2024. RE-
+  COMP: Improving retrieval-augmented LMs with              We collected compaction and summarization
+  context compression and selective augmentation. In        prompts from the official repository or documen-
+  The Twelfth International Conference on Learning          tation of each system on October 8, 2026, pinned
+  Representations.                                          to the commit listed in Table 8. Prompts avail-
+Frank F. Xu, Yufan Song, Boxuan Li, Yuxuan Tang, Kri-       able only through unofficial copies were excluded;
+   tanjali Jain, Mengxue Bao, Zora Zhiruo Wang, Xuhui       systems whose prompt is not published, includ-
+   Zhou, Zhitong Guo, Murong Cao, Mingyang Yang,            ing Claude Code and the server-side compaction
+   Hao Yang Lu, Amaad Martin, Zhe Su, Leander Mel-
+                                                            of the OpenAI and Anthropic APIs, are therefore
+   roy Maben, Raj Mehta, Wayne Chi, Lawrence Ke-
+   unho Jang, Yiqing Xie, and 2 others. 2026. Theagent-     not covered. For each prompt we mark a content
+   company: Benchmarking LLM agents on consequen-           type as requested only when the prompt contains a
+   tial real world tasks. In The Thirty-ninth Annual Con-   sentence asking for it.
+   ference on Neural Information Processing Systems
+  Datasets and Benchmarks Track.
+Qizheng Zhang, Changran Hu, Shubhangi Upasani,              C    Composition of Summaries on the
+  Boyuan Ma, Fenglu Hong, Vamsidhar Kamanuru, Jay                Training Split
+  Rainton, Chen Wu, Mengmeng Ji, Hanchen Li, Ur-
+  mish Thakker, James Zou, and Kunle Olukotun. 2026.
+  Agentic context engineering: Evolving contexts for        Setup. The agent and the compressor are GPT-
+  self-improving language models. In The Fourteenth
+  International Conference on Learning Representa-          5.6 Luna with the configuration of Section 5. Each
+  tions.                                                    summary entry is scored offline by the source judge,
+                                                            with the same request construction and threshold as
+Zijian Zhou, Ao Qu, Zhaoxuan Wu, Sunghwan
+                                                            in SJC; no entry is removed, so these runs are the
+   Kim, Alok Prakash, Daniela Rus, Jinhua Zhao,
+   Bryan Kian Hsiang Low, and Paul Pu Liang. 2025.          unmodified Prompting baseline. To follow entries
+   Mem1: Learning to synergize memory and rea-              across boundaries, we match each entry to the pre-
+   soning for efficient long-horizon agents. Preprint,      vious summary of the same run, first by normalized
+   arXiv:2506.15841.                                        text and then by character similarity of at least 0.9;
+                                                            90.0% of the carried-over entries match exactly.
+
+
+                                                            By compression boundary. Table 9 shows that
+                                                            the share of unsupported entries is highest at the
+                                                            first boundary and declines afterwards, as earlier
+                                                            summaries become a source for later ones. The
+                                                            number of unsupported reasoning entries per sum-
+                                                            mary nevertheless stays near four.
+
+
+                                                            Persistence. Table 10 reports how often a reason-
+                                                            ing entry is still present in later summaries. Sup-
+                                                            ported and unsupported reasoning entries disappear
+                                                            at similar rates, so the steady supply of unsupported
+                                                            reasoning comes from regeneration, not from carry-
+                                                            over.
+                                       Table 7: Summary of notations used in this paper.
+
+Symbol                             Description
+                                                        Agent and Environment
+π                                  LLM agent that solves a task by interacting with an environment
+P                                  Fixed prompt containing the system prompt and the task instruction; never compressed
+ai                                 Action taken by the agent at step i
+oi                                 Environment output received at step i
+ρ = (a1 , o1 , . . . , aT , oT )   Rollout of T interaction steps
+S(ρ) ∈ {0, 1}                      Indicator of whether rollout ρ solves the task
+|x|                                Token length of a text x
+⊕                                  Textual concatenation operator
+                                                         Recurrent Compaction
+B                                  Context budget; compaction is triggered when the context exceeds it
+t                                  Index of a compression boundary, t = 1, 2, . . .
+Ht                                 History span accumulated since the last boundary and compressed at boundary t
+Rt                                 Most recent interaction at boundary t, retained verbatim
+Mt−1                               Previous committed summary, with M0 = ∅
+C                                  Host compressor
+M
+ft                                 Candidate summary produced by the host compressor, M    ft = C(P, Mt−1 , Ht , Rt )
+Mt                                 Committed summary shown to the agent and passed to the next boundary
+B(·)                               Set of entries in a summary
+G                                  Post-processing operator that maps a candidate summary to a committed summary, Mt =
+                                   G(Mft ; P, Mt−1 , Ht , Rt )
+pπ,C,G                             Rollout distribution induced by the agent, the environment, the host compressor, and G
+Xt                                 Agent context after compaction, Xt = P ⊕ Mt ⊕ Rt
+                                                      Source-Judged Compaction
+Bt = {bt,1 , . . . , bt,Nt }       Entries of the candidate summary M   ft
+bt,k                               The k-th entry of the candidate summary at boundary t
+Nt                                 Number of entries in the candidate summary at boundary t
+Retrieve(bt,k , Ht )               Passages retrieved for entry bt,k from the environment outputs in Ht
+                                   Pooled evidence set, Et = N
+                                                                S t
+Et                                                                k=1 Retrieve(bt,k , Ht )
+J                                  Source judge, which scores all entries of a summary in one request
+pt,k                               Source score of entry bt,k : the judge’s confidence that it contains information from an environ-
+                                   ment output or the previous summary
+τ                                  Threshold on the source score
+gt,k                               Retention indicator, gt,k = 1[pt,k ≥ τ ]
+Render(·)                          Assembles the retained entries into a summary, preserving the section structure
+                                                          Evaluation Metrics
+Acc.                               Mean task success rate over three independent runs
+Pass3                              Fraction of tasks solved in all three runs
+Steps                              Mean number of interaction steps per task
+Peak                               Mean peak input length per task, in thousands of tokens
+Table 8: Content requested by 29 compaction prompts. Facts: observed state and results. Decisions: decisions made.
+Plans: next steps or pending work. Intent: the user’s goals or constraints. ✓: requested; ◦: requested in a weaker
+form (decisions without their rationale, or a task goal not attributed to the user); –: not requested.
+
+                 System                                  Commit    Facts   Decisions   Plans   Intent
+                 OpenClaw (default)                      d2f8755    ✓         ✓         ✓       ✓
+                 OpenClaw (safeguard)                    d2f8755    ✓         ◦         ✓       ✓
+                 Hermes Agent                            302c5d9    ✓         ✓         –       ✓
+                 AG2 v1.0                                e1c8857    ✓         ◦         –       –
+                 AG2 Classic                             86fa5cc    –         –         –       –
+                 Codex CLI                               5fe2152    ✓         ◦         ✓       ✓
+                 Gemini CLI                              44d764e    ✓         ✓         ✓       ✓
+                 OpenHands                               16662b0    ✓         –         ✓       ✓
+                 LangChain v1                            2baf2f3    ✓         ✓         ✓       ✓
+                 LangChain Deep Agents                   bfd9f22    ✓         ✓         ✓       ✓
+                 LangChain classic                       2baf2f3    –         –         –       –
+                 LangMem                                 48e3c11    –         –         –       –
+                 Goose                                   a4189ec    ✓         ✓         ✓       ✓
+                 Cline                                   95e54e4    ✓         ◦         ✓       ◦
+                 Aider                                   5dc9490    ✓         –         –       –
+                 opencode                                3884062    ✓         ✓         ✓       ✓
+                 Kilo Code                               9747234    ✓         ✓         ✓       ✓
+                 Roo Code                                b867ec9    ✓         ◦         ✓       ✓
+                 Qwen Code                               29aef7d    ✓         –         ✓       ✓
+                 Continue (IDE)                          5522c6f    ✓         ◦         ✓       ✓
+                 Continue CLI                            5522c6f    ✓         ◦         –       –
+                 CrewAI                                  42ae4bf    ✓         –         ✓       ◦
+                 Semantic Kernel (Python)                cc8a15f    –         –         –       –
+                 Semantic Kernel (.NET)                  cc8a15f    –         –         –       –
+                 Microsoft Agent Framework (Python)      2d9cc3f    –         –         –       –
+                 Microsoft Agent Framework (.NET)        2d9cc3f    ✓         ◦         –       ✓
+                 Letta Code (sliding window)             ce1fa0d    ✓         –         –       ✓
+                 Letta Code (all)                        ce1fa0d    ✓         ◦         ✓       ✓
+                 Anthropic SDK tool_runner               docs       ✓         ✓         ✓       ✓
+
+
+Table 9: Unsupported entries by compression bound-           each run, the annotator identifies the evaluation
+ary. N : number of summaries. All and Reas.: share           check that failed, the action responsible for it, and
+of unsupported entries among all entries and among
+                                                             whether that action carries out a summary entry; if
+reasoning entries (those under Decisions and Open TO-
+DOs). Count: mean number of unsupported reasoning            so, it assigns a failure pattern and judges whether
+entries per summary.                                         the environment outputs before the compaction sup-
+                                                             port the entry. The annotators see the trajectory, the
+                             Unsupported (%)                 task’s evaluation script and report, and the other
+       Boundary         N     All          Reas. Count       runs of the same task, but no judge score. Ev-
+       1st             243 29.2            54.9    4.3
+                                                             ery quoted entry, action, and check was verified
+       2nd             152 16.6            39.6    3.9       by script against the logs. A second, independent
+       3rd+            272 12.6            29.6    3.8       round of annotation agrees with the first on whether
+                                                             the failing action carries out a summary entry in all
+                                                             44 runs, on the support judgment in 40 (κ = 0.86),
+Table 10: Share of reasoning entries (%) still present d     and on the failure pattern in 37 (κ = 0.80). The au-
+summaries after they first appear.
+                                                             thors resolved the 14 runs with any disagreement.
+       First seen as        d=1     d=2     d=3    d=4       Per scenario. The 44 failed runs come from 11 sce-
+       Unsupported          20.5    10.9     5.3   4.5
+                                                             narios, where a scenario groups the task variants
+       Supported            22.6    14.4    10.1   6.6       generated from 1 template. We exclude 1 scenario
+                                                             (b0a8eae, 9 failed runs): its reference solution
+                                                             compares song durations in seconds with work-
+D    Failure Attribution
+                                                             out durations in minutes, and no method solves it
+Protocol. All 44 failed runs of the Prompting                in any run. The remaining 35 failed runs span 10
+baseline on the training split were traced by LLM            scenarios (Table 11), and a single scenario accounts
+annotators following a fixed written protocol. For           for 9 of them, so per-run counts are not indepen-
+dent; the main text therefore also reports counts per     E.2    Token Pruning and Truncation Baselines
+scenario and pattern.                                     This group contains four non-generative baselines.
+Examples. Invented deliverable.          The task         Rather than producing a new free-form summary,
+asks to refund a payment.          The summary            they retain selected portions of the original interac-
+adds the TODO “Verify and report the result-              tion history. All use the same compression trigger,
+ing transaction”, and the agent finishes with             downstream context slot, and recent-turn preserva-
+complete_task(answer=8217); the task expects              tion policy as the generative baseline. Compression
+no answer. Contradicted state. The task asks for          is triggered when the compressible history exceeds
+the total sent to roommates. The summary records          the context budget, while the fixed first prompt and
+“Jennifer Powell: $531.00”, a value that differs          most recent interaction turn remain verbatim.
+from the transactions returned by the environment,        FIFO. FIFO is a recency-based sliding-window
+and the agent’s final sum uses it.                        control. When the rendered compressible history
+                                                          exceeds the context budget, complete turns are dis-
+E     Details of Baselines                                carded from the front, oldest first, until the history
+                                                          fits. The fixed first prompt and most recent interac-
+This section describes the compression baselines          tion turn are always retained. FIFO therefore iso-
+used in our experiments. Unless otherwise speci-          lates how much behavior can be preserved through
+fied, all conditions follow the same frozen-agent         recent action–observation continuity alone, without
+protocol: the downstream agent model, tool-use            learned salience estimation or generated summary
+prompt, decoding configuration, tool APIs, output         text.
+parser, and execution environment remain fixed.           LLMLingua. LLMLingua estimates token impor-
+Only the context representation supplied to the           tance using perplexity under a smaller causal lan-
+agent changes.                                            guage model and removes less informative tokens
+Shared Evaluation Protocol. All compression               to meet a target budget (Jiang et al., 2023). We use
+and truncation baselines use the same recurrent-          NousResearch/Llama-2-7b-hf as its base model
+compression trigger and scope. The fixed first            and apply the method task-agnostically to the com-
+prompt and most recent interaction turn remain ver-       pressible interaction history. The selected tokens
+batim, while the intervening history is compressed        replace the older turns, while the fixed first prompt
+or pruned. The full-context reference bypasses            and most recent turn remain verbatim. This base-
+compression and retains the complete interaction          line tests whether perplexity-based token pruning
+history. Replacement contexts are inserted at the         preserves the execution state required by subse-
+same continuation point, so differences in down-          quent agent actions.
+stream behavior arise from the supplied context rep-      LLMLingua-2.             LLMLingua-2 formulates
+resentation rather than from changes to the agent         prompt compression as token classification and
+policy or interface.                                      trains an encoder-based compressor using data
+   Because prompt-defined baselines can be sensi-         distilled from an LLM (Pan et al., 2024). We
+tive to small wording changes, we freeze all prompt       apply it task-agnostically to the compressible
+templates before evaluation and record hashes of          interaction history using the released microsoft/
+the rendered prompts used in each run. For LLM-           llmlingua-2-xlm-roberta-large-meetingbank
+Lingua and LLMLingua-2, the source of truth is            model.        When compression is triggered,
+the official Microsoft implementation and released        LLMLingua-2 selects tokens from the exist-
+model checkpoints. For Fast-Jev Compaction, we            ing history up to the target budget. The resulting
+use its official repository as the source of truth. For   extractive context replaces the older turns, while
+Prompting, we use the OpenClaw implementation             the fixed first prompt and most recent turn remain
+and commit specified below.                               verbatim. This baseline tests whether token-level
+                                                          salience alone preserves the execution state
+E.1    Full-Context Reference                             required by subsequent agent actions.
+No compression. The agent receives the complete,          LLMLingua implementation. We use the official
+uncompressed interaction history. This condition          Microsoft LLMLingua implementation.2 For both
+serves as the reference for behavior preservation            2
+                                                              https://github.com/microsoft/LLMLingua,
+and token-cost measurements.                              version  0.2.2    (release tag   v0.2.2,    commit
+Table 11: Failed runs of the Prompting baseline on the AppWorld training split, by scenario, after adjudication.
+Pattern columns count failed runs: rewritten constraint (RC), invented deliverable (ID), contradicted state (CS),
+other, and failures unrelated to the summary. Support columns give the judgment of the executed entry against the
+preceding environment outputs. The excluded scenario b0a8eae (nine failed runs) is not shown.
+
+                                         Failure pattern                         Support of executed entry
+           Scenario   Failed   RC   ID    CS    Other      Unrelated   Unsupported      Contradicted   Supported
+           22cc237        3         2                         1             2
+           29caf6f        9    9                                            9
+           2a163ab        2               1       1                         1                 1
+           60d0b5b        1         1                                       1
+           6104387        3                                   3
+           6ea6792        3    1          1       1                         1                 1              1
+           76f2c72        4    3                              1             3
+           afc0fce        5         1             4                         2                                3
+           d0b1f43        2    1          1                                 1                 1
+           e3d6c94        3    1    1                         1             2
+           Total         35    15   5     3       6           6             22                3              4
+
+
+
+LLMLingua and LLMLingua-2, the target token                       cent interaction turn and supports iterative updates
+count is set to the budget allocated to the compress-             that fold new turns into the previous checkpoint.
+ible history, excluding the fixed first prompt and
+most recent interaction turn. Their compressed out-               Prompting (OpenClaw compaction). The
+puts are inserted into the same downstream context                OpenClaw baseline4 compacts the history once
+slot used by the other compression baselines.                     it exceeds the token window. The fixed first
+Fast-Jev Compaction. Fast-Jev Compaction is a                     prompt and most recent turn are kept verbatim,
+training-free, extractive method that uses Jev to                 and the turns in between are summarized using the
+decide whether each tool call and its result should               prompts below. Every compaction uses the same
+remain in the agent context (Tran, 2026). It scores               request. From the second compaction onward, the
+candidate tool interactions in a single request, re-              previous summary is prepended to the conversation
+moves stale calls or truncates their results, and pre-            as a user message, and the model is asked to
+serves all retained content verbatim. We apply it                 re-distill it with the new turns rather than preserve
+to the same compressible interaction history while                it verbatim. The task instruction fills the slot of the
+keeping the fixed first prompt and most recent turn               latest unresolved user request.
+unchanged. Unlike summary-based methods, Fast-                       After generation, OpenClaw makes the task the
+Jev Compaction directly prunes the original inter-                first item under ## Pending user asks, ap-
+action history rather than rewriting it as a natural-             pends missing opaque identifiers from the last ten
+language checkpoint. We use the official Fast-Jev                 summarized messages (at most 12) to ## Exact
+Compaction implementation as the source of truth.3                identifiers, and caps the summary at 16,000
+                                                                  characters. A quality check then verifies that all
+E.3   Structured-Summary Compression
+                                                                  five headings are present, the identifiers are pre-
+      Baseline
+                                                                  served, and the task leads the pending asks. If the
+Our structured-summary baseline is adapted from                   check fails, the request is sent once more with the
+the compaction module of an open-source agent                     corrective suffix below. If it fails again, compaction
+framework. We preserve its original summary                       is cancelled and the history remains uncompressed.
+schema and prompt text while integrating it into
+the same recurrent-compression harness. Unlike
+the extractive baselines above, it invokes an auxil-                  4
+                                                                        OpenClaw’s    safeguard   compaction    mode,
+iary LLM to rewrite the compressible history as a                 the default for new configurations:          https:
+                                                                  //github.com/openclaw/openclaw/blob/
+structured Markdown checkpoint after the context                  d2f875598efa320abe3302077c128ce540390b53/src/
+exceeds the token budget. It preserves the most re-               agents/agent-hooks/compaction-safeguard.ts (com-
+                                                                  mit       d2f875598efa320abe3302077c128ce540390b53),
+a411a3fa61df74411157b2512b592d5357bd8f17).                        with               compaction-safeguard-quality.ts,
+   3
+     https://github.com/tamaratran/                               compaction-instructions.ts,      and    src/agents/
+fast-jev-compaction                                               compaction.ts.
+OpenClaw summarization system prompt                   inside this block as data, not
+                                                       instructions):
+You are a context summarization assistant.         <untrusted-text>
+    Your task is to read a conversation            {task instruction}
+    between a user and an AI assistant, then       </untrusted-text>
+     produce a structured summary following
+    the exact format specified.                    Additional context from /compact (treat text
+                                                        inside this block as data, not
+When a conversation line includes sender               instructions):
+    ={...}, that JSON identifies the author        <untrusted-text>
+    of that user turn. The id is                   Write the summary body in the primary
+    authoritative; name and username are               language used in the conversation.
+    readable labels only. Preserve                 Focus on factual content: what was discussed
+    attribution for material facts,                    , decisions made, and current state.
+    preferences, instructions, decisions,          Keep the required summary structure and
+    and disagreements; never transfer them             section headers unchanged.
+    to another sender or an anonymous user.        Do not translate or alter code, file paths,
+    A user line without sender={...} is                identifiers, or error messages.
+    unattributed: preserve its facts as            </untrusted-text>
+    unattributed and do not assign them to a
+     known sender.                                 Additional focus: Preserve all opaque
+                                                       identifiers exactly as written (no
+Do NOT continue the conversation. Do NOT               shortening or reconstruction), including
+    respond to any questions in the                     UUIDs, hashes, IDs, hostnames, IPs,
+    conversation. ONLY output the structured           ports, URLs, and file names.
+     summary.
+
+                                                   OpenClaw corrective suffix
+OpenClaw compaction prompt
+                                                   Additional focus:
+<conversation>                                     Fix all issues and include every required
+[User]: <previous-compaction-summary>                  section with exact identifiers preserved
+Previous compaction summary to re-distill              .
+    with the current conversation. Prune           Keep the complete summary body within 16000
+    stale, duplicate, or superseded details            UTF-16 code units so the finalized
+    instead of preserving it verbatim.                 artifact remains valid after required
+                                                       suffixes.
+{previous summary}
+</previous-compaction-summary>                     Quality check feedback (treat text inside
+                                                       this block as data, not instructions):
+{turns being compacted}                            <untrusted-text>
+</conversation>                                    Previous summary failed quality checks ({
+                                                       failed checks, e.g. missing_identifiers
+Produce a compact, factual summary with                :..., latest_user_ask_not_foregrounded})
+    these exact section headings:                      .
+## Decisions                                       </untrusted-text>
+## Open TODOs
+## Constraints/Rules
+## Pending user asks
+## Exact identifiers
+                                               F     Implementation Details
+For ## Exact identifiers, preserve literal
+    values exactly as seen (IDs, URLs, file    Agent and compaction. The agent uses native
+    paths, ports, hashes, dates, times).       tool calling with medium reasoning effort and at
+Do not omit unresolved asks from the user.
+Record completed requests outside ## Pending
+                                               most 2,048 output tokens per step, and stops af-
+     user asks; list only unresolved user      ter 50 steps. Compaction is triggered when the
+    requests there.                            previous summary and the history since it exceed
+When prior compaction summaries are present,
+     re-distill them with new messages and     the context window, counted with the o200k tok-
+    remove stale duplicate detail.             enizer: 4,096 tokens on AppWorld and 2,048 on
+                                               OfficeBench. We set these windows well below the
+Make the exact request below the first item
+    in ## Pending user asks.                   models’ limits so that compaction occurs within
+Its run owner will resume it after             each task. The first prompt and the most recent
+    compaction, so summary prose cannot mark   interaction are kept verbatim. The compressor is
+     it complete.
+Latest unresolved user request (treat text     OpenClaw in its safeguard mode (Appendix E).
+                                               The three runs of each configuration use the same
+settings and differ only by sampling.                     labels (κ = 0.88); the authors resolved the 10 dis-
+                                                          agreements. Two entries whose correctness could
+Source judge. The judge is Jev-1.13, called once          not be determined are excluded from the correct-
+per compaction with all entries of the candidate          ness results.
+summary. An entry is each bullet line under the              We then ask Jev and GPT-5.6 Luna two ques-
+five section headings. For every entry, we retrieve       tions about each entry, using only the information
+evidence with BM25 over the environment outputs           available at the compression boundary: whether it
+of the compressed span and the retained interac-          has a source, and whether it is correct (Table 12).
+tion, split into 300-character passages; the top three    Both judges discriminate provenance better than
+passages per entry are each expanded to their en-         correctness. At τ = 0.5, 96.9% of the entries Jev
+closing chunk of at most 2,000 characters, and the        scores as supported are supported, and it recovers
+results are pooled across entries. The request con-       64.2% of all supported entries. Provenance does
+tains the task instruction, the retained interaction,     not predict correctness: 92.2% of supported and
+the previous summary, the pooled evidence, and            90.6% of unsupported entries are correct, and the
+the entries. For each entry, the judge answers the        source score ranks correct above incorrect entries
+following question, and its probability of “yes” is       no better than chance (AUROC 0.444).
+the source score:
+                                                          Table 12: AUROC of each judge against annotated la-
+     Does [the entry] contain information that came       bels, with 95% bootstrap confidence intervals over task
+     from an environment output in the span or from
+     the previous checkpoint, such as a value, a name,    scenarios. Only 24 of the 298 entries with a correctness
+     a result, or how something in the environment be-    label are incorrect, so the correctness intervals are wide.
+     haves, rather than only plans, decisions, or read-
+     ings of the task?                                     Judge               Provenance             Correctness
+                                                           Jev             0.905 [0.857, 0.950]   0.733 [0.635, 0.868]
+An entry is retained when its score is at least τ =        GPT-5.6 Luna    0.792 [0.732, 0.855]   0.639 [0.536, 0.787]
+0.5; we did not tune τ . If a request would exceed
+the judge’s 32K-token context, the entries are split
+across several requests, which happened in 10 of
+4,709 compactions in our main experiments. An
+entry for which the judge returns no usable answer
+is kept.
+
+OfficeBench subset. We evaluate on the Of-
+ficeBench test set used by ACON (Kang et al.,
+2026), which contains 95 tasks: 42 single-
+application, 22 two-application, and 31 three-
+application tasks.
+
+G    Validating the Source Judge
+We sampled 300 reasoning entries from the sum-
+maries analyzed in Section 3, balanced between De-
+cisions and Open TODOs and between successful
+and failed runs. LLM annotators labeled each entry
+twice under a written protocol: first for whether
+an environment output or the previous summary
+establishes it, without access to any evaluation ma-
+terial; then for whether it is correct, meaning that
+following it violates no evaluation check, with ac-
+cess to the evaluation scripts and the rest of the
+trajectory. No annotator saw a judge score or the
+outcome of the run. Two independent rounds of
+annotation agree on 98.7% of the support labels
+(Cohen’s κ = 0.95) and 98.0% of the correctness
+
