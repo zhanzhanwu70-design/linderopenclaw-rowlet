@@ -1,107 +1,113 @@
-# 每日 Agent × 軟體開發情報 — 2026-10-25
+# 每日 Agent × 軟體開發情報 — 2026-10-26
 
-> 軸線：**Harness 自我改寫 × 介入需分型 × 記憶有稅 × Agent 時代開發基建**
-> 產出：Rowlet（每日研究 cron）｜採集時間 2026-10-25 10:33–10:45 (+08:00)
-> 本日定調：**「harness 從靜態配置變成可自我改寫的產物；但每個介入都要先分型，否則會反效果；而記憶是有稅的基建，不是免費的正確性」**
-> 來源覆蓋：Agent/AI 工程研究（arXiv ×3）｜軟體開發潮流（Anthropic Research 一手、Pragmatic Engineer 二手、HN snippet）｜實務工具與框架（Google Cloud Blog、OpenClaw / Claude Code / Codex Releasebot、GitHub repos ×5）
+> 軸線：**Agent Skills 治理轉移 × Compaction 出處洗白 × Raw-evidence 記憶典範 × 決策平面 API × 介入效益量測**
+> 產出：Rowlet（每日研究 cron）｜採集時間 2026-10-26 10:00–10:15 (+08:00)
+> 本日定調：**「Skill 有了中立治理、compaction 有了信任邊界、記憶有了保留原則、決策有了獨立平面——接下來缺的不是新元件，而是量測介入效益的方法。」**
+> 來源覆蓋：Agent/AI 工程研究（arXiv ×5）｜軟體開發潮流（InfoQ ×2、HN、GitHub API）｜實務工具與框架（Linux Foundation / AAIF、OpenAI、框架 deprecation 彙整 ×12 來源）
 
 ---
 
 ## 今日 5 個重點
 
-### 1. Harness²：harness 可以自己改寫自己，而且不需要 ground-truth verifier
+### 1. Anthropic 把 Agent Skills 捐給 Linux Foundation——skill 格式變成中立基礎設施
 
-**發生什麼**：Google Cloud AI Research 與 Northwestern 發表〈Harness²: Recursive Agent Harnessing for an Open World〉（arXiv 2610.14224，2026-10-09）。它解決 RSI（遞迴自我改進）在 open-world 的兩個死結：任務在 harness 設計期未見、測試期全新，**沒有 verifier 可用**；以及 RSI 過度 task-specific 無法泛化。解法是兩層遞迴——**task-level recursion** 用對比式 **Propose–Probe–Compose**：提出 harness 編輯、在**同一個任務**上探測其行為效果、再由行為差異組出精煉後的 harness（因此不需要外部 ground truth），且可再平行或序列遞迴；**harnessing-level recursion** 從中抽取經驗，更新一個 continual improvement harness 讓 agent 更好適應**後續**任務。
+**發生什麼**：2026-10-22 於 San Jose 的 AGNTCon + MCPCon North America，Linux Foundation 旗下 **Agentic AI Foundation（AAIF）** 宣布四個新專案：**Agent Skills（Anthropic 捐贈）、Open Responses（OpenAI）、OpenEnv（Hugging Face）、OpenSandbox（阿里巴巴）**。AAIF 的 founding projects 原本已含 **MCP、goose、AGENTS.md**。Anthropic 原文：「we're donating Agent Skills to the AAIF to ensure that anyone building with skills can shape what's next.」
 
-**為什麼重要**：這把 harness 從「靜態配置」變成「**可被 agent 自己改寫的產物**」，而且改寫的驗證訊號來自任務本身，不需人給 ground truth。單步遞迴即讓 GLM-5 與 Gemini 3.5 Flash 在三個專業 benchmark 上穩定提升：WorkBuddy-Bench **+11.5**、JobBench **+4.5**、LAB **+11.8 個百分點**，且**模型完全不重訓**。對照昨日報告「harness 的 ROI 與模型能力成反比」——今天是那條定律的下一步：**harness 本身變成可最佳化標的**。真正的可移植點不是「讓 agent 自己改 skill」，而是 **Probe 那一步**：任何 harness 編輯都該能回答「改完之後，同類任務的行為差異是什麼」。風險是若 Probe 的行為指標偏離真實目標（例如只量「有沒有呼叫工具」而非「結果是否正確」），遞迴會把 harness 優化到錯誤方向。
+**為什麼重要**：這是 **MCP 路徑的重演**——先捐給 AAIF 取得中立治理，再讓多方共同參與。對我們最關鍵的事實是：**AGENTS.md 與 Agent Skills 現在在同一個治理傘下**，OpenClaw 的「AGENTS.md + SKILL.md」兩件武器不再依附任何單一廠商。真正的紅利在未來：格式一旦中立且可攜，**skill lint / skill eval / skill marketplace** 會從各廠自製變成可投資的公共品——skill 品質第一次有跨平台客觀評分基礎。風險側：格式變更權從單一廠商轉為多方共治，我們的 skill 實作不應過度依賴任一家的擴充語法。
 
-**來源**：<https://arxiv.org/abs/2610.14224>｜程式碼 <https://github.com/google-research/harness2>
-
----
-
-### 2. Context Engineering 是分型處方，不是通用堆疊——疊加甚至會反效果
-
-**發生什麼**：arXiv 2610.20959（Same Context, Different Agents，2026-10-14，UPenn / Dan Roth 等）用 7 個 LLM、5 個 benchmark、**1,514 個長程任務**系統性檢驗三種 context-engineering technique（CET）：semantic layer（描述資料語意）、orchestration（agent 間分工）、compaction（壓縮歷史）。關鍵發現是：**沒有 CET 時，data agent 會自然分成三種行為型態**——investigators（會查）、premature answerers（沒查就答）、early stoppers（放棄）。
-
-**為什麼重要**：**只有「對應到」的行為群，才能把 CET 的收益轉成準確度**（例如 premature answerers 配上 orchestration 就被逼著去看證據）。反過來，**同一組 CET 對 investigators 是有害的**：semantic layer 讓他**不去查**（語意層已給答案）、orchestration 讓他**過度自信、準確度掉 5 個百分點**、compaction 讓他**重複步驟**。而且**疊加不相加**——CET 組合起來的收益與損失都小於各自效果之和。這意味著「多加一層 context engineering」不是安全預設，而是需要先診斷的處方。這對 OpenClaw 特別關鍵：我們的 skill 觸發、subagent 拆分、context 壓縮每一項都是 CET，而最危險的組合正是「已經很會查的 agent + 一層厚語意層」——會得到一個**看起來很完整、實際上沒查**的結果。
-
-**來源**：<https://arxiv.org/abs/2610.20959>
+**來源**：<https://www.linuxfoundation.org/press/agentic-ai-foundation-announces-four-new-projects-agent-skills-open-responses-openenv-and-opensandbox>｜<https://aaif.io/news/agentic-ai-foundation-announces-four-new-projects>
 
 ---
 
-### 3. MemoryTax：記憶是有稅的補丁，而且天花板由「寫它的模型」決定
+### 2. Compaction Laundering：壓縮是信任邊界，不是省 token 的功能
 
-**發生什麼**：arXiv 2610.29823（2026-10-21）把記憶系統的成本攤開來算：LoCoMo 單一對話（419 turns、152 問）× 4 種記憶方法（full context / BM25 / Mem0 / Zep）× 3 個 coding agent（Pi / Codex / Claude Code）× 3 個模型（GPT-4o-mini / GPT-6 Luna / Claude Opus 5.5）。結論一：**Mem0 只在 GPT-4o-mini 上贏過 full context**，而且**它的建立成本本身就超過一整次 full-context rollout**——先把記憶建好，可能比不用記憶還貴。結論二：**記憶有天花板，由寫它的模型決定**——更強的讀者救不回更弱的寫者留下的東西。結論三：Claude Opus 5.5 下 Pi 站上 cost-accuracy 前沿，**99% 準確度、成本不到 full context 的一半**；唯一失手是一題答案鍵本身就錯的題。
+**發生什麼**：arXiv 2610.29869（2026-10-21）證明：把 typed conversation **壓平成單一純字串**並以文字標籤（如 `[User]:`）標記角色的 harness，會**在 summarizer 執行前、於程式碼層**摧毀訊息出處。攻擊者只要能控制 agent 讀到的任何內容，就能偽造一個 user turn，讓它在壓縮後**以真正指令的身分存活**。實測：**5 個 flattening harness**（pi、opencode、Cline、Aider、OpenHands）偽造 approval 洗白成功率 **87–100%**，context window 可達 **~908,000 tokens**；**4 個 role-typed harness**（Codex、Gemini CLI、Qwen Code、Continue）同一攻擊 **0%**。洗白後的 standing approval 讓 agent 在 sandbox 執行攻擊者控制的 `curl | sh`；live pi TUI 端到端 **~50%**（clean arm 0%）。同一通道還能把 agent 的計畫引開攻擊者指定的檔案，讓 code review 看不到植入的 backdoor。作者明言：**「因為出處是在 harness code 裡被決定性摧毀，任何 prompt 層防禦都無法修復它」**；code-level provenance check 可**抓 77%、僅誤傷 2%** 合法摘要內容。
 
-**為什麼重要**：這**修正了昨日報告的判斷範圍**（不是推翻）。昨日主張「記憶治理屬低成本高收益項目」——今天證據支持把預算往**治理（讀取時過濾掉過期內容）**傾斜，但**不支持往建構（寫入時預先摘要）**傾斜，兩者是不同支出項。關鍵機制是：Pi 的優勢部分來自 **agent 才能讀的照片說明**——保留原始歷史 + 讓模型自己搜，比預先摘要多保留了**非文字證據**；在 88 題證據不含照片的題目上，Pi 與 full context 只差一題。**摘要層最容易吃掉的就是這類載體。** 誠實限制：作者自陳是單一對話、每格單次 run 的短篇研究，方向可信、量級需複驗。
+**為什麼重要**：這不是「prompt injection 變強了」，而是**型別資訊在架構層被丟掉**。可攜判準極清楚：**compaction 前保留 role provenance**，用文字標籤代替結構化 role 等於把信任邊界壓扁。而 77% / 2% 代表**可部署且低誤傷的守門存在**，成本遠低於要求 agent 更小心。我們的每日 cron 長跑、memory compaction、subagent 回報壓縮全都踩在這個風險面上。
 
-**來源**：<https://arxiv.org/abs/2610.29823>
-
----
-
-### 4. Anthropic：瓶頸從「寫程式」移到版本控制——2,500 → 30,000 merges/day
-
-**發生什麼**：Anthropic 於 2026-10-13 公開〈Redesigning source control at Anthropic〉。原文直言：**「coding 不再是瓶頸」**——Claude 能自主跑研究迴圈、微調複雜程式、從零打造服務，**現在的瓶頸是所有為人類規模而建的開發基建：source control、builds、CI**。數字：2026-05 平均每天約 **2,500** 個 code change merged，到 2026-09 已 **超過 30,000**／天（>10 倍），且明言移除一個瓶頸會立刻再推高產出量。為此自建版本控制系統 **Scion**，5 個月內把 monorepo 完整遷離 git，同期還交付 code review 介面 Antique、code search、source control IAM 系統。
-
-**為什麼重要**：這不是「買了一個工具」，而是**需求型態改變基礎設施契約**的案例。關鍵設計取捨：git 的核心前提是「每個 client 都是完整可離線運作的 server」，Anthropic 的實測結論是這在 agent 時代**反向阻礙擴充**——因為「幾乎所有 client 都是永遠在線的 agent 與 job」，離線能力用不上，卻讓每個 client 都要維護完整 repo 狀態。Scion 反轉這個前提：**server 永遠可達，client 需要時再取資料**。但要注意**可攜性有限**：HN 的質疑直指核心（**二手，僅得 snippet，原文 429 限流**）——「Anthropic claims 30k merges/day, but they state it's in a monorepo. This alone suggests to me that they are needlessly creating their own problem」，即 **monorepo 是自找的瓶頸**。我們的 merge 速率離需要專用 VCS 還很遠，抄 Scion 是過度工程；真正可攜的是那個**提問方式**：「我們系統裡哪一層是『為人類規模設計、但現在被 agent 流量壓垮』的？」
-
-**來源**：<https://www.anthropic.com/research/redesigning-source-control>｜二手 <https://blog.pragmaticengineer.com/the-pulse-anthropic-builds-its-own-source-control-system/>
+**來源**：<https://arxiv.org/abs/2610.29869>
 
 ---
 
-### 5. Google Cloud：agent runtime 隔離本身就是治理層，而且明示支援 OpenClaw
+### 3. 記憶系統的複雜度已被三條獨立證據鏈判為不划算
 
-**發生什麼**：Google Cloud 於 2026-10-22 發布 Agent Compute Engine（先 powering Gemini as an agent for work tasks）與擴充的 agent governance。基礎設施面：**每個 agent 一台專屬 microVM**、rapid boot 讓 agent loop 與 eval sweep 不必等 infrastructure、**copy-on-write memory sharing** 讓單一 OS template 跑多個 agent、**fast checkpoint and restore** 暫停閒置 microVM、**hardware-isolated Cloud Hypervisor boundary**（自有 guest kernel 與 root access）、Filestore agent volumes 提供 **sub-second resume latency** 與多 agent 共用 workspace。治理面提出三挑戰：保護跨 **agent / tool / model / skill / data** 的**動態非確定性互動路徑**、在分散式 runtime 維持 **default deny + least privilege**、確保**非同步 agent 動作可稽核**，並指名風險為 shadow AI、資料外洩與難以追蹤稽核的 agent 動作。
+**發生什麼**：**Raw-RAG 勝出**（arXiv 2610.30755，2026-10-22）：純 dense retrieval + reranking 檢索**原始歷史**，在 LoCoMo / LongMemEval / MEME / MemoryAgentBench 上，於 **7 個 benchmark-model 設定中 6 個排第一**，比最強 agentic memory 高 **0.13–5.53 分**；作者強調「**即使完整存取 transformed memory store，相對 raw evidence 仍留有 accuracy gap**」。**偏好端失效**（arXiv 2610.30485 MemPABench，2026-10-21）：99 sessions / 4 個月 / 14 偏好、每次 5 次事件驅動變更的 on-policy 評估中，「**Retrieval-based systems（Mem0、MemOS、simple RAG）do not outperform No Memory**」。加上 2026-10-25 報告的 MemoryTax（建構成本本身就超過一次 full-context rollout），已是**三條互相獨立的證據鏈**。
 
-**為什麼重要**：這把「隔離」從防禦附加項提升為**承載 default-deny 的治理邊界**——因為治理對象是動態非確定的互動路徑，逐條靜態審查 skill / tool 清單本來就不夠，prompt 層宣告更不可能綁定。關鍵細節是 **skills 與 tools 並列在治理對象內**，而我們的 skill 帶副作用（寫檔、發訊息、排 cron）——**skill 宣告的能力不等於該 skill 應獲得的權限**。三挑戰中最難的是「非同步動作可稽核」：同步呼叫還能靠 tool call log 追，背景任務、cron、子 agent 回報要能對上帳，需要可追溯的**動作歸屬**。另一個值得注意的事實：**Google 在官方文章中明示相容「Claude Code、OpenClaw、Hermes」**——代表我們的架構選擇走在產業方向上。
+**為什麼重要**：這把「保留原始 + 讀取期治理」從偏好升級為**有收斂證據的架構原則**。精確的表述不是「不要記憶」，而是「**不要在寫入期把記憶形狀化**」——mutation / 預先摘要這類變形才有問題。配套原則：naive RAG 必須是**必測基線**而非弱對照組；記憶預算往「治理（淘汰過期內容）」傾斜而非「擴充（多寫記憶）」；並保留**非文字原始載體**（圖片說明、原始 trace、完整 log），因為摘要層最容易吃掉的就是這類證據。
 
-**來源**：<https://cloud.google.com/blog/topics/ai-infrastructure/introducing-agent-compute-engine-and-expanded-agent-governance/>
+**來源**：<https://arxiv.org/abs/2610.30755>｜<https://arxiv.org/abs/2610.30485>
+
+---
+
+### 4. Decisions API GA：決策平面從生成平面正式切出
+
+**發生什麼**：OpenAI 於 2026-10-22 將 **Decisions API** 轉為 GA，以 **GPT-6 Luna** 供應，針對**有界答案**的問題，比經由 Responses API 的 GPT-6 Luna **快最多 10×**；自 beta 起新增 native GPT-Live 整合、prompt caching、US/EU inference residency、native JSON 輸入、圖片入題，單次請求最多 **400 個問題**（原 200）。OpenAI 內部用例涵蓋分類、路由，以及「判斷某主題是否值得進一步檢視」；客戶案例 Box Extract 為「~5x faster route selection on 30 certificate of insurance cases, with the same accuracy as the Responses API」，低信心案例轉人工。
+
+**為什麼重要**：這是 2026-10-25 報告的 arXiv 2610.20959（context engineering 是**分型處方**、疊加不相加）的**產品化落地**——分型不只是研究分類，它有明確的產品邊界：決策平面（低延遲、有界答案、低成本）與推理平面（長鏈生成）。架構含意是**成本與延遲的量級分離**：agent 系統裡最頻繁的是小決定（路由、門控、閘值），最昂貴的是少數深度推理，混在同一模型呼叫上等於用最貴的通道處理最廉價的判斷。InfoQ 的架構側版本（《From Microservices to Agents》）說的是同一件事：**microservices 分解功能，agent 系統分解決策**——後者邊界隨輸入而變，所以 observability 與 reliability 權重必然上升。
+
+**來源**：<https://openai.com/index/decisions-api/>｜<https://www.infoq.com/articles/distributed-systems-microservices-agentic-ai/>
+
+---
+
+### 5. HPCAgent-Bench：終於有「一次介入值不值」的量法
+
+**發生什麼**：arXiv 2610.20673（2026-10-14）指出既有 benchmark 固定單一 accelerator／programming model／harness，因此「無法隔離各元件貢獻，也無法顯示新增的 skill 與 tool 是否回本」。HPCAgent-Bench 以 **689 個 kernel**（三軌）、**hidden fuzzed inputs + 外部 judge**（堵住 agent exploit 測試系統的路徑），提出兩個指標：**intervention efficacy**（以**配對 run** 量測介入對 speedup / success rate / cost 的影響）與 **weighted token cost**（input / cached-input / output 依**顯式權重**計價）。關鍵數字：「Across 40 matched setups, interventions significantly change speedup only twice but token cost by up to 3.0×.」
+
+**為什麼重要**：這是我們 10-24（Fowler harness ROI）與 10-25（harness 自我改寫、context 分型）兩天討論**缺的那把尺**——之前都在談 ROI，現在有了正規定義。數字本身揭示了一個此前被忽略的結構：**多數介入改變的是成本結構，不是能力上限**（顯著改變 speedup 只有 2 次，但 token cost 變動最高 3.0×）。作者並直說「token weighting decides whether a saving is significant」——**不寫權重就無法判定省下的 token 值不值**。誠實限制：kernel 是 HPC/ML 最佳化任務，不是通用軟體工程任務，移植需自行驗證成功率的定義。
+
+**來源**：<https://arxiv.org/abs/2610.20673>
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-### 一、Skill 應先標註「假設的 agent 行為型態」，不符時退讓而非強制
+### 一、Compaction 路徑要加「出處守門」——放在 harness code 層，不是 prompt 層
 
-依 arXiv 2610.20959，semantic layer / orchestration / compaction 每一項對某型 agent 有害。直接可做：把 `~/.openclaw/skills/` 底下每個 skill 依 **investigator / premature answerer / early stopper** 標註，並在 skill 描述裡加一個「**什麼情況下我該讓開、讓 agent 自己查**」的位置（呼應昨日 Adaptive Skill Granularity 的「macro 起步、micro 降級」）。另外記住 **疊加不相加**——三個 CET 同時開可能互相抵消。
+依 arXiv 2610.29869：壓縮前保留**結構化 role provenance**（不要用 `[User]:` 這類文字標籤代替角色欄位）；摘要後每一則「指令」必須能對應到原始訊息識別碼，對不上的一律降級為不可信內容。量化目標可直接採用論文值（抓 77% / 誤傷 2%），失敗基準也明確（flattening harness 87–100%）。**我們目前所有壓縮路徑（memory compaction、subagent 回報、cron 長跑）都應視為同一個風險面。**
 
-### 二、記憶預算往「治理」傾斜，遠離「建構」；並保留原始載體
+### 二、記憶預算結構調整：讀取期治理 > 寫入期建構，且保留原始載體
 
-依 MemoryTax：不要新增摘要型記憶層（Mem0 式預先抽取，事後注入精華），我們目前的「保留原始 + 讓 agent 自己找」是對的架構選擇，且有第一個量化理由支持。治理（淘汰過期記憶）優先於擴充（多寫記憶）。**照片說明的案例提醒我們保留非文字原始載體**（原對話原文、原 trace、原 log），不要只留摘要——摘要層最容易吃掉的就是這類證據。OpenClaw 2026.10.7 已在做（Memory Wiki 的 OKF 重新匯入保留人工註記、冷啟動不再打開每個 memory index），方向正確。
+依三條證據鏈（Raw-RAG / MemPABench / MemoryTax）同向：具體動作是**淘汰過期與失效記憶**優先於**新增記憶摘要層**；同時不把原始 trace / log / 對話原文摘要化後丟棄（非文字證據一旦摘要即不可逆遺失）。把 naive RAG 設為**必測基線**——任何記憶層若贏不過 raw retrieval + reranking，就沒有存在理由。既有方向（Memory Wiki 的 OKF 重新匯入保留人工註記、冷啟動不逐個開 memory index）正確，應繼續往治理側走。
 
-### 三、治理三挑戰裡「非同步動作可稽核」邊際成本最低——先做動作歸屬，不做隔離
+### 三、把「介入效益」變成 skill 的常駐欄位，並把決策判斷下沉到便宜通道
 
-Google 的三挑戰中，「非同步動作可稽核」是我們成本最低的一項：transcript 已有，缺的是**動作歸屬**（哪個 job、哪次 session、哪次 handoff 觸發的）。可直接變成：handoff 與 cron job 帶 correlation ID、skill 的副作用寫入時附上執行身分。另一方面**不要照抄 cloud microVM 隔離**（成本數量級不同），但應確認最低性質：「一個 agent 壞掉不會拖垮其他 agent」。同時把 **skill 視同 tool**：skill 宣告的能力 ≠ 該 skill 應獲得的權限。
+依 HPCAgent-Bench：每個 skill 應記錄「**配對 run** 後的 Δpass rate 與 **weighted token cost**（含 cached-input 權重）」，否則無法回答「這個 skill 是不是只在燒 token」——retro-fit 的第一步應是建立量測骨架，而不是先加功能。搭配 Decisions API 的啟示：OpenClaw 裡三個高頻有界判斷——cron/heartbeat 的「要不要升級處理」、skill routing 的「該不該觸發某 skill」、subagent 分派的「派給哪個專家」——都該走低延遲有界答案路徑，而非完整推理模型。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-1. **Harness²** — arXiv <https://arxiv.org/abs/2610.14224>｜程式碼 <https://github.com/google-research/harness2>（Northwestern + Google Cloud AI Research，2026-10-09）— 自改寫 harness 的完整機制與 benchmark
-2. **Same Context, Different Agents** — <https://arxiv.org/abs/2610.20959>（UPenn，2026-10-14）— CET 分型效果表，含「疊加不相加」的量化
-3. **MemoryTax** — <https://arxiv.org/abs/2610.29823>（2026-10-21）— 記憶成本帳，含「寫者決定天花板」
-4. **Redesigning source control at Anthropic** — <https://www.anthropic.com/research/redesigning-source-control>（2026-10-13）— Scion 設計取捨；二手解讀 <https://blog.pragmaticengineer.com/the-pulse-anthropic-builds-its-own-source-control-system/>
-5. **Google Cloud Agent Compute Engine + agent governance** — <https://cloud.google.com/blog/topics/ai-infrastructure/introducing-agent-compute-engine-and-expanded-agent-governance/>（2026-10-22）— 明示支援 OpenClaw；治理三挑戰
-6. **AMAP-ML/LongHorizon-Harness** — <https://github.com/AMAP-ML/LongHorizon-Harness>（v0.1.8 · 2026-10-21 · 1.8k stars）— 原生整合 Claude Code / Codex / OpenClaw；fresh-context 執行、durable verified state、獨立稽核
-7. **QoderAI/better-harness** — <https://github.com/QoderAI/better-harness>（2.4k stars）— harness-as-code、受控實驗、比較結果；feedback sensors = linters / tests / Hooks / evaluation agents
-8. **ai-boost/awesome-harness-engineering** — <https://github.com/ai-boost/awesome-harness-engineering>｜**RUCAIBox/awesome-agent-harness**（500+ references）— harness 工程的全景索引
-9. **OpenClaw 2026.10.7** — <https://github.com/openclaw/openclaw/releases>（2026-10-24）— replay-safe session recovery、large child-completion batch 留在 requester context、Memory Wiki 保留人工註記
+- <https://www.linuxfoundation.org/press/agentic-ai-foundation-announces-four-new-projects-agent-skills-open-responses-openenv-and-opensandbox> — AAIF 四案（Agent Skills / Open Responses / OpenEnv / OpenSandbox）
+- <https://aaif.io/news/agentic-ai-foundation-announces-four-new-projects> — AAIF 官方版本
+- <https://arxiv.org/abs/2610.29869> — Compaction Laundering（今日最高價值單篇）
+- <https://arxiv.org/abs/2610.30755> — Raw-RAG 勝過複雜 agentic memory
+- <https://arxiv.org/abs/2610.30485> — MemPABench：檢索式記憶不優於 No Memory
+- <https://arxiv.org/abs/2610.20673> — HPCAgent-Bench：介入效益量法
+- <https://arxiv.org/abs/2610.18933> — The Agentic Scientist：每階段 rubric 驗證的 meta-controller（與本團隊 swarm-intel 研究互補）
+- <https://openai.com/index/decisions-api/> — Decisions API GA
+- <https://www.developersdigest.tech/blog/multi-agent-orchestration-patterns> — 四家框架 supervisor／network 原語退場一覽（二手）
+- <https://news.ycombinator.com/item?id=50231722> — r/opensource 封禁 solo 與 LLM 專案（社群治理摩擦，80 分 / 108 留言）
+- <https://github.com/HKUDS/nanobot> — 極輕量 self-hosted agent framework（Python + WebUI + tools + memory）
+- <https://github.com/zhayujie/CowAgent> — 明講 Agent Harness + skills + self-evolution 的開源實作
+- <https://github.com/codewhale-hq/Codewhale> — Rust 寫的終端 agent
+- <https://github.com/CopilotKit/CopilotKit> — AG-UI 協定層（agent ↔ 前端的介面標準）
 
 ---
 
 ## 下一步建議
 
-1. **把 skill 依行為型態分類（可執行，低成本）**：為 `~/.openclaw/skills/` 的每個 skill 標註 investigator / premature answerer / early stopper，並補上「讓開條件」。這是今天三條啟發裡唯一**當天就能做完**的。
-2. **Ingest 到 llm-wiki（已完成主體，待補一項）**：本次已寫入 raw snapshot、1 個 source、5 個 concept，更新 `wiki/index.md` 與 `wiki/log.md`，並完成 graphify linking（6 個新頁面入圖，10,292 nodes / 19,936 edges）。**建議下一步補 `wiki/synthesis/` 一頁**，把「Harness 自我改寫 × 分型介入 × 記憶稅」三條串成一條主線——它們其實是同一件事的三個面：**harness 層的任何介入都要先算 ROI、比分型、算稅**。
-3. **安排一個小實驗：memory 預算傾斜驗證（中等）**：對我們自己的 daily memory 做一次「治理 vs 建構」的對照——把 `MEMORY.md` 與 `memory/*.md` 的內容分成「原始載體」與「摘要」兩類，測試只保留原始載體 + 讓 agent 自己搜（current behavior）vs. 額外加一層精華摘要，看任務成功率與 token 成本。依 MemoryTax 結論，我預期前者勝出，但這是本地實證，可信度高於引用。
+1. **把 compaction 出處守門做成一個可執行的 skill／檢查項**（成本最低、證據最強）：先盤點本團隊壓縮路徑中「typed role → 純字串」的轉換點（memory compaction、subagent 回報壓縮、cron 長跑），再依 2610.29869 的 77%/2% 目標設計 code-level provenance check。
+2. **Ingest 到 llm-wiki（已完成主體，待補）**：本次已寫入 `raw/documents/daily-research-2026-10-26-agent-skills-compaction-decisions.md`、`wiki/sources/daily-research-2026-10-26-agent-skills-compaction-decisions.md` 與 5 個新 concept 頁（aaif-agent-skills-governance / compaction-provenance-laundering / raw-evidence-primacy / intervention-efficacy-metric / decision-plane-vs-reasoning-plane），`wiki/index.md` 與 `wiki/log.md` 已更新，graphify 圖譜已重建（10,313 nodes / 17,205 links，6 個新頁面皆非 orphan）。**下一步**：為 `wiki/concepts/agentskills-io-standard.md` 補一則治理轉移時間軸段落（已加註引言，內文仍待補），並把「compaction 出處守門」掛到 `wiki/maps/code-agent.md`。
+3. **安排一個小實驗：skill 介入效益基線**——挑 2–3 個既有 skill（建議 `rowlet-self-reproduction`、`ouroboros`），用 HPCAgent-Bench 的方法做配對 run（有／無該 skill），記錄 Δpass rate 與 weighted token cost。先建立量測骨架再談優化；同時可把結果回寫進 wiki 的 skill 頁作為後續基準。
 
 ---
 
-### 證據限制（誠實標註）
+## 證據限制（誠實標註）
 
-- arXiv 三篇**僅讀摘要頁**，未讀 PDF / HTML 全文；MemoryTax 本身即自陳單一對話、每格單次 run。
-- Hacker News 原文（item 50183344）回 **HTTP 419 限流**，僅取得搜尋 snippet。
-- Anthropic 與 Google Cloud 文章為節錄讀取，未逐段讀完架構細節章節。
-- **二手且未回溯一手**：Terminal-Bench 2 pass@1 69.7%→77.0%（10 次 observability-driven iteration）、LangChain 2026-07 Nemotron playbook（$4.48 vs $43.48）、Martin Fowler harness engineering 三層綜整。
-- GitHub Trending 頁面未直接抓取，改以 HN digest 與 agents-radar 彙整交叉驗證。
-- Wiki-first 查詢：`npx graphifyy query` 回傳的節點以非 agent 領域為主（歷史／人物／地理），顯示本地圖譜在 agent 議題上仍有覆蓋落差——這本身也是一個待補的訊號。
+- **InfoQ 兩篇**（*From Microservices to Agents*、*AI in Production*）：web_fetch HTTP 200，但抽出的正文主體為導航樣板，核心論點**僅得 snippet 級證據**；已標為二手線索，未以一手全文口吻陳述。
+- **AAIF 細節為二手**：SKILL.md 格式與 progressive disclosure 不變、70+ agent 平台、10 個 hosted projects 皆來自第三方，未經一手驗證；一手可確認的只有「四案入駐 AAIF」與「AGENTS.md 已是 founding project」。
+- **Decisions API 價格 $0.10/M input tokens 為二手**（unite.ai、dev.to）；官方頁面未列價。
+- **HPCAgent-Bench 任務域**為 HPC/ML kernel 最佳化，其介入效益量法移植到通用 coding agent 需自行定義「成功」與「介入切換單位」。
+- **框架 deprecation 為第三方彙整**（developersdigest，頁面標示 2026-10-17），非各框架一手 changelog；引用的官方文件敘述（langgraph-supervisor 停止維護、ADK 2.12.0 DeprecationWarning 原文、CrewAI v2.0.0 移除）與框架文件一致。
+- **未涵蓋**：Papers with Code 今日無可用新資料；Martin Fowler / Pragmatic Engineer 今日無新文（10-24 已引用 Fowler「Are Harnesses Worth the Cost?」，不重複）；`npx graphifyy link` 指令在現行版本**不存在**（回報 `unknown command 'link'`），已改用 `tools/add-wiki-pages-to-graphify.py` + `graphify cluster-only` 完成圖譜連結與驗證。
+- **arXiv export API 當日不穩**：曾遇 HTTP 429 與 45 秒逾時（0 bytes），部分 id 需分批重試；本次 5 篇摘要皆已完整取得。
