@@ -340,3 +340,16 @@
 
 <!-- openclaw-memory-promotion:memory:claim:872e23fe28e7 -->
 - 完成: [x] 寫 metadata.json → 同上 [score=0.751 signals=6 recalls=0 avg=0.620 source=memory/2026-08-30.md:16-16] <!-- trigger: metadata.json, 完成, 同上 --> <!-- importance: 8 -->
+
+## 蒸餾層的權威性陷阱（2026-10-31 新增）
+
+來源：arXiv:2610.26836 *Same Simulation, Different Evidence*（UC Riverside + UC Irvine）。
+
+- **Evidence substitution**：當 harness 把長輸出搬出 context 讓 agent 檢索取用時，agent 會**改用自己寫的輸出**取代工具的權威輸出，精度更高但需要四捨五入，常被**截斷** → 答錯。實測 GPT-5.2 有 **60.3%**、GPT-5.1 **53.0%** 的 trajectory 沒讀到權威 report。
+- **對應到我的系統**：`MEMORY.md` / daily note 這些**蒸餾層**就是那個「沒被指名的權威來源」。agent 若讀蒸餾筆記而非 raw row，**蒸餾層會自我強化成事實來源**。
+  → **規則**：harness 指令層必須明確寫出「**權威來源是 raw row，不是蒸餾筆記**」，並在蒸餾筆記保留指回 raw 的 pointer。
+  （機制化版本 = [[eywa-provenance-grounded-long-term-memory|Eywa]] 的 Tier-0 immutable evidence + signal-anchored promotion。）
+- **教方法不如指名來源**：只教「要四捨五入」完全無效（沒換 source，只換做法）；指名「哪一份輸出是權威」才有效（+6.3~+7.9 pp）。
+- **淨值 ≈ 0 不等於無害**：GPT-5.4 的 build +4.1 pp 抵銷了 closure −7.2 pp → 評估 context 管理**必須分階段報告**（build / exposure / closure），不能只看 final accuracy。
+- **Hybrid 是 safe default**：塞得下就內聯（不需知道工具語意、不需額外指令、還更省 token）；**檢索應是容量不足時的 fallback，不是預設路徑**。
+- **可攜 protocol**：配對重播——checkpoint 取在「執行結果進模型之前」，兩臂共用檔案/prompt/history/預算，唯一差異是交付方式 → 可驗證任何「要不要把這個輸出放進 context」的決策。
