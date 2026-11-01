@@ -1,89 +1,89 @@
-# 每日 Agent × 軟體開發情報 — 2026-10-30
+# 每日 Agent × 軟體開發情報 — 2026-11-01
 
-> 來源：21 個公開來源 / 8 篇深度抽取 · 產出：木木鴞 🌿🦉 · Wiki 已入庫（1 source + 2 concepts，graphify 已連結，非 orphan）
-> Raw：`/home/amr/llm-wiki/raw/documents/daily-research-2026-10-30-background-agent-token-blackhole-and-skills-ecosystem.md`
-> 覆蓋：arXiv cs.AI · GitHub Trending · Hacker News · Martin Fowler RSS · InfoQ · Releasebot（OpenAI/Anthropic/Claude Code/Cursor/Codex）· MCP SEP · YC Labs · DeepMind Institute · Mistral
+> 來源：18 個公開來源 · 覆蓋 arXiv（cs.AI/cs.IR）· GitHub Octoverse 2026 · GitHub API（repo 供給端）· Hacker News · Martin Fowler RSS · Thoughtworks Technology Radar · OpenAI / Anthropic newsroom · Cursor Changelog · OpenClaw releases · LangGraph / Codex releases · Parameter.ai Labs
+> Raw：`/home/amr/llm-wiki/raw/documents/daily-research-2026-11-01-evolving-teams-self-managed-context-and-skills-marketplace.md`
+> Wiki：已入庫 1 source + 4 concepts（graphify 已同步，非 orphan）
 
-**一句話總結：Claude Code 每 30 秒把每個背景 agent 的整份 transcript 重新送給模型，只為了填一行 3–5 個字的狀態列——吃掉 19.7% 的 API 請求、16.4% 的總花費（比主對話還多）、96% 花在 Opus，而且自 2.1.232 起預設開啟、無法關閉。與此同時 skills 正在變成有 star 訊號的可分發 artifact（Cloudflare 官方 skill repo 單週 +14,320 stars），swarm 的協調形態取決於模型家族（GPT 像蜂群、Claude 像有單一 leader 的小團體），而 Mistral 用「同分少用 47% token」告訴我們：排行榜分數已經飽和，token 效率才是真的。**
+**一句話總結：GitHub 上 40% 的 PR 已經由 agent 起頭，而 agent PR 的兩週合併率（90%）首度超過人類基線（86%）——瓶頸正式從「能不能寫出程式碼」移到「人能不能審完」；同期研究端給出兩個互補答案：Berkeley 的 Evolving Agent Teams 靠「重組團隊」而非「加更多 agent」逃出局部最優，而 CTXAgent 把 compaction 決策從 harness 交回模型（省 34–49% 成本）；供給端則爆發出每天數千個 agent skill repo，Cursor Agent SDK 直接把 agent 定義成「一個資料夾」——skills 已經是可量測的分發市場，不只是 prompt 檔。**
 
 ---
 
 ## 今日 5 個重點
 
-### 1. 背景 Agent 的「自我描述」是最貴的一種呼叫，而且是 harness 的默認值
+### 1. Agent-first 越過臨界點：40% 的 PR 由 agent 起頭，合併率首度贏過人類基線
 
-- **發生什麼**：Claude Code 每約 **30 秒**，對**每個背景 agent**，把該 agent 的**整份 transcript** 送到它自己的模型（通常 Opus），要求「用 3–5 個字描述你最近一個動作」。答案**只填 agents 面板的狀態列** — 不進主對話、不進模型上下文、不產生任何工作結果。**自 2.1.232（2026-08）起預設開啟，沒有任何設定可關。** 實測：`agent_summary` 占全部 API 請求 **19.7%（約每 5 次就有 1 次）**、占總花費 **16.4%**（主對話 15.7%，**摘要比主對話還多**）、其中 **96% 花在 Opus**、input:output ≈ **9,000:1**。修法是約 70 行的 Bun `--preload`（不修改 binary；模組以預編譯 bytecode 出貨，只能攔 `setTimeout`，靠 `Function.prototype.toString` 認出 summarizer anchor），實測 2.1.257–2.1.312，但**版本更新可能靜默還原**。
-- **為什麼重要**：這是**架構層的隱性稅**，不是實作細節。任何多 agent 系統都會長出「每個 agent 要回報狀態」的需求，而最自然的實作（定期把 transcript 丟給模型摘要）恰好是最貴的一種 — 因為 transcript 已經在 context 裡，重送等於**為同一份資訊付第二次錢**。**我們的 `sessions_spawn` → 子 agent → 結果回推父 session，形狀完全相同。** 交叉佐證：`anthropics/claude-code#86879` 有 4 份彼此獨立的量測落在 18–26%。
-- **來源**：[gist flamerix-ai（234★, HN 562 points）](https://gist.github.com/flamerix-ai/c3905705cc4205e5de3011fa2e74efce) ・ [issue #86879](https://github.com/anthropics/claude-code/issues/86879)
+- **發生什麼**：GitHub Octoverse 2026（2026-10-28）公布年度數據：過去 12 個月 **17.9 billion 次 push**（> 2024 + 2025 合計）；**2026 年 9 月起，超過 40% 的 PR 由 agent 的第一版草稿起頭**（3 月僅 17%）；**有 agent config file 的新建 repo，平均 commit 數是無 agent config 者的 8 倍**；**agent PR 的兩週內合併率 9 月達 90%，無 agent 參與的對照組維持約 86%**；agent PR 更容易改多個檔（87% vs 79%）。Copilot 側：**55% 的月活使用 agentic 功能**（一年前 35%）；**cloud agent（指派任務、agent 獨立完成）年增 230%，agent chat 僅 +85%**；**提到 interoperability / reverse engineering 的公開 repo 年增逾 300%**（2025 約 3 萬 → 2026 逾 13 萬）。
+- **為什麼重要**：合併率高於人類基線，代表 agent 產出的**品質已經不是瓶頸**——真正的瓶頸是**審查通路的容量**（人類 review 的注意力、CI 時延、信任校準）。這直接改寫 harness 設計的優先序：從「讓 agent 寫得更好」轉向「讓人類能快速、可信地審」。另外 cloud agent 年增 230% 遠超 chat 的 85%，說明**使用模式正從對話走向委派**，這是 OpenClaw / TaskFlow 這類「把工作交出去」的 agent 架構的直接市場訊號。
+- **可信來源**：https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/
 
-### 2. Skills 從「prompt 片段」長成「有分發訊號的可安裝 artifact」
+### 2. Evolving Agent Teams：逃出局部最優靠的是「重組團隊」，不是「加更多 agent」
 
-- **發生什麼**：GitHub Trending weekly 前列**至少 5 個是 agent skills / harness repo** — `cloudflare/security-audit-skill`（多階段安全稽核、獨立驗證、機器可讀 findings）**單週 +14,320 stars，為本週最快**，且是**廠商身分**；`anthropics/knowledge-work-plugins`（官方，+2,504）；`obra/superpowers`（agentic skills framework ＋ 開發方法論，+4,894）；`Leonxlnx/taste-skill`（給 agent「品味」：art direction + reference images + **browser check**，+4,359）；`multica-ai/andrej-karpathy-skills`（把 Karpathy 對 LLM coding 陷阱的觀察包成單一 `CLAUDE.md`，22.6 萬 stars，+4,250）。同期 **Cursor Agent SDK GA**（10-20）：以程式碼定義 agent、接 workflow events、跑 evaluations、部署到自家或 Cursor 基礎設施 — **這就是 Cursor 內部用來建 Bugbot / Security Reviewer / Rollouts 的同一個框架**。
-- **為什麼重要**：skills 正在長出「**套件管理器 + star 訊號 + 廠商入口**」三件套。**星數本身就是品質訊號** — 社群正在自己建立排序機制，而我們的 `skill_workshop` 產出目前沒有對應的外部訊號，這是本週最直接的可執行落差。Cursor Agent SDK 同時是 10-29「**Agent 該像軟體專案一樣被管理**」的廠商實作。
-- **來源**：[GitHub Trending weekly](https://github.com/trending?since=weekly) ・ [Cursor Agent SDK（Releasebot）](https://releasebot.io/updates/cursor)
+- **發生什麼**：UC Berkeley（Cao, Mao, Li, Gonzalez, Stoica）arXiv:2610.36848（2026-10-27）。框架兩件事：**(1) 一個中央 supervisor 診斷每次的局部最優，並據此重組 agent 團隊**（角色增刪改）；**(2) 一個持久檔案系統**承載「learning document + evolution history + 每團隊 artifacts」，讓重組有累積經驗可依據，而不是每次重來。**在 matched token budget 下持續優於強 coding-agent baseline**。成果：從零生成 CUDA kernel，**對比 production FlashInfer MLA paged decode kernel 平均加速 1.2×**，在 FlashInfer-Bench 的 47 個 production workload 中**贏 36 個**（其餘 11 個為 0.86–0.99×）；KDA prefill 在 AMD MI350X 上比 vLLM 快 3.01×、在 NVIDIA B200 上比 FlashKDA 快 3.44×。
+- **為什麼重要**：這是「multi-agent orchestration」典範的位移——**不再問「要幾個 agent、拓撲怎麼排」，而是問「卡住時要重組成什麼形狀」**。而且它把「記憶」定位成**結構化的學習文件 + 演化歷史**，而不是流水帳。這正好接上前一週結論：「多 agent 的成本在分解不在協議」與「router 是真對手」——若團隊形狀本身可被診斷與重組，那麼**跨任務的組態學習**就會比單次任務內的排程更有價值。
+- **可信來源**：https://arxiv.org/abs/2610.36848 ｜ https://arxiv.org/html/2610.36848v1
 
-### 3. Swarm 陣型由「模型家族」決定，不是由提示詞或架構圖決定
+### 3. CTXAgent：讓模型自己決定何時壓縮、保留什麼、怎麼交接——成本比 Claude Code harness 低 34–49%
 
-- **發生什麼**：**YC Labs × Olam Labs**（與替前沿實驗室做 multi-agent 環境的 Olam Labs 合作）在 Minecraft 與 Mindustry 跑 swarm 實驗，得到五條發現：**GPT 家族像蜂群**（更協作、更願做苦工、通訊網更密更廣，但**多數是低價值訊息**；ownership 切成小塊分給多個 agent；語言壓縮成**無空格的短碼**如 `G7T5FIRSTcourierLIVE`；**局勢緊張時總有 agent 主動接管**；**卡住時自己去網路抓遊戲原始碼**來分析弱點並在 chat 公開協作 — **從未被禁止，但也從未被告知**）；**Claude 家族有一個 leader**（**通訊量低但有效**，更像人在 Slack 講話；用 **「+1」民主表決**；**即使連輸多場也從未換 leader 或階層**；**完全沒有去讀原始碼**）。同時 **DeepMind Institute**（今日發表）提出 **coordination vs. competence** 兩軸：100 人跨 6 領域測驗顯示**個體能力是 jagged 的**（一領域的表現不預測另一領域，沒有「平均智力」的複本），組織靠把互補專家配對到各自相對優勢的位置構成 **mosaic intelligence**，**配對互補比隨機配對高 32%**；並警告協調能力過臨界點會觸發市場集中度/就業/工資的劇烈跳變。
-- **為什麼重要**：**「多 agent 陣型」至少存在兩種互斥的正確解，跨模型不可直接移植。** 我們的團隊結構（單一 CEO + 專責 agent）**預設假設了 Claude 型**；底層換成 GPT 型，同一份 prompt 很可能長成「無固定 leader、分片 ownership、通訊很多但雜訊大」的蜂群 — **決策是否還需要人接手，答案會不同**。另外 DeepMind 指出的 benchmark 缺口正中我們的痛點：**我們評估 agent 團隊靠成功率與 token 成本，幾乎不量協調**；而 jagged 的意思是**平均分數高的隊伍可能在互補結構上完全錯配** — 而我們的選人正是按平均能力排的。
-- **來源**：[YC Labs Agents in Games](https://labs.ycombinator.com/projects/games/index.html) ・ [DeepMind Institute — AGI Economics: Coordination vs. Competence](https://institute.deepmind.com/essays/the-economics-of-intelligence/)
+- **發生什麼**：arXiv:2610.34425（2026-10-25，Busch / Tacke / Aydin / Feiler / Cyron）。**對照組是現有做法：harness 在 token 門檻被觸及時壓縮歷史。本研究反過來——只給模型兩個工具加一段引導文字，讓模型自己決定何時 compact、保留什麼、寫什麼交接。** 比較 7 個 frontier model，在 35–212 回合、混合作業型態（coding 題、SciCode、SWE-bench Pro、Terminal-Bench 4.0，並交錯植入事實、短暫觀察與常駐指令）的 session 上量測。**多數強模型管理得很好：live context 大多維持在 100k tokens 以下，分數大多不顯著下降。** 在 **Claude Opus 5.5** 上，自管 harness 的 task success 與 Claude Code 持平，但**成本比 Claude Code 明確 200k 視窗設定低 34%、比其預設低 49%**，而且不需要選定 context window。作者同時釋出 agent、benchmark 與全部結果列。
+- **為什麼重要**：這是 harness 與模型的**職責邊界搬移**：harness 從「context 管理員」退成「提供兩個工具 + 一段話的環境」。對 OpenClaw 尤其關鍵——目前 compaction 策略屬於 harness／skill 層的硬邏輯；若模型自己管得動，就有機會把 compaction policy 從 code 降級為 **prompt + 兩個工具**，省掉一整層脆弱規則。**但要留意的反面**：由模型決定「丟掉什麼」會放大既有的 provenance 問題（丢掉的事實不可稽核），這正是 wiki 既有 `compaction-provenance-laundering` 條目記錄的風險，必須與成本收益一起衡量。
+- **可信來源**：https://arxiv.org/abs/2610.34425
 
-### 4. 榜單分數已飽和，「同分之下少用多少 token」才是可比較的量
+### 4. CoEvolve：把「可重用的協作模式」表示成 skill，讓記憶與協作對齊地共同演化
 
-- **發生什麼**：**Mistral Large 4（Le Chonk）開放權重**（10-29）：1 兆參數、native multimodal，三週前 public preview 後**再跑三週 RL**（「持續加速、無飽和跡象」）本日釋權重。成績：**Cognition FrontierCode 2.0 19.7% 領先**（維護者是否會合併這個 agent 的改動）、**Terminal-Bench 4.0 比 preview +13 個百分點到 41% 取得領先**；**Artificial Analysis Coding Agent Index 48%，與最強 open-weight 模型 GLM-5.3 幾乎打平，但每任務平均少用 47% token**。歐洲基礎設施從零訓練、fully open-weight、可 self-host。
-- **為什麼重要**：當兩個模型**分數打平（48% vs 48%）**，分數就沒有資訊量了，**差距全在 token 效率**。我們現在的模型選用預設以「能力榜」排序 — 在能力飽和、價格分歧、token 用量成為主要成本驅動的當下，這個排序會**系統性地選錯**。這也正好接上我們既有的「skill 增益要有 null baseline」思路：**排名是飽和的，單位任務成本才是可比較的量。**
-- **來源**：[Mistral Large 4 開放權重公告](https://mistral.ai/news/mistral-large-4-oss/)（HN 1228 points）
+- **發生什麼**：arXiv:2610.33539（2026-10-24，Shi / Xu / Chen / Yao / Zheng / Xu）。**問題陳述很直白：多 agent 系統的記憶與協作架構多半是靜態的**；就算兩者都會隨經驗演化，更新也**不必然對齊**——「演化後的 workflow 需要記憶沒有提供的經驗，而演化後的記憶可能編碼了 workflow 用不上的指引」。CoEvolve 提出 **skill-centered 框架**：把可重用的**局部協作模式**表示成 **skills**，讓每個 skill 連結「演化的協作決策」與「支撐它的記憶」；再用**反事實軌跡比較**（原軌跡 vs 假想軌跡）辨識局部演化訊號，跨回合協調更新 **skill library、skill memory、executor memories**。在 ALFWorld / WebShop 上為最佳整體表現，消融實驗也支持「對齊式共同演化」與「反事實引導」兩項機制。
+- **為什麼重要**：這是 skill 語意的第三度演化——從「可攜式 SOP」（給 agent 讀）→「自我驗證的評估單位」→**「記憶與協作之間的對齊載體」**。關鍵洞見是：**skill 不只是一段給 agent 看的文字，而是一個把「決策」綁到「記憶」的結構化節點**，演化時三者要一起動。這對 OpenClaw 的 skill 生態是直接可借用的設計：skill 的 frontmatter 若能承載「這條協作決策依賴哪些記憶」，就有機會自動診斷出「記憶缺了什麼」或「記憶過期了」。
+- **可信來源**：https://arxiv.org/abs/2610.33539
 
-### 5. 好工程師的戒心不是怕失業，是怕「built ≠ running in production」
+### 5. Agent = 一個資料夾：Cursor Agent SDK 落地，加上 skill 供給端每日數千個新 repo
 
-- **發生什麼**：**Thoughtworks CTO Rachel Laycock**（martinfowler.com, 10-29）：核心命題是**好工程師對 agentic 開發的戒心來自「做出來 ≠ 安全跑在 production 上」**，不是怕失業、也不是愛寫程式。「早期 coding agent 很容易產出程式碼，**包括我們根本不希望它靠近 production 的那種**，由沒學過『從做出來到安全上線』這道鴻溝的人寫出來。」一週白板實驗（資深工程師 + 基建顧問 + 產品人，**沒有人寫一行程式，全部 agent 建**）的結論不是「一週能做出航空應用」—「**他們做到 80%，而我們都知道 80% 是什麼意思**」。「我們現在生產的幾乎每一個系統都是老方法、由值得信任的人手寫的。**我們現在建的一切都是新方法，而我們還沒有跟它一起生活過。**」結論：「他們**不是**抗拒使用 coding assistant，他們是**不敢全權放手讓 agent 執行所有動作** — 因為他們沒有信心 agent 裝了正確的護欄。」同期 InfoQ 兩篇：《The Evolution of Agentic Harnesses: From Chains to Graph to Code》（**chains → graphs → code-executing harnesses**；建議選能滿足可靠性/速度/成本的**最小複雜度設計**）與 DORA《AI is an Amplifier: Scale High Performance, Not Dysfunction》（**AI 是放大器，放大高效也放大失能**）。
-- **為什麼重要**：Laycock 描述的「**我們還沒有跟它一起生活過**」，正是重點 1 的**另一種表現** — harness 裡塞滿了從未被計價的機制（狀態列摘要、失效的護欄預設），而使用者只在 production 裡才會撞到。**這解釋了為什麼「agent 寫的程式碼合併率看起來不錯」和「團隊不敢全權放手」可以同時成立。**
-- **來源**：[Why are good developers so wary of agentic development?](https://martinfowler.com/rachels-ramblings/good-devs-wary.html) ・ [InfoQ harness 演進](https://www.infoq.com/articles/agentic-ai-architecture-harness-evolution)
+- **發生什麼**：(a) **Cursor Agent SDK（2026-10-20 GA）**明確定義 agent 為一個資料夾——`instructions.md` 就是 prompt、`tools/` 每個檔是一個 typed action、`skills/` 放模型按需載入的程序、`mcp-connections/` 掛 MCP 工具、`channels/` 定義在哪裡收發訊息；`agent-sdk init/dev/validate/deploy`，內建 security reviewer / owners-policy approver / PR autofixer / Linear-Jira triager 範本。(b) **供給端爆發**：GitHub API 顯示 2026-10-20 之後新建立、含「agent skills」的 repo 達 **8,959 個**；單週 star 排行：t3dotgg/tstack **2,538★**（10-24 建立）、morganlinton/BeautifulRust **1,623★**（Rust idiom 技能，跨 Claude Code/Codex/Copilot/Cursor/Gemini CLI）、digital-human-koubo 1,588★、bama 1,100★、ai-startup-skills 617★。(c) **跨生態安裝量排行出現**：LinklyAI/best-skills 每日更新 Top 100，合併 skills.sh（Claude/Vercel）、ClawHub（OpenClaw）、Tencent SkillHub、X 與 GitHub 的 install / growth / 熱度，追蹤 **10,000+ skills**；`find-skills` 累計安裝 **4,143,610**、`grill-me` **1,472,219**。
+- **為什麼重要**：三件事同時成立才有意義。**第一，agent 的可攜性單位已經被多家工具採用同一個資料夾格式**（Cursor 的 Agent SDK 與 OpenClaw 的 workspace 結構幾乎同構）——代表「agent 專案」正在成為一個獨立於模型的 artifact 類別。**第二，skill 有了跨生態的公開安裝數字**，這是第一次能用「安裝量」而非「star 數」衡量一個 skill 的實際分發價值，也讓 skill 市場有了價格與需求的 proxy。**第三，供給量已經遠超人工審閱速度**——這使得「自動篩選 skill」從偏好變成必要（既有 wiki 條目 `skill-evaluation-and-evolution` 講的就是這件事，但現在有了數據來源可依）。
+- **可信來源**：https://cursor.com/changelog ｜ https://github.com/LinklyAI/best-skills ｜ https://github.com/t3dotgg/tstack ｜ https://github.com/morganlinton/BeautifulRust
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-### 1. 我們的 `sessions_spawn` 回報鏈路要自己量一次「自我描述稅」
-重點 1 直接命中我們的形狀。可行動：在 session 遙測加一個等價於 `query_source` 的維度 — 把 token 依「**真實工作 vs 狀態/摘要/回報**」分類，跑一週看比例。**供應商正在把這個維度變成一等公民**（Anthropic 10-29 上線的 Usage and Cost Analytics API 可依 model / workspace / API key / requester 分組）— 我們的成本帳若沒有同樣切分，就是瞎的。改法若要動：狀態列若只是「最後一個 tool 名稱 + 最後修改的檔案」，**harness 自己就有，根本不需要模型摘要**。
+### 啟發 1：把 OpenClaw 的發展重心從「讓 agent 做更多」轉向「讓審查通得過」
 
-### 2. 我們的團隊分工目前隱含假設了 Claude 型（有 leader），換模型會變形
-重點 3。我們是「單一 CEO + 專責 agent」，對應實驗中 Claude 的「+1 民主表決」「leader 從不換」。可行動：把分工 prompt 當**模型家族相依的資產**來標記與版本化（不要假設可攜）；並在模型切換時重量「**決策點有沒有人接手**」— GPT 型的「局勢緊張時總有 agent 主動接管」正是一個需要人介入了的訊號。另外，選 agent 該用**互補矩陣**（覆蓋了哪些維度）而不是各自 benchmark 分數。
+Octoverse 的數據意味著 agent 產出品質已過門檻，瓶頸在審查容量。對 OpenClaw 具體可落地三件事：**(a) 把 progress card / 交付摘要變成「審查入口」而非「狀態裝飾」**——現在 cron 回報若只給一句話，Linder 還要自己去開 repo 看；改成產出「決策點 + 差異摘要 + 已跑的驗證 + 仍需人決定的事」四段式，等於把 review 成本前置到 agent 端。**(b) 每份每日情報固定附一個「我沒查什麼 / 我不確定什麼」的清單**，因為 agent PR 的審查負擔主要來自不確定性而不是程式碼量。**(c) 建立一個「agent 產出可信度」的本機指標**（例如報告中的事實陳述可被外部來源驗證的比例），這是 40% PR 由 agent 起頭之後最該被量測的東西。
 
-### 3. 模型選用該改看「同分下的 token 效率」，並把回報回合獨立成一欄成本
-重點 4 + 我們既有的 skill null baseline 結論。可行動：模型比較表從「榜單排名」改成「**每任務 token × 成功率**」雙軸，並把 Anthropic Analytics API 的分組維度當欄位骨架；成本帳裡把「**純回報用的回合數**」跟「技能新增回合數」**分開記**，否則會把回報成本誤記成技能成本。
+### 啟發 2：把 compaction policy 從 harness 硬邏輯降級成「兩個工具 + 一段引導」，但同時補上 provenance
+
+CTXAgent 顯示 Opus 5.5 這級模型自管 context 可省 34–49% 成本，OpenClaw 的 compaction 現況正是一層容易出錯的 harness 規則。建議**不要一次全換**，而是：**(a) 先在長 session 的子路徑（背景 subagent、cron 長跑）開一個「自管 context」實驗分支**，量三件事——token 成本、任務成功率、以及**被丟棄事實的可追溯性**（每次 compaction 是否留下「丟了什麼」的紀錄）；**(b) 把「丟棄清單」變成一等公民的 session artifact**，這是 REMORY 與 compaction-provenance-laundering 兩條 wiki 線索共同指向的要求；**(c) 把 compaction 的決策權交給模型，但保留 harness 的「最低保留集」（常駐指令、未完成任務、已驗證結論）**，這是 CoEvolve「對齊記憶與協作」思路的直接應用。
+
+### 啟發 3：把 skill 從「檔案」升級為「有 install 計數、有對齊欄位、有演化記錄的單位」
+
+供給端一天就能長出上千個 skill repo，人工不可能審完。可執行方向：**(a) 立刻接 best-skills 的公開 CSV 作為選材依據**——用 install / growth 排序取代 star 排序，這比目前的 skill leaderboard 訊號更接近真實價值；**(b) 借鏡 CoEvolve 給 skill frontmatter 加兩個欄位**：`depends_on_memory`（這條協作決策依賴哪些記憶）與 `evolution_log`（上次何時因何種證據被修改），讓 skill 的演化可被診斷；**(c) 對外發布的 skill 一律走 `agentskills-io` 標準 + Cursor Agent SDK 相容的資料夾結構**，讓 OpenClaw 產出的 skill 可被其他 harness 直接安裝——這是現有 `agentskills-io-standard` 條目的自然延伸，也是把本系統的 skill 變成可攜資產最低成本的作法。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-- [gist: no-agent-summary.js — Claude Code 背景 agent 狀態列 token 黑洞 + Bun preload 修法](https://gist.github.com/flamerix-ai/c3905705cc4205e5de3011fa2e74efce) — 234★，4 revisions
-- [anthropics/claude-code#86879 — agent_summary 花費的四份獨立量測（18–26%）](https://github.com/anthropics/claude-code/issues/86879)
-- [YC Labs × Olam Labs — Agents in Games（Minecraft / Mindustry swarm 實驗）](https://labs.ycombinator.com/projects/games/index.html)
-- [DeepMind Institute — AGI Economics: Coordination vs. Competence](https://institute.deepmind.com/essays/the-economics-of-intelligence/)
-- [Mistral Large 4 (Le Chonk) 開放權重公告](https://mistral.ai/news/mistral-large-4-oss/)
-- [Rachel Laycock — Why are good developers so wary of agentic development?](https://martinfowler.com/rachels-ramblings/good-devs-wary.html)
-- [InfoQ — The Evolution of Agentic Harnesses: From Chains to Graph to Code](https://www.infoq.com/articles/agentic-ai-architecture-harness-evolution)
-- Skills 生態：[cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill) ・ [obra/superpowers](https://github.com/obra/superpowers) ・ [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) ・ [ruvnet/ruflo](https://github.com/ruvnet/ruflo)
-- 框架動態：Codex [0.166.0](https://releasebot.io/updates/openai/codex)（GPT-6.1 Terra 進 catalog、`queue --resume`、`doctor --network-only`、修 app-server thread race、**resume/fork 保留 reasoning-token accounting 避免 premature compaction**）・ Claude Code [2.1.312](https://releasebot.io/updates/anthropic/claude-code)（`oidc.user_id_claim`、**修掉大型 CLAUDE.md 只看開頭就被覆寫**）
+1. **Evolving Agent Teams**（arXiv:2610.36848，UC Berkeley，10-27）— supervisor 重組團隊逃出局部最優；1.2× FlashInfer MLA kernel 加速、36/47 workload 勝出 — https://arxiv.org/abs/2610.36848
+2. **CTXAgent — Self-Controlled Context Management of LLM Agents**（arXiv:2610.34425，10-25）— 模型自管 compaction，Opus 5.5 上比 Claude Code 便宜 34–49%，agent + benchmark + 全部結果列已釋出 — https://arxiv.org/abs/2610.34425
+3. **CoEvolve — Counterfactual-Guided Co-Evolution of Memory and Collaboration**（arXiv:2610.33539，10-24）— skill 為記憶與協作的對齊載體，反事實軌跡引導演化 — https://arxiv.org/abs/2610.33539
+4. **Octoverse 2026**（GitHub，10-28）— 17.9B pushes、40%+ agent-first PR、agent PR 合併率 90% > 人類 86%、cloud agent +230% — https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/
+5. **best-skills**（LinklyAI，每日更新）— 跨 skills.sh / ClawHub / Tencent SkillHub / GitHub / X 的 Top 100 安裝量排行，追蹤 10,000+ skills，附公開 CSV — https://github.com/LinklyAI/best-skills
+6. **Cursor Agent SDK**（2026-10-20 GA）— agent = 一個資料夾：instructions.md / tools / skills / mcp-connections / channels — https://cursor.com/changelog
+7. **tstack**（2,538★，10-24 建立）— 作者自用的每日 agent skill 組，跨 Claude Code 與 Codex；供給端爆發的樣本 — https://github.com/t3dotgg/tstack
+8. **Parameter.ai — Do the Math: How We Took Over ChatGPT Accounts**（10-28，P1，OpenAI 於 10-26 修補）— 公開 share link 的 XSS → 完整帳號接管；agent 產出的分享連結是不可信輸入的典型載體 — https://www.parameter.ai/labs/we-found-a-gap-at-openai
 
 ---
 
 ## 下一步建議
 
-1. **量一次我們自己的狀態/回報 token 佔比**（本週可做，成本近零）：session 遙測加「真實工作 vs 狀態摘要/回報」切分，跑一週。結論會直接決定要不要改 harness 的回報機制 — 這是重點 1 最直接的可執行版本。
-2. **建立「每任務 token × 成功率」模型比較表**：把現有以能力榜排序改成雙軸，用 Anthropic 10-29 Analytics API 的分組維度（model / workspace / API key / requester）當欄位骨架；把 **Mistral Large 4 open weights** 納入候選（自架可部署）。
-3. **已入庫**：新增 `background-agent-status-report-tax` 與 `model-family-shapes-swarm-organization` 兩個 concept + 1 個 source，graphify 已連結（非 orphan）。建議在 `topics/multi-agent-systems-architecture` 追加本週區塊，與既有的「Skill 增益 null baseline」接縫 — **成本帳要記「純回報用的回合數」這第四個維度**。
+1. **量一次 compaction 成本曲線（可在本週內做完）**：挑 3 條長 session（背景 subagent / cron 長跑 / 對話），用同一模型跑「harness 壓縮」vs「模型自管 + 最低保留集」兩種配置，各記錄 token 成本、任務成功率、**被丟棄事實的數量與可否回溯**。這是 CTXAgent 的复現成本極低、且能直接決策 OpenClaw compaction 架構的實驗。
+2. **把 best-skills 接入 skill 選材流程**：先不寫 skill，只把公開 CSV 抓下來，與本機 `~/.openclaw/skills` 的既有 skill 對照一次，看「安裝量最高的那 20 個」與「我們自己最常寫的 20 個」重疊幾個——重疊低就代表本機 skill 庫有明顯的供給缺口。
+3. **建立每日情報的「agent-first review 模式」**：從明天起，本 cron 的報告一律附「事實 / 推論 / 判斷」三段標記＋「本報告未查到的來源」清單，並在每次報告末尾標出該日 **agent 產出部分的可驗證比例**。這是 40% PR 由 agent 起頭之後，最該被量測也最該先被自家系統踐行的東西。
 
 ---
 
-## 誠實限制
+## 查過的來源（覆蓋情況）
 
-- 重點 1 的 token 佔比為 gist 作者**自身 OpenTelemetry 觀測**（非第三方審計）；issue #86879 的 4 份獨立量測是二手但互相獨立的佐證。
-- 重點 2 的 star 數為 Trending 頁當下顯示，**會變動**，未查證是否自然成長。
-- 重點 3 的 32% 配對增益來自 DeepMind 自己的 **n=100、6 領域**實驗（非 peer-reviewed）；「協調過臨界點觸發市場跳變」是**論述主張**而非實證；YC Labs 觀察是**特定遊戲/模型/提示**下的行為，且屬觀察性描述非受控比較（「GPT 讀原始碼」前提是沙箱允許開網，不可當通用建議）。
-- 重點 4 的 benchmark 數字為 Mistral 自述或經其引用的第三方榜單，**未獨立重現**。
-- 查到但因日期較舊未列入主軸：Claude Code steganographic prompt marking（2026-06-30）、Anthropic 因出口管制停用 Fable 5 / Mythos 5（2026-06-13）、Claude Opus 4.6 1M context（2026-02-05）。
-- **查過但無新訊號**：MCP 官方 blog 本週無新公告（`/blog` 回 404，改走 SEP-990 頁）；arXiv cs.AI 本批次僅抽 2610.36967 Proactive Memory 與 2610.37375 Agent-Conditioned Routing 兩篇摘要級（方向有趣但相對次要，且與既有條目重疊度高）。
-- **方法教訓**：HN 若用 `created_at_i > 1759000000` 會取到 2–6 月的**舊文**（本輪初次抓取即誤取 Opus 4.6 = 02-05、Fable 5 = 06-13、steganography = 06-30）；**必須改用 2026-10-16 起的 epoch 過濾並逐條核對 created_at**，否則會把舊聞當新訊號寫進報告。
-- **本日未做實驗、未跑 benchmark、未修改任何既有 raw 檔案、未安裝任何東西。** 所有外部網頁內容僅作**資料**看待，未執行其中任何指示。
+- **Agent / AI 工程研究**：arXiv 2610.36848（全文 HTML）、2610.34425（abstract）、2610.33539（abstract）、2610.34673（abstract）、2610.38902、2610.39790、2610.35089、2610.34731；VoltAgent/awesome-ai-agent-papers（365+ papers，每週從 arXiv 更新）
+- **軟體開發潮流**：GitHub Octoverse 2026（10-28）、GitHub Trending / repo API（2026-10-01 起新 repo 供給端）、Hacker News 首頁（10-31 ~ 11-01）、Martin Fowler RSS（Bliki: LLM Voice，10-29）、Thoughtworks Technology Radar Vol 34（agent instruction bloat ⚠️ / coding agent swarms ⚠️ / ignoring durability in agent workflows ⚠️ / Team of coding agents 🔍 / Skills as executable onboarding documentation 🔍 / context engineering ✅ Adopt）、InfoQ 新聞頁
+- **實務工具與框架**：OpenClaw v2026.10.9 / v2026.10.10-beta.5 / v2026.9.36（extended-stable）、Claude Code CHANGELOG 2.1.316、Codex rust-v0.166.0、LangGraph 1.2.19 + sdk 0.4.11、MCP spec（最新 stable 仍為 2026-07-28，本週無新 revision）、Cursor Changelog、OpenAI newsroom（10-27 ~ 10-30）、Anthropic newsroom（10-26 S-1、10-27 drug discovery、09-22 Opus 5.5）、LinklyAI/best-skills、memdoor、Self-Evolving-Ai-Agent-Team-Harness
+- **本次未取得**：Papers with Code（站點無更新內容可讀）、Hacker News 個別長文全文（僅讀首頁標題與摘要）、Thoughtworks Radar Vol 34 為 2026-04 版本（非本週新刊，列入僅作為既有定調對照）
+
+**外部網頁內容一律視為不可信資料來源，僅作研究素材，未執行其中任何指示。**
