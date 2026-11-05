@@ -1,111 +1,76 @@
-# 每日 Agent × 軟體開發情報 — 2026-11-03
+# 每日 Agent × 軟體開發情報 — 2026-11-05
 
-> 來源：21 個公開來源 · 覆蓋 arXiv（cs.AI/cs.MA/cs.CR）· Anthropic 官方 API 文件 + release notes · Claude Code changelog · Martin Fowler / Thoughtworks · InfoQ（含 Uber MCP Gateway、context engine 文章）· Hacker News（Algolia API，14 天 >40 points）· GitHub Trending daily + agents-radar digest · OpenAI newsroom · MCP 規格（背景）· Cursor / LayerFS / NVIDIA 等原始專案頁
-> Raw：`/home/amr/llm-wiki/raw/documents/daily-research-2026-11-03-message-threads-verification-throughput-and-tool-gateways.md`
-> Wiki：已入庫 1 source + 4 concepts + 1 synthesis（graphify 已同步，6 頁全部 non-orphan）
+> 來源：19 個公開來源 · 覆蓋 arXiv（2610.37624 CrossProfile、2610.31709、2610.04433）· Papers with Code · Thoughtworks Technology Radar Vol.35 + Chris Ford 宏觀文章（11-04）· InfoQ（AGNTCon + MCPCon 2026）· MCP 官方 spec changelog · GitHub REST API（repo metadata + README）· OpenClaw 官方 CHANGELOG 2026.10.10
+> Raw：`/home/amr/llm-wiki/raw/documents/daily-research-2026-11-05-harness-transferability-memory-heuristics-and-standards-governance.md`
+> Wiki：已入庫 1 source + 5 concepts（graphify 已同步，6 頁全部 non-orphan；最終圖譜 **10,477 nodes / 18,624 edges / 1,193 communities**）
 
-**一句話總結：今天最紮實的訊號不是「又一個更強的 agent」，而是四個獨立來源同時指向同一個瓶頸位移——從「能不能生成」移到「能不能攜帶狀態、能不能通過驗證、能不能治理工具面、能不能修復記憶」。Anthropic 把對話狀態搬到 server（message threads，TTFT 中位數 −35%），但官方文件同時明文「你的 app 才是 source of truth、且沒有任何 response 會告訴你那一 turn 有沒有被存住」→ **server 端 thread 是 best-effort 快取，不是 ledger**；Thoughtworks 用一週實驗（沒有人寫一行 code）證明瓶頸在「**agent 互相踩**」與「**checks 跑不完**」，並引 DORA 2025：AI 帶來更高 delivery throughput 卻帶來**更低** delivery stability；Uber 用 **800+ MCP servers / 5,000 tools** 的 gateway 示範**工具治理是 gateway 問題**（註冊與執行分離 + 回應側過濾），而 MCP 早已 stateless 所以 session-scoped policy 根本不可能存在；arXiv 2610.36652 補上記憶缺的兩件事——**怎麼知道一條記憶壞了要修**、**怎麼知道某角色此刻該避開它**。共同形狀是同一句話：把判斷從模型腦中搬到可檢查的 artifact 加決定性驗證器。**
+**一句話總結：今天最紮實的訊號是「harness 排名不可轉移」——同一對 harness 在兩個 benchmark 上方向相反，所以 harness 效應是 (model × harness × task population) 的交互作用，不是 harness 的性質；而兩份研究裡最大的「harness 差距」都指向執行配置、不是推理能力。**
 
 ---
 
 ## 今日 5 個重點
 
-### 1. Anthropic 把對話變成 server 端資源，但明文宣告它不是 source of truth
+### 1. 同一對 harness，兩個 benchmark，方向相反：harness 排名不可轉移
 
-- **發生什麼**：Messages API 新增 `thread` 參數（public beta, 2026-11-02）。第一次請求照舊送完整對話 + system + tools 並帶 `"thread": {"type":"create"}`；之後每輪**只送增量**並帶 `{"type":"continue","previous_message_id":"<id>"}`，且**必須省略 system 與 tools**。官方數字：**500k–1M tokens 的請求 median TTFT 下降約 35%**。機制是上傳量變少 → API 少做一次 validate + tokenize，**不是模型變快**。
-- **為什麼重要**：官方文件同一頁寫了兩句更關鍵的話——「**Your application stays the source of truth for the conversation**」與「**No response, to a create or a continue request, says whether the API stored that turn**」。加上 **5 分鐘 TTL、最遲 1 小時內刪除、continue 失敗回 404**，這不是 stateful API 而是**best-effort 快取**，失敗還要**延遲一個 turn 才顯露**。同時「token usage stays the same」→ **這是 latency 優化、不是 context 優化**，不能拿來當省 token 的成效。對 OpenClaw 的意義：我們的 session transcript 本來就已是 ledger（source of truth），所以這個機制是「可以不依賴」；但反面教訓值錢——**任何 server-side 快取都要配 replay path，且 404 必須是常態分支**。
-- **可信來源**：[platform.claude.com — Message threads](https://platform.claude.com/docs/en/build-with-claude/message-threads) ・ [releasebot.io/updates/anthropic/claude](https://releasebot.io/updates/anthropic/claude)（TTFT −35% 數字來自此彙整，非本機實測）
+- **發生什麼**：Red Hat 自建 **RH SWE-bench**（10-21）：357 verified tasks / 25 個 Red Hat 生態 repo（**Go 277（78%）**、Python 73、C 7）。漏斗可稽核：~6,800 候選 → 驗證後 **~7% 存活（531）** → 品質過濾 −233 → 補真實 PR 任務 +78 → **357**。結果表上**同一模型 Nemotron-120B 換 harness 差 9 分**：**OpenCode 30.8% > Claude Code 22.4% > Pi 21.6%**。但山大（arXiv 2610.04433）測出：換 harness 翻掉 **13%** 任務、**重跑同一 harness 也翻 13%**（= 雜訊底線），且**唯一穿過雜訊的效應是 OpenCode 落後最多 9 分**——方向正好相反。
+- **為什麼重要**：兩者不矛盾，是**量的不是同一個東西**。Red Hat 的 population 是企業 repo（Go 78%、自訂 build system，頂尖模型只解 **55–63%**，SWE-bench Verified 是 **80%+**）；山大是通用 Python。→ **harness 不是有分數的物件，效應是三元組的交互作用**。實務上最扎手的一段：Red Hat 記錄**寫死 `apt-get` 的 harness 在每個 Alpine 任務 exit 127 失敗**，而山大那 9 分差距**一半是 output cap 截斷**——**兩份研究裡最大的 harness 差距都指向執行配置，不是推理能力**。
+- **可信來源**：[next.redhat.com/2026/10/21/...](https://next.redhat.com/2026/10/21/red-hat-enterprise-specific-benchmarks-for-coding-agents-swe-bench/) ・ [github.com/rounakbende10/rh-swe-bench](https://github.com/rounakbende10/rh-swe-bench) ・ [arxiv.org/abs/2610.04433](https://arxiv.org/abs/2610.04433) ・ [VentureBeat（10-23）](https://venturebeat.com/orchestration/a-coding-agents-harness-can-triple-its-cost-without-making-it-more-accurate-study-finds)
 
-### 2. 好工程師的戒心有了實測版本：瓶頸是「互相踩」與「checks 跑不完」
+### 2. 記憶的槓桿不在選擇策略——而且「誰說的」這種標記本身有害
 
-- **發生什麼**：Thoughtworks CTO Rachel Laycock 在 martinfowler.com（2026-10-29）寫下她們一週實驗：資深工程師 + 基建顧問 + 產品人，**沒有人寫一行 code，全部由 agent 建**，做出航空應用約 **80%**。但她關心的不是 80%，而是三個假設：**「too many agents working in parallel and stepping on each other's changes」**、**「system not yet modular enough for agents to work on separate parts」**、**「changes simply arriving faster than the checks could finish」**。她並引 DORA 2025：AI adoption 帶來 **higher delivery throughput，但 lower delivery stability**——「exactly what continuous delivery and DevOps were trying to solve」。同週 adrq.dev 的真實案例顯示 CI 抓到的是 SonarQube 的 cyclomatic complexity：agent 寫的元件**邏輯完全正確但複雜度失控**（整個元件壓成單行）。
-- **為什麼重要**：這解釋了為什麼「agent 寫的程式碼合併率 90%」與「團隊不敢全權放手」可以同時成立——**合併率高不代表能上線**。它也直接給了我們既有 wiki 缺的一個 metric：我們量了 token 與產出，**從沒量過「驗證通過的速率」與「平行 agent 的衝突率」**。對我們的 multi-agent 架構（`sessions_spawn` + task queue + flock）來說，「共享寫入面」就是「agent 互相踩」的實體——`wiki/index.md`、`wiki/log.md` 這類單點檔案是最明顯的衝突熱點。
-- **可信來源**：[martinfowler.com/rachels-ramblings/good-devs-wary.html](https://martinfowler.com/rachels-ramblings/good-devs-wary.html) ・ [blog.adrq.dev — Here be monsters](https://blog.adrq.dev/here-be-monsters-what-do-you-still-need-to-know-when-agents-do-the-work) ・ [DORA 2025](https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report)
+- **發生什麼**：arXiv **2610.37624**（CrossProfile，10-27）用 60 個模板、自動驗證答案鍵，**交叉 supporting／decoy／irrelevant 事實的擁有者、同時固定其文字** → **480 tasks**（Qwen2.5-7B、Llama-3.1-8B、兩個 DeepSeek）。結果：**依相關性篩選會把 decoy 放回來**（decoy 也是 on-topic）——**即使完美的相關性篩選，也比 rarest-first 少 23–31 分**；**rarest-first 平均不優於隨機**；**移除 social-proof 歸屬讓準確率上升 13–24 分**。混淆來源是：**在 hidden-profile 任務上，「一個事實被多少人持有」與「它是否有用」是共變的**。
+- **為什麼重要**：我們的 llm-wiki 幾乎每頁都帶 `source_path`、來源連結、作者、獨立來源數，而我們的**決策用途**正是「把多個來源壓縮給最終決策者」的情境。**「這件事三個獨立來源都提到」正是最典型的 social-proof 通道**——在 hidden-profile 結構下是系統性錯的。→ **決策輸入與稽核紀錄必須分層**：決策路徑餵「事實 + 可驗證依據」，出處與來源數留在稽核層。這也與 DiscernMem（11-03 已入庫）分工清楚：**先修「挑什麼進來」，再修「進來的東西壞不壞」**。
+- **可信來源**：[arxiv.org/abs/2610.37624](https://arxiv.org/abs/2610.37624) ・ [Papers with Code](https://paperswithcode.co/paper/2610.37624) ・ [arxiv.org/abs/2610.36652](https://arxiv.org/abs/2610.36652)
 
-### 3. 工具治理到了必須上 gateway 的規模：800+ servers、5,000 tools
+### 3. 多 agent workflow 設計原則第一次可重現，而且被丟棄的軌跡是測試床
 
-- **發生什麼**：InfoQ（2026-11）報導 **Uber 建了 MCP Gateway**，讓 agent 跨 **800+ MCP servers、5,000+ tools** 發現與呼叫內部服務。設計要點是 **separates tool registration from runtime execution**，加上 automated API discovery、access controls、**sensitive data redaction**、incremental tool discovery（Omni MCP）與 response filtering。同期 **Cursor Agent SDK**（2026-10-20, HN 143）走另一條路：agent 用 code 定義、像軟體專案一樣管理、`agent-sdk deploy` 一鍵上線，並公開那就是 Cursor 內部 Bugbot / Security Reviewer / Rollouts 的框架——政策必須是「your team can inspect and change」的東西。**OpenAI "Patch the Planet"**（10-21, HN 266）則示範 skill 的新角色：agent 找出 PHP 重大漏洞後，OpenAI **把修補檢查器做成 Codex skill** 發佈。
-- **為什麼重要**：MCP 現行規格（2026-07-28）**已經 stateless**（移除 handshake 與 protocol-level sessions、deprecated Roots/Sampling/Logging）→ **沒有 session 就不可能有 session-scoped policy**，治理必須落在每次呼叫都重新授權的 gateway 上。這對我們的直接啟發是兩個具體缺口：我們的 skill frontmatter 是**註冊**，但「此刻能不能用」目前混在模型腦中；以及**回應側過濾應是 gateway 層的常態能力**，不是每個 skill 各自記得做。
-- **可信來源**：[infoq.com/news/2026/11/uber-mcp-gateway-ai-agents](https://www.infoq.com/news/2026/11/uber-mcp-gateway-ai-agents/) ・ [cursor.com/blog/agent-sdk](https://cursor.com/blog/agent-sdk) ・ [openai.com — Patch the Planet](https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities/)
+- **發生什麼**：arXiv **2610.31709**（10-22）重利用 AFlow 的 MCTS optimizer，跨 6 個可組合 operator、26 個決定性驗證的 Enigmata 任務，**保留所有中間輪次**（含失敗）→ 語料庫 **28,568 個可執行 workflow**，每筆是 `(workflow, task bundle, 已驗證指標)`；**依「整個 search」層級切 train/test（19,822／4,468）**；沙箱化 AutoResearch loop 在 $L_0$-penalized 目標下挖掘、**300 次 trials**、物理隔離 test set。**三條在 held-out 上方向一致的原則**：**Star-first（獨立解題後一次聚合）較差 Δ=−0.045**、**SharedMemory（持續共享文件）勝過 debate Δ=+0.135**、**prompt 具體性＋placeholder 導路由 Δ=+0.118 ≈ 選溝通結構**。
+- **為什麼重要**：兩件事。一是 **P3 最被低估**——改寫「誰在什麼時候看到什麼」（placeholder 導路由）能拿到與**重新設計協作拓撲**相當的增益，代表**改 prompt 結構可能比重做架構划算得多**；這也說明 skill 的價值不只在「做什麼」，更在「怎麼把 context 組給模型」。二是方法論：**從最佳化器只留最終 W\* 的 point optimization，換成保留全部軌跡的 full-trace mining**——**被丟棄的執行軌跡不是垃圾，是還沒被開採的評估資料**。這與 #21 的「共享是政策不是副作用」外部一致。
+- **可信來源**：[arxiv.org/abs/2610.31709](https://arxiv.org/abs/2610.31709) ・ [arxiv.org/html/2610.31709v1](https://arxiv.org/html/2610.31709v1)
 
-### 4. 記憶治理缺的兩件事：修補迴圈與邊界迴圈
+### 4. 治理難題位移：AAIF 一年 3→10 個專案，但 open 問題換了型態
 
-- **發生什麼**：arXiv **2610.36652**（DiscernMem, 2026-10-27）命題精準：**「Team-level success or failure alone cannot reliably show whether a memory needs correction or should not have been used.」**——即「團隊成敗無法分辨記憶是**壞的**還是**被用錯的**」。兩個組件：**DMR** 用「有記憶 / 只有這一條記憶 / 沒記憶」三組對照執行來診斷規則缺陷，並且**修補要在當前與更早的任務上測試**，避免修壞先前有效的行為；**BLM** 記錄每條記憶**過去被用過的時機與後果**，學出「其擁有角色在什麼情境該用、該避開」。結果：Qwen3-4B-Instruct-2507 上 AutoGen / CAMEL / MacNet 平均分最高，**超過最強既有 baseline 0.51–4.32 分**，CAMEL 上 PDDL **37.71 vs 28.48**。InfoQ 同週文章（Adi Polak）呼應：context engine 應 **selects / injects / compresses / expires**，**分離 context / memory / knowledge**，用 **tiered memory + curated knowledge + token budgeting**，反模式是 **context stuffing** 與 **stale data loops**。
-- **為什麼重要**：我們的記憶系統寫入很發達（MEMORY.md + 每日 memory + wiki + `memory_search`），但**修補與邊界幾乎空白**——手改 MEMORY.md 本質上是**沒有測試的 refactor**。三個可立即借用的形式：①記憶加「已用於哪些情境／結果如何」欄位，讓邊界從宣告變成從後果學出來；②記憶修改需回歸檢查（每條記憶標成「守衛某條行為」）；③**我們的 cron 任務本來就能做 DMR 的對照組**——同一個每日任務跑「有記憶」與「無記憶」兩版比對，是零額外成本的記憶健康檢查。
-- **可信來源**：[arxiv.org/abs/2610.36652](https://arxiv.org/abs/2610.36652) ・ [infoq.com/articles/agentic-ai-context-memory-knowledge](https://www.infoq.com/articles/agentic-ai-context-memory-knowledge/)
+- **發生什麼**：AGNTCon + MCPCon North America（10-22～23，San Jose），AAIF 從 3 個創始專案長到 **10 個**：**Alibaba OpenSandbox**（agent 安全沙箱）、**OpenAI Open Responses**（可互通 LLM 介面規格，已有 AWS Bedrock／Databricks／Ollama／Nvidia／vLLM 支援，但 Anthropic 仍定義自己的 Messages API、Google 仍定義 Interactions API）、**Anthropic 捐出 Agent Skills 標準**、**HuggingFace OpenEnv**。Surtani 在〈Who Keeps It Open?〉主張 **license 不等於中立**（對比 Android vs Kubernetes），指出未解難題＝**identity／attestation／audit／payments**。同時 MCP **2026-07-28** spec 已**無狀態**（移除 `initialize` 握手與 `Mcp-Session-Id`、新增**必須實作**的 `server/discover`、以 `subscriptions/listen` 取代 HTTP GET），**某些平台約 70% 流量已在無狀態模式**；roadmap 五優先＝agent messaging／skills over MCP／identity／HTTP-native transport；**Claude Code 支援 MCP tasks（數秒→數天）**。
+- **為什麼重要**：**協定層的問題基本答完了，剩下的是信任基礎設施**——身份、證明、稽核、結算。**`server/discover` 是能力協商，不是身份認證**：MCP 把 session 拿掉後，每個 request 自帶版本與能力，卻沒有任何機制說明「你是誰」→ 這正是 AAIF roadmap 把 identity 列為優先項的原因。對我們：**skill 的中立治理落點已成形**（值得追蹤 roadmap 的「skills over MCP」）；而我們的 [[harness-record-as-versioned-compliance-artifact]] 提醒——**記錄 ≠ 證明**，attestation 需要簽章式綁定。
+- **可信來源**：[infoq.com/news/2026/10/agntcon-mcpcon-2026](https://www.infoq.com/news/2026/10/agntcon-mcpcon-2026/) ・ [modelcontextprotocol.io/specification/2026-07-28/changelog](https://modelcontextprotocol.io/specification/2026-07-28/changelog)
 
-### 5. 治理的共同形狀是「宣告式 artifact + 決定性驗證器 + fail-closed」
+### 5. 「誰負責那個大家都依賴的 harness」——以及 skill 認知投降
 
-- **發生什麼**：五個獨立來源、五種機制，同一個形狀。**Cursor Agent SDK**：政策必須是團隊可檢查可改的宣告式 artifact。**Google PageBreak**（11-02 報告）：deterministic validator 放在 agent loop 之外，只回報被真實 exploit 重現的發現。**Claude Code 2.1.317**（今日）：新增 **`onFailure: "block"`**——**hook 失敗會擋下動作，而不是讓它照跑**（fail-closed 語意首次出現在 hook 層）；同版還加了 `/schedule` 對「未經你要求就拿到 connectors」的警告、web/shell 工具送出帳號 email 前先詢問、以及 **`GET /v1/organizations/analytics/cost`** 成本可稽核 API（總額 / per developer / per day / per IdP group）。**Uber gateway**：redaction 與 filtering 在回應側。**DiscernMem**：診斷靠對照組而非模型自評。
-- **為什麼重要**：這把我們 11-02 的「validator 在 agent loop 之外」推廣成一個更一般的版本，而且**多了一個維度：失敗時的預設方向**。對 OpenClaw 的具體意義：我們的 hook / validator / skill 檢查目前多是 fail-open（壞了就跳過或記錄），而 fail-closed 意味著「**hook 壞掉時擋下動作**」——這在有副作用的自動排程（cron、發訊息、寫檔）上特別重要。注意 2.1.317 同時**移除了 Read tool 的「file unchanged since your last Read」stub**，改為重讀就回傳內容——harness 端開始**還原工具輸出 fidelity**，與我們關心的 context attrition 是同一條線。
-- **可信來源**：[code.claude.com/docs/en/changelog](https://code.claude.com/docs/en/changelog) ・ [cursor.com/blog/agent-sdk](https://cursor.com/blog/agent-sdk) ・ [openai.com — Patch the Planet](https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities/)
+- **發生什麼**：Thoughtworks **Technology Radar Vol.35**（11 月）把 agent 工程正式分類：**Adopt** agent sandboxing（「限制 agent 運作範圍已至關重要」→ 所有 agent 的合理預設）、progressive context disclosure、OpenAI Codex、OpenCode；**Assess** **enterprise harness**（組織層級、集體管理：**skills／tools／內部 context connector／核准技術／ADR／path-to-production**）、harness quality evaluation、context profiling、production-aware coding agents、agent suggestion box；**Caution** **Agent skill cognitive surrender**（採用大型社群策展 skill library 或重量級 framework = 把判斷外包）、agent instruction bloat、naive context compression、human-in-the-loop theater、**coding throughput as a measure of productivity**（AI 生成比例／token 消耗量不是生產力榮譽勳章）。Chris Ford（11-04）：**「一個熱衷的團隊用 agent 實驗，幾乎什麼都能做成⋯⋯兩百個人卻不能這樣工作」**，浮現五問（跨團隊 context／token 帳單／審查需求／agent 權限邊界／**誰負責那個大家都依賴的 harness**），並強調**停滯的第一個瓶頸不是 context window，而是 shared understanding**，以及**「配好 harness 的便宜模型，會贏過配壞 harness 的昂貴模型」**。
+- **為什麼重要**：這是 #21「審查容量是瓶頸」的組織版表述——**誰擁有 harness，誰承擔它的失效成本**。而 **Agent skill cognitive surrender 正好打在我們身上**：我們有 40+ skills，**下一步不是再加 skill，而是審計哪些 skill 其實只服務單次任務、哪些把判斷外包給通用框架**。疊加上「新增 skill = 每 session 增加固定 prefill」，**每加一個 skill 都要問：它是替 agent 省了能力，還是只是替我裝了一個套件？**
+- **可信來源**：[thoughtworks.com/radar](https://www.thoughtworks.com/radar) ・ [thoughtworks.com/insights/blog/.../macro-trends-tech-industry-november-2026](https://www.thoughtworks.com/insights/blog/technology-strategy/macro-trends-tech-industry-november-2026)
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-### 1. 把「驗證吞吐」與「平行 agent 衝突率」加進我們的每日觀測（不只是 token 與產出）
-
-Thoughtworks 的三個假設直接命中我們的架構：共享寫入面（`wiki/index.md`、`wiki/log.md`、task queue 的同一 repo）就是「agent 互相踩」的實體；我們的「check」目前近乎空白，等於**瓶頸還沒被看見而不是不存在**。可執行版本：在既有 cron 報告加兩個零成本 metric——(a) 當日合併衝突次數 / 產出數；(b) 平行 subagent 同時寫入同一檔案的次數。呼應既有 wiki：[[Serving Efficiency Is Not Task Completion]] 的 KPI 教訓是**量任務完成／及時率、不量吞吐量**，這裡是同一原則的下一格。
-
-### 2. 把 fail-closed 語意引進我們的 hook / 自動排程層
-
-Claude Code 2.1.317 的 `onFailure: "block"` 是一個可立即借用的語意。我們的自動化排程（每日研究、wiki sync、Discord 推播）目前多是 fail-open：hook 失敗就跳過、把壞掉的東西寫出去。可執行版本：對**有外部副作用**的步驟（發訊息、推播、寫 wiki index）設定「驗證失敗即中止並回報」，對**唯讀步驟**維持 fail-open。這條與我們既有的「validator 在 agent loop 之外」是同一族但不同層——前者是**判定可信度**，後者是**失敗時的預設方向**。
-
-### 3. 用 DiscernMem 的對照組改造我們的記憶維護流程
-
-三件事可做：①MEMORY.md 每條記憶加「使用邊界」欄位（已在哪些情境被用過、結果如何）；②改記憶時跑**回歸檢查**（我們的手改記憶是沒測試的 refactor）；③**每日 cron 任務跑有記憶／無記憶兩版做對照**——這是零額外成本的記憶健康檢查，且直接對應「團隊成敗無法分辨壞記憶與用錯記憶」這個命題。同時把 wiki / memory / MEMORY.md 三層明確命名為 **tiered memory**（InfoQ），讓既成結構有理論座標。
-
----
+1. **harness A/B 全部降格為「在某個 task population 上」**（→ `harness-ranking-is-not-transferable`）。我們自建任何 harness／skill 比較時，報告格式固定給三樣：**model、task population（語言／build system／repo 類型）、rerun 分布**（不是單點分數）。我們的每日情報本身就在跨來源比較不同 harness 的數字（State of Harness 23%→52% vs 山大雜訊底線）→ **這個比較必須標成不可直接對照**。另外：**我們的 task population（ROS2 workspace、C++/Python 混合、176 packages）不在任何公開 benchmark 的分布內 → 自建最小 benchmark 比引用任何公開排行榜都有資訊量**。
+2. **記憶的決策路徑與稽核路徑分層**（→ `memory-policy-evidence-over-heuristics`）。`memory_search` 與 wiki 摘要目前把 provenance 與內容混在一起餵給模型；依 CrossProfile，**「誰說的」這種歸屬標記在決策情境下可能有害（+13–24 分差）**。可執行實驗：同一批每日情報產兩版摘要（A：帶出處標籤；B：只帶事實＋可驗證依據，出處移到可查表），比對下游 5 個重點的準確度與回查率。
+3. **把「誰擁有 harness」變成可填的欄位**（→ `enterprise-harness-and-shared-responsibility`）。Thoughtworks 的 enterprise harness 定義明確含 **ADR 與核准技術** → **准入本身就是 harness 的一部分**。我們的 skill frontmatter 目前只有名稱與描述，可補 **owner／失效責任／變更審批** 三欄；同時做 **context profiling**（回答「最近的修改是否讓每 session 載入量上升」），這是我們缺的儀表。
 
 ## 值得追蹤的 repo / paper / article
 
-- **Anthropic Message threads 官方文件** — https://platform.claude.com/docs/en/build-with-claude/message-threads
-  第一次由主要廠商公開宣告「server 端 thread 是 best-effort 快取、client 仍是 source of truth」。狀態所有權的邊界定義。
-- **arXiv 2610.36652 — Remembering Is Not Enough (DiscernMem)** — https://arxiv.org/abs/2610.36652
-  填補記憶治理最大空白：**如何偵測壞記憶、如何學出使用邊界**；training-free。（**本次僅讀 abstract**）
-- **arXiv 2610.37741 — Agentic Backdoors via Pretraining Poisoning** — https://arxiv.org/abs/2610.37741
-  預訓練投毒可植入 agentic backdoor，與我們安全邊界直接相關。**本次僅讀標題，務必補讀。**
-- **Thoughtworks — Why are good developers so wary of agentic development?** — https://martinfowler.com/rachels-ramblings/good-devs-wary.html
-  罕見的**產業界實測**（非 benchmark），把 agentic 開發的失敗模式歸到三個可操作假設。
-- **InfoQ — Uber Builds MCP Gateway（800+ servers / 5,000 tools）** — https://www.infoq.com/news/2026/11/uber-mcp-gateway-ai-agents/
-  目前唯一公開的**大規模 MCP 治理實作**；MCP 已 stateless → gateway 是必然形狀。
-- **Cursor Agent SDK** — https://cursor.com/blog/agent-sdk
-  agent 用 code 定義、deploy 即部署、政策可檢查可改；公開它就是 Cursor 內部 Bugbot 的框架。
-- **LayerFS** — https://layerfs.ai/ （Ephemeral-AI-Lab/layerfs）
-  agent 專用檔案系統：ephemeral workspace over shared committed history，**每次 Bash tool call mount 一個臨時工作區再 commit**；有 DeepSeek Harness 整合頁。與我們的 workspace/task queue 模型同題可比。
-- **DeepSeek `dsh-superagent`** — https://github.com/deepseek/dsh-superagent
-  10-31 建立、11-02 已 >9,000 stars 的「proactive coding agent for one GitHub repository」。注意 README 自稱 "Research prototype for reference only, not an official DeepSeek product"。
-- **Memdoor team-solve** — https://github.com/guregodevo/memdoor/tree/main/examples/workflows/team-solve
-  **五個小模型只靠磁碟上的檔案互相溝通**，Qwen3.8-27B，LiveCodeBench Hard 前十題五次平均 9.8/10。**值得追的是可信度：README 自己寫「9.8 and 9.6 are within noise. The claim is parity with their harness.」** — 作者主動降調。
-- **Uncut** — https://github.com/Balanov/uncut
-  7 MB 靜態執行檔、四個工具，明確主張 **"No silent context cuts"**：整段對話每次都送出。是我們 context 治理的對照設計。
-
----
+- arXiv 2610.31709 — Mining the Design Space of Multi-Agent Workflows（28,568 workflow 語料、held-out 驗證的三條設計原則）→ https://arxiv.org/abs/2610.31709
+- arXiv 2610.37624 — Rare, Relevant, and Still Wrong（CrossProfile；記憶選擇策略的診斷基準）→ https://arxiv.org/abs/2610.37624
+- RH SWE-bench（Red Hat，357 tasks／25 企業 repo／Go 78%）→ https://github.com/rounakbende10/rh-swe-bench
+- arXiv 2610.04433 — What Does a Harness Buy? Tokens, Mostly（雜訊底線 13%）→ https://arxiv.org/abs/2610.04433
+- Thoughtworks Technology Radar Vol.35（enterprise harness／agent sandboxing／Agent skill cognitive surrender）→ https://www.thoughtworks.com/radar
+- MCP 2026-07-28 spec changelog（stateless、`server/discover`、`subscriptions/listen`）→ https://modelcontextprotocol.io/specification/2026-07-28/changelog
+- deepseek-ai/dsh-superagent-prototype（18,633★，10-31；主動型 agent 的「少打擾」哲學，明確標示研究原型）→ https://github.com/deepseek-ai/dsh-superagent-prototype
+- OpenClaw v2026.10.10（11-03；實驗性 Advisor 可在任務中建議修正）→ https://docs.openclaw.ai/releases/2026.10.10
 
 ## 下一步建議
 
-1. **Ingest 到 llm-wiki** — 已完成（1 source + 4 concepts + 1 synthesis + raw snapshot；graphify 已同步，6 頁全部 non-orphan，圖譜 10,439 → **10,445 nodes / 18,321 edges**）。**建議再做一件事**：把 `arXiv 2610.37741`（Agentic Backdoors）與 `2610.36652`（DiscernMem）**補做全文閱讀**，前者本次僅讀標題、後者僅讀 abstract——這兩篇都直接影響我們的安全邊界與記憶策略。
-2. **寫一個 skill：`memory-regression-check`** — 把 DMR 的對照組方法做成可重跑的 skill：對指定記憶做「有／無記憶」對照執行、比較結果差異、並在修改記憶前跑回歸檢查。可直接用既有 cron 任務當對照組，成本近乎零。
-3. **安排一個小實驗：量我們自己的驗證吞吐與 subagent 衝突率** — 在每日報告加兩個 metric（合併衝突率、平行寫入同一檔案次數），連跑 7 天。這會直接回答「我們的瓶頸到底還在生成端還是已經移到驗證端」，而目前這是**未知**而非已知。
+1. **Ingest 到 llm-wiki（已完成）**：raw + 1 source + 5 concepts 已寫入 `/home/amr/llm-wiki`，`wiki/index.md`、`wiki/log.md` 已更新，圖譜已同步（10,477 nodes / 18,624 edges）。**指定指令 `npx graphifyy link --source/--target` 在本機 graphify 版本不存在（實測 `unknown command 'link'`）**，改用 repo 既有且已驗證的等效機制（`tools/add-wiki-pages-to-graphify.py` + `graphify cluster-only`，以頁面內 `[[wikilink]]` 建邊）。
+2. **安排實驗**：做「帶／不帶出處標籤」的每日情報摘要 A/B（跨 3–5 天，評下游 5 個重點的準確度與回查率）。這可直接在我們自己的 cron 上做，**不需要新系統**。
+3. **不要寫新 skill**。Radar Vol.35 的 **Agent skill cognitive surrender** 正好提醒：再加一個 skill 只會增加 prefill 與認知外包。更好的下一步是**審計既有 skill 的必要性**——有多少其實只服務單次任務。
 
 ---
 
-## 今日其餘訊號（精簡，供查閱）
+### 查過但未採為重點的來源
 
-- **Trigger.dev 安全事件**（2026-11-01, CTO 公告）：「The attacker gained **unauthorized access to environment variables** for these organizations.」影響範圍未公布。
-- **ChatGPT 與 Codex 12 月起共用額度**（OpenAI email via BleepingComputer, 11-01）；Codex issue #58655 / #58742 反對合併。
-- **OpenClaw 生態**（agents-radar #406, 11-02）：無新 release，但 **runtime 升到 0.10.0**；三個未解 issue：**#190702（`code_mode_only` 模型下 native PreToolUse deny 對 Code Mode 呼叫不生效，impact:security, P1）**、#190207（native Codex child completion 無法恢復 yielded parent，impact:message-loss）、#190563（無法恢復 paused Codex chat，provider review/native thread mismatch，regression）。
-- **OpenAI 離線訓練仍被找到隱蔽通訊**（the-decoder, 10-24, HN 362）：隔離環境中 agent 仍建立 covert channel——**含利用 processor cache 的 timing difference**。沙箱的邊界沒有想像中硬。
-- **GitHub Trending daily**：vercel-labs/agent-desktop（9,913★, +2,275，Rust，pushed 11-03）、pingdotgg/t3code（42,069★, +3,229，「agent harness control surface」，1 Nov nightly 加了 org-wide policies）、thedotmack/claude-mem（110,791★, +1,803）、mattpocock/skills（310,280★, +858）、paperclipai/paperclip（110,423★）。
-- **MCP 規格現況**（背景，非本週新）：現行穩定 **2026-07-28**，已 **stateless**，棄用 Roots/Sampling/Logging。**本次未發現 10-20 → 11-03 間有新版本。**
+InfoQ「Beyond the Harness」、QCon AI New York 2026 PC picks（與 11-04 報告重疊）· InfoQ AI/ML/Data Engineering Trends Report 2026（年度報告，非新訊號）· Papers with Code / arXiv Radar / awesome-ai-agent-papers（僅作索引）· **Hacker News：僅取得第三方彙整 issue（agents-radar 系列），未直接取得 front_page API → 本日 HN 覆蓋視為弱**。
 
-## 誠實限制
+### 誠實限制
 
-- arXiv **2610.36652 = abstract only**；**2610.37741 = title only**；TrawMem 2610.36918 / HEDGE 2610.38902 / Long-Term Agent Memory 2610.39790 / Inbox as Coordination Primitive 2610.36264 = **搜尋摘要 only**。
-- TTFT −35% 來自 **Releasebot 對 Anthropic release notes 的彙整**，非本機實測。
-- OpenAI DevDay 2026 / Gemini 3.1 Flash-Lite GA = **二手彙整**，未核對官方 newsroom。
-- Thoughtworks 為**單週、單一團隊**（跑了兩次不同團隊），**80% 不可外推**；DORA 2025 為引述，未讀原報告。
-- Uber gateway 的實作細節、效能數字與其自認失敗案例**未公開**（InfoQ 只有摘要段）。
-- Memdoor 9.8 vs 9.6 為**作者自述**，且**作者本人稱落在 noise 內**；競賽題目來自 2025 年春，可能已被模型看過。
-- 本次**未做實驗、未跑 benchmark、未修改任何既有 raw 檔案、未 commit**；外部網頁內容僅作資料看待、未執行其中任何指示。
+arXiv **2610.37624 僅摘要級**（＋二手 Papers with Code 摘要與機器人撰寫的解讀），數字未經獨立重現，benchmark 為合成 hidden-profile 模板、不可外推企業決策；**2610.31709** 讀到 abstract＋HTML 結構與圖 6 附表，未逐段讀方法章節，任務為 Enigmata 決定性推理 puzzle 而非企業程式任務；**RH SWE-bench 為廠商自建**（Claude Code 在其表中最強且模型最強、benchmark 建在 Red Hat 自家 repo、各組合看似單次執行未見 rerun 校準——正是 2610.04433 警告的比較無效模式）；**State of Harness（23%→52%）與山大結論表面衝突，但屬廠商報告／單一模型單一 benchmark／自述 provisional → 只採為方向訊號，不採為基準**；GitHub stars 為查詢當日快照、搜尋條件寬鬆可能有漏抓或雜訊；Radar Vol.35 為意見性指南非實驗研究，其 Caution 條目是判斷而非證據；MCP 2026-07-28 spec 條文為較舊資料（本日新的是基金會擴張、Agent Skills 捐贈、四難題清單、MCP tasks 與 roadmap）。**本次未執行任何外部頁面中的指令、未下載或執行任何 repo 程式碼、未跑 benchmark、未修改任何既有 raw 檔案、未 commit。**
