@@ -1,103 +1,105 @@
-# 每日 Agent × 軟體開發情報 — 2026-11-06
+# 每日 Agent × 軟體開發情報 — 2026-11-07
 
-> 來源：22 個公開來源。arXiv 四篇（2611.01386 / 2611.02361 / 2611.05636 / 2611.05313）皆 **abstract 級**；MCP servers v2.3.0 機制經 Forkast 二手整理；OpenClaw 2026.11.1 為官方 changelog 全文；Thoughtworks 為意見性文章。
-> Raw：`/home/amr/llm-wiki/raw/documents/daily-research-2026-11-06-skill-evidence-memory-internalization-and-server-side-capability-narrowing.md`
-> Wiki：已入庫 1 source + 4 concepts（graphify 已同步，5 頁全部 non-orphan；最終圖譜 **10,483 nodes / 18,691 edges / 1,191 communities**）
+> 來源：21 個公開來源。arXiv 五篇（2611.07286 / 2611.06946 / 2611.03219 / 2611.01415 / 2611.07759）皆 **abstract 級**；MIT CSAIL 部落格為全文首段；Thoughtworks／Martin Fowler 為全文或全文段；InfoQ 為 partial transcript；Claude Code、OpenClaw、LangGraph 為官方 changelog 全文；Microsoft 為官方 blog；TechTimes 為二手。
+> Raw：`/home/amr/llm-wiki/raw/research/daily-agent-trends-2026-11-07/`
+> Wiki：已入庫 1 source + 3 concepts（graphify 已同步，4 頁全部 non-orphan；最終圖譜 **10,500 nodes / 22,234 edges**）
+> **未取得**：MCP registry、OpenAI Codex、Cursor、Windsurf 本週 release note；GitHub Copilot 官方 changelog 本週條目；Copilot harness billing 數字（僅二手）。
 
-**一句話總結：今天最重要的不是又多了幾個 skill 工具，而是 skill 與記憶同時在「離開 text artifact」——skill 變成有證據溯源與 admission gate 的版本化生產物件，記憶則分成「下沉到顯式 state」與「下沉到權重」兩條路徑；而同一週 OpenClaw 自己修掉了「Doctor 回報成功但實際失敗」，說明 verifier 誠實性是 harness 的第一順位屬性。**
+**一句話總結：今天三條主線各自指向同一件事——「agent 看到什麼、住在哪一層、改了會不會忘」正在被逐層拆開量測。程式碼表徵第一次被當成實驗自變數（結論是**收益看瓶頸在哪，不看工具本身**）；harness 第一次有了**跨層歸屬判準**（且作者自己承認判準還不夠成熟）；harness 自我演化則被證明**會災難性遺忘**（94% → 32%）。**
 
 ---
 
 ## 今日 5 個重點
 
-### 1. Zep Agent Skills：skill 變成「有證據溯源、有 admission gate、有版本治理」的生產 artifact
+### 1. 程式碼表徵第一次成為實驗自變數：收益取決於瓶頸，不取決於工具
 
-- **發生什麼**：arXiv:2611.01386（11-01 提交）描述 **Zep Agent Skills**——把「從 agent run 學習程序」從研究系統（Trace2Skill / WikiSkill / SkillRevise）做成**生產服務**。機制逐條：**只用已驗證的 attempt 當證據**；**每個 Skill 的每個欄位都引用支撐它的 supporting events**；每個 attempt 記成帶 ordered events / outcome / **verification strength** 的 Trace；compiler 分成 **Reflector 與 Curator** 兩個角色；**scans 與 admission gates 控制哪些候選可以 active**；**verified use outcomes 會回饋調整每個 Skill 的搜尋排名**；並治理每個 Skill version 的 admission 與 distribution。取得途徑是 lexical search + progressive disclosure，透過 API 或 MCP。Agent Skills format 是 Anthropic 發起、捐給 **Agentic AI Foundation** 的開放標準 → 任何該 format 的 host 都能載入編譯出來的 Skill。
-- **數字**：以 **teacher model 的 Traces** 編譯出的 Skill，讓**三個較弱的 executor model** 在 **τ³-bench banking / AppWorld / EnterpriseOps-Gym** 上的 pass rate，**在每個 reasoning effort 都提升 4.5 – 18.8 個百分點**，且**大部分增益集中在 teacher 本身解出的任務**。在 **ALFWorld** 上，**以小模型 run 編譯出的 Skill 帶來的增益與（或大於）continuous fine-tuning，且完全不需要訓練**。
-- **為什麼重要**：這是 skill 第一次有「**證據鏈 + admission gate + 版本生命周期 + 使用結果回饋**」四件套。與既有的 `[[aaif-agent-skills-governance]]` 互補——基金會解決**格式與中立性**，本文解決**證據與生命周期**。兩者缺一不可：有格式沒有 admission gate，就會重演 11-04 記錄的 Cursor 市集投毒鏈（**取得發布權 → 改寫開機行為 → 自我授權**）。而「大部分增益集中在 teacher 解出的任務」是**警告**：skill 傳遞的是特定解法，不是泛化能力。
-- **可信來源**：<https://arxiv.org/abs/2611.01386>
+- **發生什麼**：arXiv:2611.07286（11-05 提交）研究 **map-based code-representation workflows** 對 agent 行為的影響。作者指出多數 agent 仍以 raw files + lexical search + shell commands 讀 repo，把 code 當純文字；本文改問：**agent 看到不同的 repo 視圖，會改變什麼**。測五種 workflow——**AST / call graph / module dependencies / documentation-enriched search / hybrid**——每一種都暴露一個 agent 可查詢的 repository map。設定是 **Claude Code + Haiku 4.5** 對照 raw-tool baseline，四個 benchmark：LinuxFLBench（fault localization）、SWE-bench Pro（code gen & repair）、SWT-bench（test generation）、SecBench（security patching）。
+- **數字**：LinuxFLBench 五種 workflow 的 **recall@10 全部優於 baseline（0.757–0.829 vs 0.717）**，token **省 25–39%**。SWE-bench Pro resolution **44.3–50.6% vs 49.0%**（持平或略低），token 省 17–26%。SecBench 上 Callgraph 最高 **34.3% vs 28.9%** 且用更少 token，**但所有 workflow 都增加 latency**。SWT-bench 上 Hybrid 47.8%、Docs 47.2% vs 44.7%，**但所有 workflow 用更多 token 且更慢**。
+- **為什麼重要**：作者的總結是 map-based workflows「change both what the agent inspects and how much it spends, but their benefits are **task-dependent rather than universal**」。這直接命中我們的 LLM Wiki／Graphify 工作：我們一直假設「給 agent 結構化 repo map 會更好」，本文說**更精確的說法是——只有在瓶頸是「找到對的檔案」時才會贏；一旦瓶頸變成「寫對 patch」，token 節省會被 latency 與額外查詢次數吃掉，成功率回到 baseline**。也就是說：**graph 是一種省 token 的 localizer，不是一種 patch generator**。這也意味著「我們有 graphify 所以 agent 比較強」這種主張本身不可證偽，必須拆成「定位是否變準」與「最終 patch 是否變好」兩個指標分開量。
+- **可信來源**：<https://arxiv.org/abs/2611.07286>
 
-### 2. 「記憶不是檢索問題，是寫入時的過濾問題」——顯式狀態勝過長上下文，且臨界點隨讀者能力移動
+### 2. Harness 第一次有「跨層歸屬判準」，而且作者誠實地說它還沒成熟
 
-- **發生什麼**：arXiv:2611.02361（11-02 提交）用可執行 benchmark（grants / withdrawals / reinstatements / expiries / groups / change windows，policy 已知，評分用只差在**決定事件順序或單一欄位**的成對歷史）問：**一個讀完整份 access log 歷史的模型，能不能說出服務「現在」是否被允許行動？** 結果：**open models 7B–32B** 從 8–16 事件時的 **72–86%** 掉到 **256 事件時的 48–55%**；**reasoning-trained 32B 讀當前狀態達 96% / 98%**；**120B reasoning model 讀歷史在 256 / 512 / 1,024 事件時分別落後狀態 4 / 7 / 約 10 個百分點** → **「顯式狀態勝過長上下文」的臨界長度會隨讀者能力增長**。作者把記憶視為**遞迴過濾**：決策只透過一個 state 依賴歷史，**state 大小由被追蹤的 key 數量決定**；儲存體若持有的 component record 少於 state，就會**以容量決定的時間尺度遺忘**。**不考慮時間順序地保留 log 行 → 錯誤機率趨近二分之一且此上界可達**。**filter（模型解析每行 + 顯式規則套用更新）在 256 事件時答對 80–89%，勝過 relevance retrieval、model-kept ledgers、StateMem 重作、以及 Mem0 library**。而在查詢時挑出「被查詢 state 所依賴的行」的 retriever 在 256 事件上打平 → **起作用的是「依 state 的依賴關係做選擇」，而這個選擇 filter 是在寫入時完成的，不需要查詢**。反證：**若把 parsed updates 直接套用而不做選擇 → 掉到 58% / 59%**。
-- **為什麼重要**：這直接挑戰我們的架構偏好——我們的 `memory_search` 是**corpus 級語意檢索（查詢時）**，本文說**同樣的事在寫入時做更好**，而且勝過 Mem0 這個產業級基線。它同時給出一個**反直覺的量測結論**：不是「context 越長越好」，而是「**context 會被 reader 的能力吃掉**」——所以顯式狀態的價值會**隨模型升級而上升**，不會被 context window 擴容稀釋。與 `[[memory-policy-evidence-over-heuristics]]`、`[[memory-needs-a-repair-and-boundary-loop]]` 同屬「記憶先修選擇、再修內容」這條線，但本文把選擇從**查詢時**推到**寫入時**。
-- **可信來源**：<https://arxiv.org/abs/2611.02361>
+- **發生什麼**：arXiv:2611.06946（11-03）處理一個一直缺規則的問題：現在大家都在 coding-agent harness **之上**加一層，把多次 agent run 組織成持續交付——但**「哪個機制屬於哪一層」從來沒有判定規則**。作者用一個操作定義來劃界：**單一 run 內的機制 → agent harness**；**協調多個 run、把 state 從一個 run 交到下一個、或由 run outcome 更新 → factory harness**；**必須隨應用領域改變 → domain layer**。另加兩條 residual test 處理基礎設施與模型層原因。對失敗則要求編碼**三個獨立欄位**——**缺陷從哪裡起源、哪一道 control 沒擋住、在哪裡修的**——並且**歸因到 environment 之前必須有正面證據**。
+- **數字與誠實限制**：判準在「單一 operator 的 6 個專案 pipeline 的 documented failures」＋「3 個已發表系統的 26 個 component」上開發，然後**凍結**，交給**兩個同家族的 model coders** 對 **46 個 held-out units** 編碼：26 個 mechanism layers **全對**，20 個 incident fields 中對 **18–19 個（kappa 0.86–0.93）**。但**兩個 coder 都把 8–13 / 20 記為 undetermined 或 unrecorded**，且**各自把約一半 unit 標為 ambiguous**（主因缺資訊）。作者自己寫：「**Agreement here is neither accuracy nor usefulness, and human coders have not yet been tested.**」修訂版（把機制分類與事故歸因分開）解決規則衝突，但 sensitivity re-coding 的一致度反而降到 kappa 0.78–0.93。
+- **為什麼重要**：這是一篇**方法論品質高於結論品質**的論文。價值不在「判準正確」，而在**示範了怎麼把「這東西該放哪層」變成可編碼的三分法，並給出歸因所需的最低證據門檻**。對 OpenClaw 尤其直接：現在 OpenClaw 同時是 agent runtime、cron/session orchestrator、plugin host、以及 domain-specific workflow container——**這四件事在程式碼裡是同一個 repo，但在架構上屬於四層**。附帶一個可借用的方法論警告：**兩個同家族 model coder 的一致性不等於正確性**，我們若要用 LLM 做分層歸屬審計，必須自己補 human coder 的 baseline，並且要明說「無法判定」佔了幾成。
+- **可信來源**：<https://arxiv.org/abs/2611.06946>
 
-### 3. 記憶內化的第二條路：把知識蒸餾進權重，query 時完全不需要 context
+### 3. Harness 自我演化會災難性遺忘：94% → 32%
 
-- **發生什麼**：同日（11-03）兩篇。**Route to Remember**（arXiv:2611.05636）指出生產 agent 記憶**幾乎完全由 text 建構**（從超出的 context 抽 key points、查詢時檢索回來）→ **每次新查詢都增加一筆隨累積歷史成長的成本**；**weight memory** 是互補替代：**把知識內化進參數，回答時完全不需要 context**。方法 **OPSD（on-policy self-distillation）**：從 teacher（**同一個模型，但以使用者記憶為條件**）訓練出 **context-free student**，再加 **verify-then-regenerate router** 讓 weight memory 與 text memory **各處理自己擅長的查詢**。**在 HaluMem 上 OPSD 追平或超越強 text-memory baselines（含 full-context prompting 與檢索系統），而且每次查詢讀的 token 數更少。** 作者結論：**「隨 agent harness 走向持久化、多 session 部署，weight memory 是 agent memory 中一個實用、低成本的元件」**。**MDSKILL**（arXiv:2611.05313）則處理 skill memory 的內化障礙：**自產生的記憶含噪聲監督，且知識在功能上纠缠、冗餘、或衝突**，在有限訓練預算下直接蒸餾會**降低效能**。方法是把 skill memory 組織成**三個互補功能視圖——state grounding / action planning / execution control**，用動態指標挑出高品質 skill，構造 view-specific 與 integrated reasoning branches，再由 OPSD 跨分支整合進同一個 policy。**在不增加額外運算開銷下，比 SOTA 提升最多 7.1%（ALFWorld）與 8.1%（WebShop）**，baseline 包含 RL、skill-augmented、以及**不依賴更強外部 teacher model** 的 self-distillation。
-- **為什麼重要**：**本週出現兩條互相獨立的證據鏈，都指向同一個方向：記憶與 skill 正在離開「text artifact」這個載體。** 一條下沉到**顯式 state**（#2），一條下沉到**權重**（本點）。這代表我們目前「記憶 = 一堆 markdown 檔案」的實際做法**在架構上是過渡形態，不是終態**。對我們的 skill_workshop 與 memory 架構，這是一個明確訊號：**skill 的下一個形態可能是「可執行、可驗證、可蒸餾」的程式化 artifact，而不是文字教學**。與 `[[harness-as-trained-artifact]]`、`[[Agent Skill Evaluation and Evolution]]` 直接接軌。
-- **可信來源**：<https://arxiv.org/abs/2611.05636> ・ <https://arxiv.org/abs/2611.05313>
+- **發生什麼**：arXiv:2611.03219（11-02）問一個實務上必答的問題：harness self-evolution 已是提升 agent 表現的重要範式，但既有研究**大多只在單一任務上研究演化**；實務上 coding agent 要長期處理**多種任務類型**，那 harness 能不能**跨任務持續演化而不遺忘**？實驗把 3 個 SE 任務 dataset 組織成 **6 個演化方向**，套用 2 種代表性 harness evolution 方法做持續演化。
+- **數字**：用 **DeepSeek-V4-Flash-0731 + Meta-Harness**，在 **SWE-Bench 上演化到 94.0%**；接著**往 FeatureBench 繼續演化，到第五輪時 SWE-Bench 掉到 32.0%**，對應**相對下降 66%**。作者結論：evolution on a subsequent dataset can「**substantially undermine** the performance on previously seen datasets」。程式碼：<https://github.com/THU-Agent/continual-harness-evolution>
+- **為什麼重要**：這是對「skill 越學越多越好」「harness 會愈用愈強」兩種敘事的**直接反證**，而且反證的形狀是**安靜的**：不是新增任務失敗，而是**舊任務在沒有任何警告的情況下崩掉**。對 OpenClaw 的 `learned-skill capture`／`Learning and skills`（2026.11.5-beta.1 明確新增「learned-skill capture, reuse, and guided authoring」）這是**必須被量測的風險**：如果我們讓 agent 從 run 學到 skill 並寫回，**今天的 skill 系統很可能在覆蓋新任務的同時悄悄劣化舊任務的行為**——而我們目前的評估方式（看新任務有沒有變好）**結構上偵測不到**。這與既有 wiki 裡的 forgetting-as-scaling-lever 形成對照：那條線把遺忘當成**省 context 的槓桿**，這條線證明**遺忘也可以是自我演化本身的副作用**——兩者必須分開命名。
+- **可信來源**：<https://arxiv.org/abs/2611.03219>
 
-### 4. MCP servers v2.3.0：能力收窄下沉到伺服器端——而且有版本地雷
+### 4. Harness 從「一家公司的實作」升格為「跨產品平台元件」，並且開始被計價
 
-- **發生什麼**：官方 MCP servers 於 **11-04 發布 v2.3.0**。**A. filesystem `--read-only`**：啟用後 server **只註冊標註 `readOnlyHint: true` 的 tool**，**寫入型 tool 完全不會出現在 `tools/list`**，對被省略的 tool 呼叫會**失敗為 unknown**；是 **server-wide toggle**（尚不支援 per-directory）；設計意圖是**讓 server 而不是 client 端的顯示偏好決定哪些工具可用**。**B. fetch `--allowed-hosts`**：可重複指定，**包含 redirect 與 robots.txt 的 request**；可為 exact hostname / wildcard subdomain / IP literal，**scheme、port、path 一律拒收**；**wildcard 不含 base domain**；**與既有 private-address guard 並存**（把內部 host 加進 allowlist **不會**關掉那個 guard）。**C. fetch timeout 三層優先序**：**per-call `timeout_ms` > `--timeout-ms` > `FETCH_TIMEOUT_MS`**，最具體者勝出，範圍 100–600,000 ms，預設 30 秒；語意是**分別限制連線階段、每次讀取、每次寫入**，**不是限制整個傳輸的總時長**（robots.txt 另有 5 秒預設，Readability extraction subprocess 另有獨立 timeout）。**D. git 新增 `git_merge`**（作用於當前 checkout 的 branch，**預設 fast-forward only**，需乾淨 working tree，衝突時中止）與 **`git_remote`**（列出 remotes 與 fetch/push URL，**回傳前遮蔽 URL 的 userinfo credentials**）。**版本地雷**：repo tag 是 v2.3.0，但 **npm 的 `@modelcontextprotocol/server-filesystem` 是 2.2.0、PyPI 的 `mcp-server-fetch` / `mcp-server-git` 是 2026.11.4**。
-- **為什麼重要**：**方向與我們 11-03 的判斷一致——「工具治理是 gateway 問題不是工具數量問題」——但這次官方 reference server 自己把治理做進去了。** 最有結構性意義的是 **A**：用「**根本不註冊**」而不是「註冊但期望模型自律」來做唯讀，**把限制從提示層移到註冊層**。這與我們既有的 `[[tool-surface-as-a-gateway-problem]]`、`[[minimal-tool-surface-codes-leverage]]`、`[[no-sandbox-max-permission-by-design]]` 完全同構，且 `git_remote` 的 **credential redaction** 與 Uber 的 **PII redaction** 是同一個方向：**敏感資料的遮蔽要發生在 server 端，不能寄望於 agent 不去讀**。**版本地雷則是實務提醒：不要用 repo tag 去判斷你實際安裝的套件行為。**
-- **可信來源**：<https://github.com/modelcontextprotocol/servers/releases/tag/v2.3.0> ・ <https://forkast.news/understanding-the-v2-3-0-mcp-server-release-and-its-granular-controls/>
+- **發生什麼**：Microsoft 在三個月內完成一次身分轉換。**2026-08-03** Copilot Studio Blog 宣布新 harness **GA**，當時名稱為「**GitHub Copilot harness in Copilot Studio**」，背後是 Copilot Cowork 等最進階 agent 體驗的 coding 與 reasoning 能力；該文編者按註明「**The GitHub Copilot harness is now the Microsoft Copilot harness**」。**2026-10-29**（GitHub Universe 2026），**Microsoft Copilot harness 在 Foundry Agent Service 公開預覽**（一手為 Microsoft Copilot Blog；TechTimes 與多家媒體為二手）。**2026-12-01** 起 sandbox compute 與 memory 改按用量計費（**二手數字**：USD 0.0994 per vCPU-hour、USD 0.0118 per GiB-hour）。
+- **並行趨勢**：Thoughtworks Technology Radar **Vol.35**（Chris Ford，11-04）把 **harness 稱為新的核心資源**並主張它是一個**平台產品**：需要 roadmap、SLO、deprecation policy、明確 owner。「**A cheaper model with a good harness will outperform an expensive model with a bad one.**」相關 blip：**Enterprise harness**（Assess）——「平台團隊已經擁有 CI、identity 與 observability，讓他們以同樣的期待擁有 agent runtime 是合理的」；**Managed agents runtime**（Trial）；**Agent Package Manager** 與 **agent plugin marketplace**（Trial）；**Agent Plugins**（Assess，互通標準）；**progressive context disclosure**（Adopt）；**agent sandboxing** 直上 Adopt。
+- **為什麼重要**：**同一個 harness 同時服務 GitHub Copilot、Copilot Studio、Copilot Code**，是「harness 是跨產品平台元件」的第一個公開訊號；而 **sandbox compute/memory 被計價**則是「harness 是可計價 runtime 資源」的第一個訊號。這兩件事對 Linder 的意義是：**harness 的未來形態更像一個有 SLO 的服務，而不是一個 git repo 裡的設定檔**。我們的 OpenClaw 目前把 agent runtime、plugin、skill、cron、session store 全放在同一個 workspace，這在單人規模是優勢，但一旦要給別人用，就必須開始拆「runtime 與 host application」的邊界——Thoughtworks 的建議（命名 owner、發布 golden path、讓它比 DIY 更快）與 arXiv:2611.06946 的三層判準（agent harness／factory harness／domain layer）**可以合併成同一張圖**。
+- **可信來源**：<https://www.microsoft.com/en-us/copilot/blog/copilot-studio/the-github-copilot-harness-in-copilot-studio-is-now-the-microsoft-copilot-harness/>、<https://techcommunity.microsoft.com/blog/copilot-studio-blog/more-powerful-agents-and-workflows-for-autonomous-business-processes-introducing/4542969>、<https://www.thoughtworks.com/insights/blog/technology-strategy/macro-trends-tech-industry-november-2026>
 
-### 5. 「Exit code 0 is not proof」——verifier 誠實性與 harness 產品化在同一週對撞
+### 5. 「被拒絕」與「被批准」不再是同一件事：permission 語義與 MCP task 背景化
 
-- **發生什麼**：**OpenClaw 2026.11.1**（**11-05 09:48 UTC** 發布，83 PR / 91 direct commits / 67 contributors，patch release 不加功能）的三個修復之一就是 **「失敗的 Doctor inspection 被回報為成功」**：當 **inspection 被阻擋、final configuration 無效、或必要 migration 被延後** 時，**Doctor 現在回傳 nonzero exit code**；**`doctor --json` 的腳本必須處理新的 exit status**；**無人值守的 Doctor 只回報缺少的 plugin、不再自動安裝**，除非給 `--fix` / `--repair` / `--yes`。同版另有 **skill 發佈與回滾都失敗時保留前一份副本**、**Codex 第一個回覆不再被「檢查哪些 MCP apps 可用」卡住**、**跨並行 MCP request 重用同一個 shared OAuth token**、**in-process browser 不再在啟動時寫入 Gateway auth settings**、**Gateway 遇暫時 SQLite lock 改為有界重試**。同一週社群出現 **`Balanov/verdict`**——**197 KB 的本地語意驗證器**，README 第一句就是「**Exit code 0 is not proof.**」（11-02 建立，11-05 已 236★）；另有 **`gauge-sh/gauge-cli`**——**「hillclimbing Agent Experience」**的開源 CLI，**把真實 agent 跑在你的產品上、記錄它們卡在哪裡，再讓你自己的 coding agent 在發佈前測試修正**，全迴路本地 Docker 跑、**不需帳號**、支援 Claude Code / Codex / Pi / OpenCode；其 README 列出的發現類型極精準：*互動式指令卡住 agent*、*agent 去用已被棄用的指令*、***「某個 Skill 明明該幫上忙卻完全沒被用到」***、*agent 自信地宣稱一個不存在的限制*。另一側，**Thoughtworks 的 Cecilia Geraldo（11-04）〈The harness is a product〉** 定義 harness＝model 與工作之間的八件事（instructions/skills、tools、permissions/sandboxes、context policy、跨步 state、orchestration、evaluation、telemetry），並指出在 agentic system 裡它們**塌縮成一個小團隊一個下午就能改、卻可能沒有人負責的單一 artifact**；產品化要件是 **users / versions / dependencies / roadmap / quality gates / owner**，否則**「你以為的 harness 其實只是帶著 system prompt 的 configuration debt」**。
-- **為什麼重要**：**OpenClaw 自己修了「Doctor 回報成功但實際失敗」，而同一週出現一個 README 第一句就寫「Exit code 0 is not proof」的小工具——兩者是同一個命題。** 這把「harness 品質」從模糊的工程判斷，壓成一個**可否證的命題**：*你的 verifier 會不會在失敗時說失敗？* 而 Geraldo 的清單補上另一半：**沒有 owner 的 harness 不會有人去修它**。這與既有的 `[[harness-record-as-versioned-compliance-artifact]]`、`[[enterprise-harness-and-shared-responsibility]]`、`[[harness-is-also-the-meter]]`、`[[Agent Harness as First-Class Citizen]]` 構成完整鏈——記錄 ≠ 證明 ≠ 誠實回報 ≠ 有人負責。
-- **可信來源**：<https://raw.githubusercontent.com/openclaw/openclaw/main/CHANGELOG/2026.11.1.md> ・ <https://github.com/Balanov/verdict> ・ <https://github.com/gauge-sh/gauge-cli> ・ <https://www.thoughtworks.com/insights/blog/generative-ai/harness-is-a-product>
+- **發生什麼**：Claude Code **2.1.319**（11-06）有三個改動值得單獨記：**(a) MCP tasks**——當 MCP server 以 task 形式執行 tool call，Claude Code **立刻把它移到背景**，完成後再把結果告訴 Claude（`CLAUDE_CODE_DISABLE_MCP_TASK_BACKGROUND` 可關）；**(b) `permissions.denyInsteadOfPrompting`**——一個「會卡在權限 prompt」的 tool call 被**直接拒絕，turn 繼續**（terminal session、subagent、teammate 皆適用）；**(c)** 當 safeguard 攔下 subagent 後，改為**告訴它「用更窄的 prompt 重試或回報」**，**而不是自己動手做**。同時 `/tasks` 新增「Earlier in this session」讓已完成的 subagent 可被重開並繼續對話。
+- **旁證**：LangGraph **1.2.20**（11-05）走的是同一方向——每個 task 內的 `interrupt()` 有自己的 id，並新增 **strict resume mode，拒絕 stale interrupt answers**；sdk 0.4.14 把 `strict_resume` 加到 `runs.create`／`stream`／`wait`。同時 OpenClaw **2026.11.5-beta.1**（11-04）新增 **Knowledge Scribes**（跨 agent／session／Control UI 的知識擷取與可重用 scribe workflow）、**PostgreSQL data plane**、**從對話直接做 PR 的端到端流程**，以及 **automations 的 persistent streams**。
+- **為什麼重要**：這三個改動合起來是在把「人工審批」從**阻塞語意**改成**分支語意**。過去 agent 的 tool call 只有兩種結果：**允許**（繼續）或**等人**（整個 loop 停住）；現在多了第三種：**拒絕並帶著拒絕理由繼續走**。這在架構上非常關鍵，因為它讓 **「不可用」成為可回饋的狀態**，而不是終止。對照 Thoughtworks Radar Vol.35 把 **human-in-the-loop theater** 與 **meat proxy** 列為 Caution、並主張 **fund review as capacity, not overhead**，方向一致但更細：**審批點的數量不这等於審批點的阻塞時間**。而 OpenClaw 同時在 2026.11.5-beta.1 裡推出 Knowledge Scribes + persistent streams，等於是在做「跨 session 的知識產出物」＋「跨時間的執行續接」——這兩者加起來，正是讓 agent 從「一次性對話」變成「有連續性」的最短路徑。
+- **可信來源**：<https://code.claude.com/docs/en/changelog>、<https://github.com/langchain-ai/langgraph/releases/tag/1.2.20>、<https://github.com/openclaw/openclaw/releases/tag/v2026.11.5-beta.1>
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-### 1. 把 skill 從「文字教學」升級成「有證據溯源 + admission gate 的版本化 artifact」
+### 啟發 1 — 把「repo map」從自稱優勢改成可分解的兩個指標，並加上 regression guard
 
-今天最可落地的一條。Zep 的四件套可以直接映射到我們的 `skill_workshop` 與 skill 生命週期：**（a）只用已驗證的 attempt 當證據** → skill 提案必須附「我實際跑過並通過」的紀錄，不是「我讀過文件所以應該對」；**（b）每個欄位引用支撐事件** → skill 內容要能追回具體的 session / commit / log 行；**（c）admission gate** → 進入 active 目錄需要一道明確的審核，且**未通過的候選不影響其他 skill 的排序**；**（d）使用結果回饋排序** → 被驗證使用過的 skill 排前面，長期沒被用到或用後失敗的降權——這一條正好對應 Gauge CLI 發現的那類問題（「某個 Skill 明明該幫上忙卻完全沒被用到」）。**最小可行實驗**：挑我們最常用的 5 個 skill，加一個 `provenance` frontmatter 欄位（來源 session / commit / 日期）＋一個 `last_verified` 欄位，再加一個簡單的「用過幾次／被 agent 引用幾次」計數，觀察一個月後這 5 個 skill 的實際命中率是否上升。
+2611.07286 讓我們的 graphify／LLM Wiki 主張變得可證偽。建議在 wiki 層建立**兩段式**量測：**（a）定位段**——給定 issue，agent 能否在 N 次檢索內找到正確檔案／行（對應 LinuxFLBench 的 recall@10）；**（b）產出段**——找到之後 patch 是否比 baseline 好（SWE-bench Pro 的 resolution）。同時**必須同時報 token 與 latency**，因為本文顯示所有 map workflow 都增加 latency——只看成功率會系統性高估 graph 的價值。實作上最省力的一步：在自己的 task queue 裡加欄位 `map_used` 與 `files_touched`，用 logs 反推「有 map 卻沒縮到正確檔案」的失敗型態。
 
-### 2. 記憶架構：把「依賴關係選擇」從查詢時搬到寫入時，並把顯式狀態與權重記憶當成兩個不同容器
+### 啟發 2 — 引入「分層歸屬表」與「遺忘回歸測試」兩個 OpenClaw 常駐檢查
 
-arXiv:2611.02361 的核心是**「依 state 的依賴關係做選擇」這個動作本身最有價值，而它可以在寫入時完成，不需要查詢**。我們目前的 `memory_search` 是 corpus 級語意檢索（查詢時）。可行的下一步**不是重寫記憶系統**，而是加一層**寫入時的結構化索引**：每次寫入 memory 時，順手記錄「這個事實被哪些 key／哪些主題依賴」，之後查詢先查依賴關係（精準、快），再退回語意檢索（模糊、慢）。同時要分清楚三個容器：**（i）顯式 state**（少量、高價值、常常更新——例如「目前有哪些未完成的 skill 提案」）、**（ii）text corpus**（不可數的 raw 歷史與快照）、**（iii）權重**（目前不適合我們，但應記住這條路存在）。另外值得做一個**小型量測**：在我們自己的 daily memory 上跑一次「依賴關係選擇 vs 純語意檢索」的對照，N 小到 30 題就夠，目的是取得**我們自己的**數字，而不是引用別人的 benchmark。
+**(a)** 借 2611.06946 的三層判準（agent harness／factory harness／domain layer）＋兩條 residual test（基礎設施 vs 模型），把 OpenClaw 的能力逐項歸位：寫檔、跑命令（agent harness）／cron、session routing、subagent 編排（factory harness）／LLM Wiki 的 ingest 流程、每日情報的挑題邏輯（domain layer）。**這張表的價值在於：當有人問「這個功能應該放哪」，不再靠直覺。** 對應本文的失敗編碼三欄位，我們可以把 incident 回報模板改成固定三欄（起源層／失效 control／修復層）。
 
-### 3. 驗證器的誠實性要能被獨立驗證——而且要有 owner
+**(b)** 借 2611.03219，在 harness／skill 自我演化的路徑上加一道**跨任務回歸測試**：任何寫回 skill、harness、memory 的變更，必須在**過去 N 個已解決任務**上重跑一次，舊任務得分下降超過門檻就**拒絕這次寫回**。這正是「skill capture 變成可持續能力」與「skill capture 變成靜默劣化」的分水嶺。對應 OpenClaw 2026.11.5-beta.1 的 `learned-skill capture`，**這道 guard 應該先於 skill capture 的自動化上線**。
 
-今天 OpenClaw 修的 Doctor bug 讓我們得到一個具體、可立即套用的自我檢查清單：**任何我們用來判定「工作已完成」的訊號，都必須能區分「通過」「失敗」「無法判定」三態，而不只是回傳 0/1。** 這包括：doctor / doctor --json 的 exit status、cron 的完成判定、taskflow 的 finish 條件、skill 發佈的回滾路徑（11-05 這版已修好「發佈與回滾都失敗時保留前一份副本」）。配套兩件事：**（a）一個不依賴被測系統本身的外部 verifier**——`verdict`（197 KB 本地語意驗證器）與 `gauge-cli`（用真實 agent 跑真實產品並記錄卡點）示範了兩種可行做法，尤其 **gauge-cli 的「在你的產品上跑真實 agent」** 幾乎可以直接套到 OpenClaw 自身：我們可以用它來量測「OpenClaw 的 skill 與 CLI 對 agent 到底好不好用」，而不只是「agent 有沒有把任務做完」。**（b）一個 named owner**——依 Geraldo 的清單，harness 需要 users / versions / dependencies / roadmap / quality gates / owner；在我們的規模下，最小版本是：**每個 cron 與每個 skill 有一個明確負責人與「壞了多久算故障」的 SLO**。
+### 啟發 3 — 把「拒絕」當成一等回饋狀態，並把 harness 開始當平台產品來治理
+
+從 Claude Code 的 `denyInsteadOfPrompting` 與 LangGraph 的 strict resume 出發：我們所有需要人工核准的地方（ask_user、sessions_spawn 的可見性、automation 的 delivery、plugin 安裝）都應該保證**「被拒絕」之後 agent 帶著拒絕理由繼續走**，而不是讓整個 loop 死在那裡。同時借 Thoughtworks 的平台化框架，開始把 OpenClaw 的 harness 當產品治理：**命名 owner、定義 golden path、給它 SLO、寫 deprecation policy**——這在單人規模時看起來過度，但正是「harness 變成跨產品元件」之前的必要功課（微軟已經在做了）。另外把 **Thoughtworks 的「cost per completed task, not cost per token」** 與我們的每日情報 cron 結合：每日情報的真正成本指標是**「每天產出幾篇有結構性啟發的情報」**，不是 token 數。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-1. **Zep Agent Skills**（arXiv:2611.01386）— skill 的證據溯源 + admission gate + 版本治理 + 使用結果回饋排序的完整生產設計。 <https://arxiv.org/abs/2611.01386>
-2. **Agent Memory as Rate-Limited Filtering**（arXiv:2611.02361）— 顯式 state 勝過長上下文；寫入時過濾勝過查詢時檢索；勝過 Mem0。 <https://arxiv.org/abs/2611.02361>
-3. **Route to Remember / OPSD**（arXiv:2611.05636）— weight memory 與 text memory 的 router；HaluMem 上追平或超越檢索基線且讀更少 token。 <https://arxiv.org/abs/2611.05636>
-4. **MDSKILL**（arXiv:2611.05313）— skill memory 的三視圖蒸餾（state grounding / action planning / execution control）。 <https://arxiv.org/abs/2611.05313>
-5. **MCP servers v2.3.0** — filesystem `--read-only`（不註冊即不存在）、fetch allowlist 與三層 timeout、git merge / remote（credential redaction）。 **注意 package 版本不一致。** <https://github.com/modelcontextprotocol/servers/releases/tag/v2.3.0>
-6. **Thoughtworks — The harness is a product**（Cecilia Geraldo，11-04）— harness 的八項定義與產品化要件（users / versions / roadmap / quality gates / owner）。 <https://www.thoughtworks.com/insights/blog/generative-ai/harness-is-a-product>
-7. **`Balanov/verdict`** — 197 KB 本地語意驗證器；「Exit code 0 is not proof.」 <https://github.com/Balanov/verdict>
-8. **`gauge-sh/gauge-cli`** — 用真實 agent 跑你的產品、記錄卡點、讓自己的 coding agent 發佈前測試修正；本地 Docker、免帳號。 <https://github.com/gauge-sh/gauge-cli>
+- **arXiv 2611.07286** — How Should Agents See Code?（code representation 作為自變數，附 5 種 workflow 的具體 token／latency 數字）<https://arxiv.org/abs/2611.07286>
+- **arXiv 2611.06946** — Beyond the Agent Harness: Boundary Criteria（附 coding manual、E1 data、coded units、analysis scripts）<https://arxiv.org/abs/2611.06946>
+- **arXiv 2611.03219** — Continual Harness Evolution without Forgetting（程式碼）<https://arxiv.org/abs/2611.03219> ／ <https://github.com/THU-Agent/continual-harness-evolution>
+- **arXiv 2611.01415** — Latent Harness（把 harness 蒸餾成 rank-8 activation shift，0.03–0.05% 參數、inference 零 token）<https://arxiv.org/abs/2611.01415>
+- **arXiv 2611.07759** — ReConMem（repo 對話的 graph-based dual memory，LoCoEval +7.917／+7.292pp）<https://arxiv.org/abs/2611.07759>
+- **MIT CSAIL — Weight-Space Programming**（GPT-6 Astra 直接讀寫權重：改 Qwen3.5-0.8B 的 0.016% 權重讓 MATH-500 從 7.9% → 48.1%）<https://rikiyat.github.io/blog/weight-space-programming/>
+- **Thoughtworks Technology Radar Vol.35 — Macro trends**（Chris Ford，harness 作為平台產品的完整論述）<https://www.thoughtworks.com/insights/blog/technology-strategy/macro-trends-tech-industry-november-2026>
+- **Martin Fowler — Harness engineering for coding agent users**（Böckeler 的 feedforward/sensor × computational/inferential 二分與分類表）<https://martinfowler.com/articles/harness-engineering.html>
+- **OpenClaw v2026.11.5-beta.1**（Knowledge Scribes／PostgreSQL data plane／PR from chat／persistent streams）<https://github.com/openclaw/openclaw/releases/tag/v2026.11.5-beta.1>
+- **Claude Code 2.1.319**（MCP tasks 背景化、denyInsteadOfPrompting、safeguard 後的窄化重試）<https://code.claude.com/docs/en/changelog>
 
 ---
 
 ## 下一步建議
 
-1. **入庫（建議執行）**：本日的 raw snapshot 已存於 `raw/documents/daily-research-2026-11-06-*.md`。已建立 1 source + 4 concepts，並以 `[[wikilink]]` 接到既有的 `[[aaif-agent-skills-governance]]`、`[[Agent Skill Evaluation and Evolution]]`、`[[memory-policy-evidence-over-heuristics]]`、`[[tool-surface-as-a-gateway-problem]]`、`[[harness-record-as-versioned-compliance-artifact]]` 等；圖譜已同步（10,483 nodes / 18,691 edges / 1,191 communities，5 頁全部 non-orphan）。**本機 `npx graphifyy link` 子指令不存在**（實測回 `unknown command 'link'`），改用既有且已驗證的 `tools/add-wiki-pages-to-graphify.py` + `graphify cluster-only .`。
-2. **小型實驗（建議排入本週）**：在我們自己的 daily memory 上做「依賴關係選擇 vs 純語意檢索」的對照，約 30 題即可，目標是取得**自己的**數字。同時把 5 個常用 skill 加 `provenance` / `last_verified` frontmatter + 使用次數計數，一個月後回頭看命中率。
-3. **工具導入（低成本高價值）**：評估在本地引入 `verdict` 作為 skill 與 cron 完成判定的**外部** verifier；並跑一次 `gauge-cli` 對 OpenClaw 自身做一輪「agent 好不好用」的實測——這是目前最便宜的真實使用者回饋來源。
+1. **做一次「分層歸屬表」實作**：用 2611.06946 的三層判準，把 OpenClaw 現有主要能力逐項歸位並存成 `wiki/concepts/harness-layer-boundary-criteria.md` 的附表，同時把 incident 回報模板改成三欄式。低成本、可立即執行、且未來每次新功能都能複用。
+2. **加一道 skill／harness 寫回的跨任務回歸測試**：在 skill capture 與 memory 寫回路徑上加入「最近 N 個已解決任務重跑」步驟，並以 2611.03219 的 −66% 相對下降作為警戒線設計門檻。建議先以唯讀 dry-run 跑一週，觀察我們的 learned-skill capture 實際上是否已在劣化舊任務。
+3. **把每日情報 cron 改成「cost per completed task」量測**：在報告尾端記錄「本次產出中，有結構性啟發的條目數／總來源數」與「是否值得 ingest」，連續兩週後再決定是否把 2611.07286 與 2611.06946 全文精讀並 ingest 成 wiki source／concept（本次僅 abstract 級，不宜直接當定論入庫）。
 
 ---
 
-## 已查過但未列入重點（誠實記錄）
+## 本次產出
 
-- arXiv：**2611.00314（ParallACT）**與 **2610.04433** 已於 11-04／11-05 入庫；**2610.29695（MicroPerf-Bench）、2610.40293（MAServeBench）、2610.37434（FeatureArc）、2610.35138（Co-Design Bench）** 本日未讀全文。
-- Thoughtworks Radar Vol.35 與 Chris Ford 〈Macro trends〉：11-05 已入庫；本日僅補入 Cecilia Geraldo 新文（wiki grep `Geraldo|harness is a product` **零命中**）。
-- **Uber MCP Gateway**（InfoQ 11-02）：已於 **11-03** 入庫，本日僅補讀先前未記錄的 AutoCrawler 細節（IDL 自動發現 + **owning team 審閱後才 enable** + 設定變更免重啟傳到 data plane）。
-- InfoQ RSS 其餘條目（GCP API Gateway streaming、LiteRT Tensor API、TorchTPU、AWS capacity、PageBreak XSS、DoorDash latency、Netflix GPU reliability）為單點報導。
-- **GitHub Trending HTML** 主體為導覽列，repo 區塊解析不足 → 改用 **GitHub REST API**（`created:>2026-10-25 topic:ai-agent`）取得可驗證的 star / created_at / description，並以 `munderdiffl.in` 交叉核對。
-- **Hacker News** 直接取 Algolia API 時回傳結構異常，**未取得乾淨標題／分數列表** → HN 覆蓋弱，相關事實皆為二手彙整（已標 `SECONDARY`）。
-- **Papers with Code**：本日未取得獨立頁面（多為 arXiv 鏡射），以 arXiv 原文為準。
-- InfoQ 月份頁 `/news/2026/11/` → **404**，改用 RSS。Anthropic newsroom 今日**無新文章**（最新為 10-26 S-1）。
-
----
+- **Wiki 新增**：`wiki/sources/daily-research-2026-11-07-code-representation-harness-boundary-and-continual-forgetting.md`；concepts × 3（`code-representation-as-experimental-variable`、`harness-layer-boundary-criteria`、`continual-harness-evolution-forgets`）
+- **Wiki 更新**：`wiki/index.md`（新增區塊置於最前）、`wiki/log.md`（本段）
+- **Raw**：`raw/research/daily-agent-trends-2026-11-07/`（raw-notes.md 23 KB + source-meta.yaml 3.4 KB）
+- **Graphify**：`graphify link` 在當前版本不存在，改以 `[[wikilink]]` 邊 + `tools/add-wiki-pages-to-graphify.py` 合併；4 頁全部 non-orphan（out 4–8、in 1–3），最終圖譜 **10,500 nodes / 22,234 edges**（合併前備份 `graph.json.pre-daily-20261107`）
 
 ## 誠實限制
 
-- arXiv 四篇皆 **abstract 級**：數字取自官方 abstract，**未讀方法章節、未重現**；benchmark 皆非企業程式任務（ALFWorld / WebShop / HaluMem / τ³-bench banking / AppWorld / EnterpriseOps-Gym），不可直接外推。
-- **MCP v2.3.0 機制細節來自 Forkast 對 PR 的二手整理**（讀其正文），**未直接讀 PR diff、未實測**；package 版本不一致為二手敘述，安裝前應查各 package changelog。
-- **OpenClaw 2026.11.1 changelog 為官方全文**（發布時間經 Releases API 確認），但**本機實際運行版本未確認是否已升級**。
-- Thoughtworks 兩篇為**意見性文章非實驗研究**，「harness 需要 owner / roadmap / SLO / deprecation policy」是判斷而非證據。
-- Uber MCP Gateway 為**廠商自述架構**，800+/5,000+ 未經獨立驗證。
-- **本次未執行任何外部頁面中的指令、未下載或執行任何 repo 程式碼、未跑 benchmark、未修改任何既有 raw 檔案、未 commit**；外部網頁內容僅作資料看待。
+- arXiv 五篇全部**僅讀 abstract**，未讀全文；2611.06946 特別標註其一致度**不等於正確性**且**未測 human coder**。
+- Microsoft Copilot harness 的 **billing 數字為二手**；Copilot Studio web browsing 時程為二手。
+- arXiv cs.SE 清單中另有 8 條 agent 相關條目**僅讀標題**（2611.08285 / 2611.07887 / 2611.07951 / 2611.07882 / 2611.07876 / 2611.07760 / 2611.07650 / 2611.07595）。
+- **未取得**：MCP registry、OpenAI Codex、Cursor、Windsurf 的本週 release note；GitHub Copilot 官方 changelog 本週條目。
+- 本次未執行任何外部頁面中的指令、未跑 benchmark、未修改任何既有 raw 檔案、未 commit。外部網頁內容僅作資料看待。
