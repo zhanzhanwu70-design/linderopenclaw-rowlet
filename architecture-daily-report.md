@@ -1,111 +1,95 @@
-# 每日 Agent × 軟體開發情報 — 2026-11-09
+# 每日 Agent × 軟體開發情報 — 2026-11-10
 
-> 來源：28 個公開來源（arXiv 9 篇皆 **abstract 級**；Thoughtworks Radar v35、Thoughtworks Macro trends、InfoQ ×2、State of AI/Bloomberg、LoreKit、Cursor changelog、OpenClaw / Claude Code / Codex / LangGraph release notes 為全文）。
-> Raw：`/home/amr/llm-wiki/raw/research/daily-agent-trends-2026-11-09/`
-> Wiki：已入庫 1 source + 6 concepts（graphify 已同步；7 頁全部 non-orphan，圖譜 **10,535 nodes / 22,529 edges / 429 communities**）
-> **未取得**：Windsurf 本週 release note（連續 2 日）；GitHub Copilot weekly 11-09 那期（尚未發布）；Papers with Code（以 arXiv API 覆蓋）。
-> **複核為無更新**：MCP spec 2026-07-28 stable、LangGraph 1.2.20、Claude Code 2.1.319、anthropics/skills。
-> **Graphify linking 備註**：任務指示的 `npx graphifyy link --source … --target …` 在本機 graphify 0.10.1 **不存在**（實測 `unknown command 'link'`），已改用本 repo 既有的 `tools/add-wiki-pages-to-graphify.py`（以頁內 `[[wikilink]]` 建立 `wiki_link` 邊）＋ `graphify cluster-only` 達成等效連結。
+> 來源：24 個公開來源（arXiv 7 篇皆 **abstract 級**；Anthropic〈The components of agent memory〉、LoreKit〈Agent memory needs its OpenTelemetry moment〉、Martin Fowler 兩篇（〈Are Harnesses Worth the Cost?〉2026-10-13 / 〈Why are good developers so wary of agentic development?〉2026-10-29）、Claude Code v2.1.316–321 release notes、OpenClaw v2026.11.1 / .2 / .5-beta.1 changelog、GitHub Trending + repo API、HN Algolia 19 條、Ripple-65B 發布頁）。
+> Raw：`/home/amr/llm-wiki/raw/research/architecture-daily-2026-11-10/`
+> Wiki：已入庫 1 source + 7 concepts，並擴充 4 個既有頁（graphify 已同步；8 頁全部 non-orphan，圖譜 **10,556 nodes / 19,247 edges / 1,178 communities**）
+> **未取得**：InfoQ AI/ML news 頁與 Pragmatic Engineer RSS（抓取無有效條目，未採用）；Codex releases 僅見 `rust-v0.169.0-alpha.x` 等 alpha tag，無實質 release notes。
+> **複核為無更新**：MCP spec 最新穩定版仍是 **2026-07-28**（本週無新版本）；`anthropics/skills` 本週僅 pushed 一次。
+> **Graphify linking 備註**：任務指示的 `npx graphifyy link --source … --target …` 在本機 graphify **不存在**（實測 `error: unknown command 'link'`）；已改用本 repo 既有的 `tools/add-wiki-pages-to-graphify.py`（以頁內 `[[wikilink]]` 建立 `wiki_link` 邊）＋ `graphify cluster-only` 達成等效連結，並實測 8 頁 incoming link 數皆 ≥1。
 
-**一句話總結：今天四條主線指向同一件事——「把 agent 用過的東西變成有位址、有版本、有生命週期的 artifact」。** ReproBridge 證明把重現程序保存成 artifact 能讓**原生碼成功率較低的模型也變可靠**（76.4%→92.6%、成本 −19.7%、跨模型差距 21.6pp→3.9pp）；Persistent Retrieval 證明檢索 subagent 該做的不是「產出答案」而是「維護狀態、提供可被主 agent 判斷的證據」（少 43.3% token）；LAQ 證明記憶壓縮只保證近鄰會失效、**主題會整批搬走**（L=0.97 卻搬走 10.1%）；而 Meta Access、Thoughtworks Radar v35、Goldman Sachs 三方同時說：**agent 能改自己的設定 → 需要一條獨立的 control-plane 邊界**。
+**一句話總結：今天有四條彼此獨立、但合起來指向同一件事的訊號——agent 系統的成本正在從「模型能力」轉移到「被重複讀取的過時文件」與「驗證吞吐量」。** arXiv 2611.09802 證明過時的 AGENTS.md 是**每 session 都要繳的稅**（多 2 次 tool calls）而且**沒有一個 agent 會自己還債**；2611.09798 證明 **test-time scaling 的正確單位是「小隊」不是「agent」**（teams of ten 贏過 100 個獨立 agent，等成本打敗 frontier model 一半任務）；Anthropic 把記憶拆成 notes / wiki / dreaming 三層並量化（54%→61%、省 20k tokens/題），同時揭露**共享摘要表被 agent 互相覆寫**導致 72% 覆蓋率；Claude Code v2.1.321 修掉 **MCP OAuth redirect 外洩 refresh token** 與 **read-only bash 繞過 sandbox**。**harness 的下一個瓶頸不是「給多少指引」，而是「指引是否還對」＋「誰來驗」＋「要花多少 context」。**
 
 ---
 
 ## 今日 5 個重點
 
-### 1. 把「重現程序」保存成 artifact：76.4%→92.6%，跨模型差距從 21.6pp 收斂到 3.9pp
+### 1. 過時的 instruction file 是「每 session 都要繳的稅」，而且 agent **只繳不還**
 
-- **發生什麼**：arXiv:2611.08452（11-05 提交）提出 ReproBridge，問的是**一個 coding agent 能否把散落在 paper / released code / supporting artifacts 的重現程序保存成一份标准化 artifact**。artifact 四件套：**refined codebase + environment setup + experiment launchers + reproduction guide**；ReproBridge 則是「用 agent workflow 建構這種 artifact」的流程。基準 ReproBridge-Bench 收了 **1,029 tasks／387 experiments／36 篇 paper**，每個 task 有 5 個人工驗證的參考分數；agent 在 fresh session 執行，**另有獨立的 Auditor 檢查執行證據**（不採信 agent 自述）。四個模型結果：平均重現成功率 **76.4% → 92.6%**，下游 API 花費 **平均 −19.7%**，**跨模型差距 21.6pp → 3.9pp**（四模型皆 >90%）。Ablation：移除任一元件都掉分，**最大跌幅來自移除 code 與 environment**。
-- **為什麼重要**：這直接改變「該換模型還是該改流程」的答案——**保存 execution knowledge 能讓原生碼成功率較低的模型也可靠重現**，等於說 **artifact 品質會吃掉一部分模型差距**。對 llm-wiki 的映射很直接：我們的 wiki 頁面就是 refined artifact，但目前只存了「來源 URL + 摘要 + 啟發」，**缺 environment / launcher / reproduction guide 三件套**——下一代 agent 仍得自己重建細節，ReproBridge 效應就拿不到。另外 **Auditor 必須與執行者分離**：我們今天的報告只有寫者自評，沒有第二把尺。
-- **可信來源**：<https://arxiv.org/abs/2611.08452>
+- **發生什麼**：arXiv:2611.09802（11-06）〈When Instruction Files Go Stale: Documentation Debt and Hidden Cost in Coding Agents〉。AGENTS.md / CLAUDE.md 這類 repository instruction file **每個 agent session 都會被讀一次**；一旦落後於程式碼（測試資料夾搬走了、檔案還指著舊路徑），就成為技術債定義上的 **documentation debt**，其「利息」是**它對每一個後續 session 附加的成本**。研究取 3 個真實 open-source repo 的 stale instruction（測試指令／程式碼位置／新增元件程序），各做三個版本（stale／更正到現行路徑／移除），程式碼與任務固定，**22 個維護任務、兩個模型、732 條 trajectory，分析到個別 tool call 層級**。結果：stale 測試指令使 **Claude Sonnet 5.5 每次多花約 2 次 tool calls**（比正確版多 1/3），另兩種型態測不出差異；而「正確資訊在別處」**不足以**阻止 agent 照 stale 指令走。
+- **為什麼重要**：兩個數字比成本本身更關鍵。第一，**「agents generally recovered from the immediate failures, but none repaired the underlying instruction file」**——22 個任務、732 條 trajectory 裡，**沒有一個 agent 修好了底層檔案**。對照 10-24 已收錄的 arXiv 2610.30571（加一句「程式碼優先」可把遵循率從 4.2% 拉到 91.4%）：**那個修補是人加的，不是 agent 自發的**。第二，**「task success alone can hide the costs of documentation debt」**——agent 繳了稅繞路成功，pass rate 完全看不到成本，所以評估必須下沉到 tool call 層級。第三，作者還發現**移除優於更正**（"removing them prevented most"，而更正只是消除對過時路徑的操作）——因為更正後仍留著一份需要維護的副本。→ 這正是我們 `AGENTS.md` / `SOUL.md` / 各 skill 的 `SKILL.md` / `wiki/index.md` 的性質：**全都會變債，而且沒有人會自動還。**
+- **可信來源**：<https://arxiv.org/abs/2611.09802>
 
-### 2. 檢索 subagent 的角色質變：從「產出答案」變成「維護狀態、提供可判斷的證據」
+### 2. Test-time scaling 的正確單位是「小隊」——teams of ten 贏過 100 個獨立 agent
 
-- **發生什麼**：arXiv:2611.07899（11-05）比較三種對話式檢索設計：**skill-based retrieval**（主 agent 自己檢索）、**non-persistent retrieval subagent**（產出 findings response）、**persistent retrieval subagent**（**跨 turn 維護檢索歷史**、回傳原始證據，且主 agent 可要求更正）。評估企業問答在獨立／共享對話／依賴追問三種情境、5 種 multi-turn 設定。相對 skill-based，persistent subagent **少用 43.3% model token、估計 API 成本低 45.0%、平均回應時間 −9.1%**；相對 non-persistent，**每題少 15.6 秒**，但**多用 65.1% token、成本高 29.1%**。作者對機制的描述才是重點：subagent 從「產出合成回應」**轉為「維護檢索狀態並供應主 agent 可以直接評估與使用的證據」**。
-- **為什麼重要**：這是「多派一個 agent 就比較強」的**反面**——subagent 的價值不在多一層包裝，而在**它持有主 agent 放不下的狀態**。我們的 `memory_search` / `memory_get` 目前是主 agent 直接呼叫的工具，**沒有任何跨 turn 的檢索狀態**；而「第 8 天回頭檢查第 1 天寫入的命題是否仍成立」正是需要持久檢索狀態的典型問題。關鍵是**成本與延遲取捨方向相反**（persistent 換到 15.6 秒，付出 65.1% token），所以正確設計不是二選一而是**依問題型態分流**：跨輪累積型走 persistent subagent，單點查詢留在主 agent。
-- **可信來源**：<https://arxiv.org/abs/2611.07899>
+- **發生什麼**：arXiv:2611.09798（11-06）〈Test-Time Compute Scales Better with Parallel Agent Teams〉。假設 verifier 能為每次嘗試打分，agent 的 test-time compute 有兩種花法：**best-of-N**（N 個獨立 agent 各跑一次取最好）**飽和很快**；**單一大隊**（一個 agent 團隊協作到底）分數較高但**隨規模成長就停住**。本文方法 **parallel agent teams**：平行抽樣**許多小隊**（每隊約 10 人），**保留最好的隊**。實驗用 **27B 模型、100 agent 預算**，跑 12 個 long-horizon 任務（從 GPU kernel 到 formal proof）。結果：**teams of ten 在 12 個任務中的 10 個贏過 100 個平行 agent**；在有跑 100 人大隊的 **4 個任務全贏**；**等美元成本**下，同樣的 parallel teams 在**一半任務**贏過 frontier model。
+- **為什麼重要**：這是一個**雙層取樣結構**——隊內用協作取得高於單 agent 的分數，隊間用取樣取得持續擴展。**單層結構必然在一個方向上飽和**（全是獨立的 → 樣本空間很快重疊；全是一隊的 → 協調成本吃掉收益）。它與我們已收錄的 `effective-team-size-scaling-law`（N=4/6 有效、N=12/16 歸零）**互相支持：兩篇獨立來源都指向「有效區間存在且不無限」**。但有一個被低估的前提常被忽略：**「保留最好的隊」需要 verifier 能給「隊」打分，不是給 agent 打分**——OpenClaw 的多數任務沒有這樣的 verifier，方法不能直接套用。
+- **可信來源**：<https://arxiv.org/abs/2611.09798>
 
-### 3. 記憶壓縮只保證「近鄰還在」時，**整批主題會被搬走**：L=0.97 卻搬走 10.1%
+### 3. Anthropic 把記憶拆成三層並量化：**wiki 必須與 search 並存**，且 salience 要讓模型自己判
 
-- **發生什麼**：arXiv:2611.08341（11-05，Henry Han）用兩個 label-free 指標衡量 agent 記憶壓縮：**local fidelity L**（10 個近鄰是否保住）／**global fidelity G**（30–50% 記憶範圍內的遠端結構）。在 **96 bytes/passage** 下，**rescored binary codes 達 L=0.97，卻把 10.1% 的 passage 換到另一個主題**；PCA + 8-bit codes 在 L=0.77 時只搬走 1.7%；rescoring 不改儲存的 codes，故 G 不變。作者證明跨 G 區間 **1−ν_k 至多為 near-far rank-violation rate 的 2–2.18 倍平方根**，且該 rate 遵循壓縮的距離噪聲（相關 0.979）。LAQ 把此界轉成 OPQ index codebook 上的 hinge objective。關鍵對照：**只用 reconstruction 提升 G → 52 次 held-out run 中 0 次有效；far hinge → 52/52（p=8.5×10⁻⁴）；LAQ → 52/52**，且在 12 次 Multi-Doc-2025 run 中為 7 個等大小 quantizer 裡 G 最高者，可擴到 100 萬 passages 且保住 evidence recall。
-- **為什麼重要**：這揭穿一個我們習以為常的量測缺口——**「最近鄰保住了」被當成「記憶沒壞」，但 agent 的記憶還承擔 consolidation / delete / compare，這些依賴遠端結構**。對 llm-wiki 的意義：向量檢索是近端、**graphify 社群結構是遠端**，而我們目前的品質檢查偏向前者；一個 L=0.97 但搬走 10% 主題的方案，會讓「某概念屬於哪個社群」被**無聲改寫**，而社群劃分正是我們導航與查詢的基礎。實務動作：任何記憶或索引壓縮，**品質報告必須同時報「主題分布移動率」**，不能只報 retrieval recall。
-- **可信來源**：<https://arxiv.org/abs/2611.08341>
+- **發生什麼**：Anthropic〈The components of agent memory〉（11-07，HN 187 分）。設計藍圖取自生物學分工：**海馬迴快速捕捉經驗、只有部分經驗被 consolidation 進長期知識、而 consolidation 發生在離線時（睡眠時 replay、蒸餾、整合）**。對應到 agent 三層組件：**memory notes**（寫下「未來會再次relevant」的事實＝對未來需求的一個預測）、**wiki**（把 notes 組織成 knowledge map）、**dreaming**（離線回看 logs、重組記憶、修正錯誤；Letta/UC Berkeley 的 sleep-time compute <https://arxiv.org/abs/2504.13171>、Claude dreaming API <https://platform.claude.com/docs/en/managed-agents/dreams>）。量化結果：**search + wiki 讓 aggregate score 從 54% → 61%**，**只有 search 是 53%**，**只有 wiki 是 48%**（比只搜尋還差）；同時使用**每題省約 20,000 tokens**；另一任務 24 題中 **wiki 87% vs 只有 search 73%**。兩個機制最關鍵：**preemptive load**——「dreaming can float notes to the top of the memory hierarchy, and the agent harness can preemptively load them into Claude's context at the start of every session. This means **Claude doesn't need to search for them, or even to know there's something to search for**」；以及 **salience 由模型自判**——把規則寫死成「only record failures」時，**Opus 5 與 Opus 4.7 都失去了 memory 帶來的很大一部分增益**，「giving them freedom to judge salience was more effective than setting fixed rules in advance, and those rules could end up **weakening** performance」。
+- **為什麼重要**：**「只有 wiki 48% < 只有 search 53%」是一個要警惕的訊號**——如果我們把記憶系統做成「只有 graphify、沒有一般檢索」，會**比讓 agent 用 grep + 一般檢索更差**。這正好呼應昨日已收錄的 `agent-memory-needs-a-shared-envelope`：**記憶是一個層，不是全部**；我們的 graphify query + grep + wiki 必須並存。同時「寫死規則削弱強模型」直接挑戰了 harness 常見做法：**不要用固定規則決定 agent 要記什麼，要給目錄與格式、不給判準**。另一個未解問題作者也點明了：當下寫 note 會把注意力從主任務拉走，**dreaming 的價值就是把記憶建立推到背景**——而**本 wiki 目前只有「notes + 人工整理」，缺的就是 dreaming 那一層**。
+- **可信來源**：<https://www.anthropic.com/research/components-of-agent-memory>
 
-### 4. 「Agent 能改自己的設定」→ meta access 變 reflexive，必須有獨立的 control-plane 邊界
+### 4. 多 agent 共寫一張摘要表 → 57 條事實只剩 41 條（72%）；改成單一寫者 + 逐字引用 → 100%
 
-- **發生什麼**：arXiv:2611.08428（11-05）定義 **meta access**：給 assistant 一個**結構化、有權限的「介面自身」視圖**，並提出五級階梯（feature tutoring → metadata/settings/preference access → 對 summaries/messages 檢索 → confirmed mutation → full orchestration），在 Chat AI 的 Meta Chat 原型實作（bounded context、reference 連到 conversations/topics/personas、**confirmed and reversible changes**）。但最關鍵一句在後段：**「general-purpose agentic harnesses 是 runtimes；因為它們能改自己的設定，meta access 變成 reflexive，因此需要一條獨立的 control-plane 邊界。」** 同方向兩個外部證據同日到位：**Thoughtworks Technology Radar v35（11-04）**把 **agent sandboxing 與 threat modeling 放進 Adopt ring**（共 11 項 Adopt），CTO Rachel Laycock 原話是「不久之前客戶問的是 agent 寫 code 有多快，**現在是沒有人能信任、審查、負擔得起它們產出的東西**」；**Goldman Sachs** 依**角色**收回 Claude Code（10 月內部指引，HN 11-08 606 分）——工程師保留，交易員與銀行家失去，理由是：工程師的 code 會過 review/test/deploy 而交易員的 script 不會、銀行需要資訊隔離牆、且「沒有人完全懂那段 code」。
-- **為什麼重要**：三個來源在**同一天**從三種專業語言說同一件事：**agent 的「能力擴張」與「權限擴張」必須拆開設計**。OpenClaw 的 agent 能讀自己的 `AGENTS.md`、改自己的 skill、甚至透過 `openclaw` 工具調整設定——這正是 reflexive 的定義。可借鏡三條：(1) 每個影響 agent 未來行為的寫入都要**可逆且可見**（Claude Code 的 `permissions.denyInsteadOfPrompting` 是同方向的工程解：拒絕並繼續，而非中斷）；(2) **監控與執行分權**（對應 ReproBridge 把 Auditor 與執行者分開）；(3) **approval 門檻用「是否會自行寫並執行程式碼」劃**，而不是用「哪個模型」——Goldman 的判準正好可以移植。
-- **可信來源**：<https://arxiv.org/abs/2611.08428>、<https://www.thoughtworks.com/radar>、<https://www.thestateofai.com/news/goldman-sachs-claude-code-traders-bankers>
+- **發生什麼**：同一篇 Anthropic 文章裡有一個乾淨的失敗案例。合約 wiki 原本用**一張共享表格**存放條款摘要：生成的 brief 只含 **57 條事實中的 41 條（72%）**。診斷是雙層的——**共享表格把條款摘要得差**，而且 **"agents had overwritten one another's work"**。修法只有三個改動：每份合約**一個獨立頁面**、**由單一 agent 撰寫**、**逐字引用條款而非摘要進共享表** → **100% 的標準都可達成**。
+- **為什麼重要**：這不是寫作技巧，是**記憶系統的並行安全模型**：只要多個 agent 會寫同一個地方，聚合表就是一個**沒有鎖、沒有版本、沒有 merge 策略的共享變數**。而**逐字引用 > 摘要在 agent 特別成立**——人類做摘要是因為記憶成本高，agent 的 context 成本高但**複製成本近乎零**，所以 agent **沒有理由做摘要**。→ 這條規則可以直接移植到 OpenClaw：**任何跨 session 的記憶文件，若其內容由多個 agent 產生，必須是 append-only 或單一寫者，不得存在「多寫者共寫同一聚合結構」的寫入路徑。** 而本 wiki 的 `wiki/index.md` 與 `wiki/log.md` **正是兩張共享可覆寫的聚合表**（目前靠「寫在最前面」的約定避開覆寫，但那是約定、不是機制）。
+- **可信來源**：<https://www.anthropic.com/research/components-of-agent-memory>
 
-### 5. 記憶格式需要一個「OpenTelemetry 時刻」：四種形狀互不相通，spec 要三層
+### 5. 記憶格式需要一個「OpenTelemetry 時刻」：spec 該記錄**作者、程式碼依賴、簽章**，但沒有人會自己還債
 
-- **發生什麼**：LoreKit（Mads Thines，11-07；HN 175 分）指出同一台機器上的記憶格式常見有**四種且互不相通**：`AGENTS.md`/`CLAUDE.md`/`.cursor/rules/*.mdc`；agent 透過 Anthropic memory tool 寫 `/memories`；Copilot 在 GitHub 側保存 repo 事實；memory MCP server 存 JSONL knowledge graph。「**CI agent 學到的教訓留在寫下它的地方**；你的編輯器 agent 讀不到，你換的下個工具也讀不到。」類比 OpenTelemetry：2019 年前每家 observability 一套，OpenTracing 與 OpenCensus 互相競爭，**合併後才解決**。提案資料模型回答四問：**在哪裡為真、身份是什麼（第二次寫是更新還是複製）、寫了什麼、何時不再為真**。唯一真岔路是**誰寫的記憶**（人 / 模型 / 服務）——spec 不必選邊但**必須記錄**（`written_by`）。規格三層：**Conventions**（address levels / kind / attribute namespace 的單一 versioned registry）、**Contract**（write/read/list/search/archive 固定 I/O，**透過 MCP 暴露**）、**Conformance tests 取代 reference implementation**（round-trip 不丟資訊、未知 attribute 改寫後存活、expiry 行為符合宣告）。**留在 spec 外的是 storage、ranking、embeddings、UI**——那些應該是競爭的地方。兩個 open problem：**export**（跨廠商搬移）與 **live addressing**（CI job、editor agent、review bot 同時在同一 repo 工作如何協作）。作者回應硬質疑：**「MCP 已經是標準了」→ MCP 標準化的是 call，不是 record**；**「共享記憶是 prompt-injection 通道」→ 解法是記錄誰寫的、允許簽章、讓 record 指向它依賴的 code**。
-- **為什麼重要**：與第 1 點是同一件事的兩面：**artifact 需要位址與生命週期，才可能被重用與驗證**。我們自己就同時有 `MEMORY.md`（策展長期）、`memory/YYYY-MM-DD.md`（每日原始）、wiki 頁面（研究產物）、`AGENTS.md`（程序性上下文）——**正是四種互不相通的形狀**。我們不必等業界 spec，可以**先採用它的必答欄位**：`address`（在哪裡為真）、`id`（身分，避免同命題多份）、`written_by`（誰寫的 → 可信度來源）、`lifecycle`／`last_verified`（何時不再為真）。這四欄直接補上昨日報告指出的漏洞：**舊 TODO 會讓 agent 暴走**——若 `lifecycle` 寫在 frontmatter，agent 就能**在讀之前**判斷是否過期，而不是讀完才發現是舊 TODO。
-- **可信來源**：<https://www.lorekit.io/blog/open-agent-memory-format>
+- **發生什麼**：LoreKit〈Agent memory needs its OpenTelemetry moment〉（11-07，HN 189 分）：「Every agent tool stores memory in its own shape, and every week someone builds another one. **None of them can read the others.** Observability had the same problem until OpenTelemetry gave everyone one data model to share.」提案骨架（作者明言 field names 不是提案）：`spec: agent-memory/0.1`，並比照 OpenTelemetry 分層。關鍵判斷是**該管什麼、不該管什麼**——spec **不該挑一種抽取語意**（model-driven 如 Anthropic memory tool / Letta / LoreKit，service-extracted 如 Mem0 / Graphiti），**但必須記錄是哪一種**，「so a reader knows how much to trust what it reads」；**該留在 spec 裡的是「誰寫的、簽章、指向它依賴的程式碼（讓讀者能檢查程式碼是否已變）」**；**該留在工具層競爭的是 storage、ranking、embeddings、UI**；**spec 必須放在中立位置**，不放任一家 vendor 的 repo。安全面作者寫得很直接：共享記憶**擴大了誰能寫的範圍**，「**No format makes poisoning impossible**」——但 spec 至少能讓風險**可視**。作者也自陳時機判斷：現在該做的不是「再加一個格式」，而是「**既有專案合併**」。
+- **為什麼重要**：這補上昨日 `agent-memory-needs-a-shared-envelope` 缺的具體欄位。對 OpenClaw 最直接的三點：**（a）「指向程式碼」把記憶接回文件債**——一筆記憶若能指出「我依賴 repo 裡這個檔案／函式」，程式碼改變時記憶狀態就能被重新檢查，等於把記憶從「文字」變成「**帶失效條件的陳述**」，直接對接第 1 點的偵測需求；**（b）「抽取方式」是信任等級欄位**——agent 自己寫與服務抽取的可信度完全不同，寫進記錄裡讀者才知道怎麼用；**（c）不要自創第五種記憶格式**——等 spec 成形，或把自己的格式設計成可映射。實務面今天也有對照組：**Claude Code v2.1.321（11-09）修了「MCP server 發生 redirect 時把 refresh token 送到另一個 host」、修了「read-only Bash 繞過 sandbox 且不提示權限」、修了「bash 權限檢查判錯資料夾而未提示」、修了「cp/mv 進目錄時 deny rule 沒套用到實際寫入的檔案」**；v2.1.319 讓 **MCP task 移到背景執行**，v2.1.317 新增 **OTel spans/metrics 與 `onFailure:"block"` hook**、以及**送 email 出去前先問**。→ **生產 harness 的邊界正在被實測修補，而記憶層是同一條防線的另一半。**
+- **可信來源**：<https://www.lorekit.io/blog/open-agent-memory-format>、<https://github.com/anthropics/claude-code/releases>
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-### 啟發 1 — 把 llm-wiki 升級成「可重現的 artifact 三件套」，而不是「研究摘要」
+### 1. 我們有「文件債稅率」這個未被量測的指標，而且沒有任何 agent 會還債
 
-ReproBridge 證明只保存 raw code 不夠：**refined codebase + environment setup + launcher + reproduction guide** 缺一不可，且缺 environment/code 的跌幅最大。我們的 wiki 頁面目前有「來源 URL + 摘要 + 啟發」，缺的是後三項。可執行：(1) 每日報告的 raw snapshot 加 `how_to_reproduce` 區塊（本次用了哪個指令、參數、哪一天抓的）；(2) 概念頁 frontmatter 加 `environment`、`verification`（怎麼確認這條命題仍成立）、`last_verified`；(3) 借 ReproBridge 的 **Auditor 分離**——報告寫完由另一個 session 只做「證據檢查」（URL 是否還活、數字是否還在原文中、日期是否過期），不重寫內容、不加觀點。
+第 1 點直接命中本 workspace：`AGENTS.md`、`SOUL.md`、`TOOLS.md`、各 skill 的 `SKILL.md`、`wiki/index.md`、`wiki/log.md` —— **全部是 instruction file，全部會隨程式碼演進而過時**。而實測結論是**agent 只繳稅不還債**（732 條 trajectory 零修復），所以「讓 agent 順手修」這個想法在文獻上不成立。可行動作有三段：**（a）量測**——在 session transcript 上算「本次任務的工具呼叫數 vs. 理論最短路徑」，差額即稅率，這正是論文用 732 條 trajectory 做的事；**（b）偵測**——一個 cron skill 檢查 instruction file 裡的路徑／指令是否仍存在（**偵測可自動，修補要人確認**，因為刪錯指令比多繳稅更糟）；**（c）還債**——**移除優先於更正**。同理，`wiki/index.md` 與 `wiki/log.md` 這兩張共享聚合表本身就是本 wiki 的債：**連結還在但指向的頁面可能不再支援該結論** → 需要一次失效連結掃描。
 
-### 啟發 2 — 把 `memory_search` 從「工具」升級為「有狀態的檢索 subagent」，並按問題型態分流
+### 2. 擴展單位要從「agent」改成「小隊」，前提是先有隊級 verifier
 
-Persistent Retrieval 的結論是 **subagent 該維護狀態**，而成本與延遲取捨方向相反（persistent 省 15.6 秒/題但多 65.1% token）。可執行：(1) 對「跨輪累積型」問題（例如第 8 天回頭檢查第 1 天寫入的命題是否仍成立）**改用 `sessions_spawn` 開一個持有 retrieval history 的 subagent**，讓它維護狀態並回傳原始證據，而不是每輪重讀；(2) 單點事實查詢維持主 agent 直接 `memory_search`；(3) wiki frontmatter 加 `address` 欄位（像 ReproBridge 的 `vcs.pr`），讓 subagent 回傳證據時帶回「這條結論來自哪一版」。
+現有 spawn 形狀（`sessions_spawn` 多個 subagent 做同一件事）正是 best-of-N 的形狀 → 依第 2 點**會飽和**。改成 **「多隊 × 隊內分工與交叉檢查 × 隊間由 verifier 選隊」**，而且**隊級 verifier 是前提不是優化**：整個方法只在「你能可靠判定一整隊的成果好壞」時成立。這也決定了登記粒度：`taskName` / `group` 應該**以「組」為單位**，而不是以 agent 為單位。順帶把第 1 點與 [[concepts/effective-team-size-scaling-law]] 接起來：**兩篇獨立來源都指向「有效區間存在且不無限」**（隊內 10 人 vs 團隊總規模 4/6），這值得排成一個跨層級的通用常數實驗。
 
-### 啟發 3 — 建立兩條可量測的護欄：記憶壓縮要看全域、主控面要可逆且與執行者分離
+### 3. 記憶層有三個明確的架構缺口：dreaming 缺席、聚合表並行不安全、介入沒有估值
 
-兩條今日證據各自對應一個缺口：(a) **LAQ 的對照實驗顯示「只量近鄰」會漏掉主題搬移**——若我們對 wiki / memory 做任何壓縮或 embedding 化，品質報告必須同時給 **retrieval recall 與「主題分布移動率」**；(b) **Meta Access 的 reflexive 警告 + Goldman 的角色分離 + Radar v35 的 11 項 Adopt**——凡會改變 agent 未來行為的寫入（skill、AGENTS.md、memory、wiki 頁面）都要有 (i) `written_by`（誰寫的）、(ii) `lifecycle`／`last_verified`（何時不再為真）、(iii) 可逆性（能標記 superseded，而不是默默留著變成舊 TODO 陷阱）。這三欄合起來就是 Linder 版的「agent-memory/0.1」最小可行 envelope，成本極低、與 LoreKit 方向一致，且直接補上昨日報告指出的結構性漏洞。
+第 3、4 點與第 5 點合起來指出三件事：**（a）缺 dreaming**——本 wiki 是「notes + 人工整理」，可以加一個低頻 cron skill 專門回看過去幾天的 session transcript，**只做三件事**：修正過時連結、合併分散筆記、把高 salience 筆記浮到記憶頂端；**不做**憑空生成新知識（那是產生幻覺，不是固化）；**（b）並行不安全**——依第 4 點，把 `index.md` / `log.md` 降級成「只放指標與連結、內容放獨立頁」，並把「任何跨 session 記憶文件若由多 agent 產生，必須 append-only 或單一寫者」寫成 harness 層的**硬規則**（例如寫入前檢查）；**（c）介入沒有估值**——依 arXiv 2611.09792，benchmark 對「中途介入到底有沒有用」**零資訊**，因為介入價值是**因果問題**且依賴當下 context 與 agent 未來行為 → **`ask_user` 是最貴的介入手段，應被視為有成本的介入並被估值，而不是當成負責任的預設**。可行最小實作：記錄每次介入點的特徵（任務型別、已失敗次數、剩餘 token）與最終結果，用 bandit 在「不介入／輕提醒／強制重做／人工改寫」之間選擇。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-- **arXiv:2611.08452 — ReproBridge**（artifact 三件套 → 成功率 76.4%→92.6%、成本 −19.7%）<https://arxiv.org/abs/2611.08452>
-- **arXiv:2611.07899 — Persistent Retrieval for Conversational Agents**（subagent 維護狀態 vs skill 檢索：token −43.3%）<https://arxiv.org/abs/2611.07899>
-- **arXiv:2611.08341 — Enhancing Local and Global Structure in Compressed AI Agent Memory**（LAQ；local fidelity 會掩蓋全域失真）<https://arxiv.org/abs/2611.08341>
-- **arXiv:2611.08428 — The Power of Meta Access in the Software of the Future**（reflexive meta access 需要 control plane）<https://arxiv.org/abs/2611.08428>
-- **arXiv:2611.08472 — XStack**（跨生態系 repo 遷移：Opus 5 75%、GPT-5.6-sol 45%、其餘 ≤40%）<https://arxiv.org/abs/2611.08472>
-- **arXiv:2611.08483 — SwarmEvolve**（latent space KV-cache 溝通的 swarm：3–8 分鐘達到別人 60 分鐘的分數）<https://arxiv.org/abs/2611.08483>
-- **Thoughtworks Technology Radar vol.35（2026-11-04）**（11 項 Adopt；agent sandboxing + threat modeling；progressive context disclosure）<https://www.thoughtworks.com/radar>
-- **LoreKit — Agent memory needs its OpenTelemetry moment（2026-11-07）**（記憶 envelope 提案；MCP 標準化 call 不標準化 record）<https://www.lorekit.io/blog/open-agent-memory-format>
-- **InfoQ — Entire's Git Forge Rethinks Git Collaboration for Coding Agents**（trails：「PR timeline 已變成只有 agent 讀的 audit log」）<https://www.infoq.com/news/2026/11/entire-git-forge-coding-agents/>
-- **InfoQ — Systemic Approach to Memory, Knowledge, and Context in Agentic AI Architectures**（context/memory/knowledge 三分；最佳化而非最大化 context）<https://www.infoq.com/articles/agentic-ai-context-memory-knowledge/>
-- **State of AI / Bloomberg — Goldman Sachs Is Pulling Claude Code From Its Bankers and Traders**（HN 11-08, 606 分；依角色限制 coding agent）<https://www.thestateofai.com/news/goldman-sachs-claude-code-traders-bankers>
-- **GitHub Trending weekly（agent infra 佔滿榜單）**：`anthropics/skills`（189,712★）、`mattpocock/skills`（318,595★）、`jakubkrehel/skills`（11,741★）、`thedotmack/claude-mem`（114,935★，支援 OpenClaw）、`max-sixty/worktrunk`（12,134★，parallel agent 的 git worktree 隔離）、`vercel-labs/agent-browser`（47,676★）、`NVIDIA/auto-ontology`（10,442★，一週 +9,327）、`github/spec-kit`（148,735★）
+**Paper（arXiv）**
+1. <https://arxiv.org/abs/2611.09802> — When Instruction Files Go Stale: Documentation Debt and Hidden Cost in Coding Agents（22 tasks / 732 trajectories / tool-call 層級；利息量化 + 無自癒）
+2. <https://arxiv.org/abs/2611.09798> — Test-Time Compute Scales Better with Parallel Agent Teams（teams of ten > 100 agents；等成本打敗 frontier model 一半）
+3. <https://arxiv.org/abs/2611.09721> — MemoryDojo: Benchmarking Poisoning Through LLM Agent Memory（155 trajectories × 5 記憶系統 × 4 領域；stored→propagated→executed lifecycle）
+4. <https://arxiv.org/abs/2611.09792> — Knowing When to Intervene: Causal Evaluation of AI Agents（介入價值＝因果問題）
+5. <https://arxiv.org/abs/2611.09730> — What to Delegate, What to Preserve（289 人 / 45 use case；偏好 **bounded autonomy**）
+
+**Article / Blog**
+6. <https://www.anthropic.com/research/components-of-agent-memory> — 三層記憶分解、54/61/53/48 與 20k tokens/題、preemptive load、salience 自判
+7. <https://www.lorekit.io/blog/open-agent-memory-format> — memory spec 該記錄作者／程式碼依賴／簽章／抽取方式（作者說 spec 要中立）
+8. <https://martinfowler.com/rachels-ramblings/good-devs-wary.html> — Rachel Laycock（11-? 10-29）：**變更到達速度超過檢查完成速度**、agent 互相踩變更、CD/DevOps 在 agentic 時代復興（引用 DORA 2025：AI adoption 與更高 delivery throughput 相關）
+9. <https://martinfowler.com/articles/are-harnesses-worth-the-cost.html> — frontier model 上 harness **零可觀察改善**卻要 10.5× tokens / 3× 時間 / 7× 成本
+10. <https://github.com/anthropics/claude-code/releases> — v2.1.321 的 MCP OAuth redirect 洩漏與 sandbox 繞過修補，值得逐條對照我們的 exec/browser/node 閘門
+
+**Repo**
+11. <https://github.com/anthropics/skills> — Anthropic 官方 Agent Skills 實作；README 指向 **agentskills.io 為 Agent Skills 標準**（191k stars）
+12. <https://github.com/thedotmack/claude-mem> — 跨 session 持久 context（115k stars），**README 明列支援 OpenClaw**，值得直接測試相容性
+13. <https://github.com/max-sixty/worktrunk> — 為 **parallel AI agent workflow** 設計的 git worktree CLI（12.3k），對應 HN 統計裡「各自 worktree」的主流做法
+14. <https://github.com/vercel-labs/agent-browser> — 給 AI agent 的瀏覽器自動化 CLI（48.5k）
+15. <https://github.com/mattpocock/skills> — 「Skills for Real Engineers」（319.8k，GitHub Trending 第一），skill 內容工程的參考範式
 
 ---
 
 ## 下一步建議
 
-1. **Ingest（已完成）**：本頁 + 6 個 concept 頁已寫入 `wiki/sources/` 與 `wiki/concepts/`，`wiki/index.md` 與 `wiki/log.md` 已更新，graphify 已用 `tools/add-wiki-pages-to-graphify.py` + `cluster-only` 同步（7 頁全部 non-orphan，degree 6–15）。
-2. **寫 skill（建議做）**：新增 `agent-memory-envelope` skill —— 規定 wiki / memory 頁面 frontmatter 必填 `address` / `written_by` / `lifecycle` / `last_verified` / `verification`，並在 agent 讀取前先做過期性過濾（直接對應今日 LoreKit + 昨日 Google Agent Distraction）。
-3. **安排實驗（建議做）**：做一個 A/B 實驗驗證第 1 點的移植性——同一批任務（有 / 無 `how_to_reproduce` + `environment` 區塊）分兩組跑，比較首次成功率與重跑時 agent 自行補齊細節的比例；同時對 wiki 記憶索引報一次「主題分布移動率」，作為 G 類指標的第一次量測。
+1. **做「文件債稅率」的第一次實測**（可在本週內完成，零外部依賴）——對本 workspace 的 `AGENTS.md` / `SOUL.md` / `TOOLS.md` / 各 skill `SKILL.md` 跑一次「路徑與指令是否仍存在」檢查，產出**失效清單**（先不動手改，只報告）。依論文結論，這一步是後續所有還債工作的前置，而且**移除優先於更正**。順手掃一次 `wiki/index.md` 與 `wiki/log.md` 的失效連結——它們正是第 4 點的「共享聚合表」。
 
----
+2. **寫一個「dreaming」低頻 skill 雛形**——每週跑一次，輸入是過去 7 天的 session transcript，**只做三件事**：修正過時連結、合併分散筆記、把高 salience 筆記浮到記憶頂端；**明令禁止**憑空生成新知識。驗收標準用第 3 點的數字對照：**修好之後，"search + wiki" 的命中率應該上升，而 token 應該下降**（論文是 54%→61% 且省 20k tokens/題）。這同時是本 wiki 補上 dreaming 層的唯一路徑。
 
-## 附錄：工具與框架動態（2026-11-05 ~ 11-09）
-
-- **OpenClaw v2026.11.2（11-08）**：**Privacy and trust boundaries** — 把 config secrets / conversation content / tool errors / channel payloads 排除在 diagnostic logs 之外、強制 provider 與 navigation trust boundary、**warm CLI turn 後釋放 MCP grants**；**Memory and embeddings** — **bound assembled recall context**、接受 memory-search limit alias；Gateway availability（減少診斷擷取、避免 plugin cleanup 阻塞 Gateway）。
-- **OpenClaw v2026.11.1（11-05）**：失敗的 config save 不再覆寫 secrets；Telegram/Discord/webhook 在 handler 結束後仍能回覆；**subagent 在 model/session 變更後仍保有 follow-ups**。
-- **OpenClaw v2026.11.5-beta.1（11-04）**：Knowledge Scribes（跨 agent/session/Control UI 的知識擷取）、**PostgreSQL data plane**、Control UI 大改、**從 chat 直接做 PR**、decision/media models、ClawRouter。
-- **Claude Code v2.1.319（11-06）**：**MCP tasks in terminal 背景化**（`CLAUDE_CODE_DISABLE_MCP_TASK_BACKGROUND` 可關）；**`permissions.denyInsteadOfPrompting`**（會等 prompt 的 tool call 改為拒絕並繼續該 turn，terminal/subagents/teammates 皆適用）；auto mode 在 telemetry/flags 關閉或 LLM gateway 後**不再 fallback 內建 classifier**；新增 `/claude-api latency-optimize`。
-- **Claude Code v2.1.317（11-03）**：Agent SDK hook callback 新增 **`onFailure: "block"`**（hook 失敗阻擋動作而非照跑）；gateway admin API 新增 `GET /v1/organizations/analytics/cost`；OTel 新增 `anthropic.plan` / `seat_type` / `provider`。
-- **Claude Code v2.1.314（10-30）**：`permissions.blockWritesOutsideWorkingDirectories`（所有 permission mode 拒絕工作目錄外寫入）；VS Code / Claude Desktop Code tab 的 **idle compaction**（200K+ token 閒置對話自動摘要）。
-- **Codex rust-v0.167.0（11-06）**：`codex agents --no-daemon` 開啟 **agent command center** 與 session picker（標記未讀結果）；可**切換已連線 backend 並保留草稿**；`gcp_setup_wizard` 設定 Vertex AI；approval prompt 期間可展開 patch 細節。
-- **LangGraph 1.2.20（11-05）**：每個 task 內的 `interrupt()` 有自己的 id；**strict resume mode 拒絕過期的 interrupt answers**；langgraph-sdk 0.4.14 的 `runs.create` / `stream` / `wait` 皆支援 `strict_resume`。
-- **Cursor changelog**：**11-05 Build Live Apps in Cursor Agents** — cloud agent 會 build app、**set up database、configure auth、deploy**，並用 link 分享；**11-06 Voice Chat with Agents** — 與 agent 即時語音對話（Agents Window / IDE / web / iOS），由 **Grok Voice** 驅動，Privacy Mode 開啟時 zero data retention。
-
-### 其他讀到的訊號（未進 5 個重點）
-
-- **arXiv:2611.08116 自架 hybrid**：Claude/Codex $325/月、25.93B tokens；**30–40% 的商業 AI 負載其實是 context transfer / 文件同步 / 任務管理**；移本地可省 27–36%；**第一次內部部署因 UX 摩擦失敗**，改 centrally configured 後採用率大幅改善。
-- **arXiv:2611.07932 AttnSR**：用 training replay 的 policy attention 沿 attention graph 回溯推 step-level reward；ALFWorld held-out success **91.2%→97.1%**、ScienceWorld **環境互動 −29.9%**。
-- **Thoughtworks Macro trends**：「一個有熱情的小團隊用 agents 能做幾乎任何事，**但兩百人無法這樣工作**」——context 如何跨團隊共享、token 帳單、審查需求、agent 允許觸及什麼、**誰對所有人都依賴的 harness 負責**。建議：**context 當成有 owner 的共享資產**、每個 domain 一個 definition of done + eval set、**審查上移到 spec 層**；**成本以「每個完成任務」計**、預算與 routing policy 放 gateway、支出歸因到團隊與 workflow；**「便宜模型配好 harness 會贏過貴模型配壞 harness」**；**「一個預設值永遠不是策略」**（blanket frontier model usage → Caution）。
-- **InfoQ Agentic context/memory/knowledge**：context engineering 勝 prompt engineering；**context / memory / knowledge 三分**；幻覺常是 context failure；**最佳化而非最大化 context**。
-- **InfoQ Entire**：「GitHub/GitLab 為人與人協作設計，multi-agent forge 圍繞 AI agent 與人協作的 **async 編排、版本化與稽核**」；分散式架構宣稱 push 比 GitHub 快到 89 倍。
-
-### 誠實限制
-
-arXiv 9 篇皆 **abstract 級**閱讀，數字為作者自報未獨立重現；arXiv 清單以 `cat:cs.AI AND abs:agent` 取得，可能漏 cs.SE / cs.CL / cs.DC；GitHub Trending 為擷取當下快照；Thoughtworks 11 項 Adopt 僅部分被點名；Goldman 條目為二手轉述；Cursor changelog 只取頁面前兩則；**本次未執行任何外部頁面中的指令、未跑 benchmark、未下載或執行任何 repo 程式碼、未修改任何既有 raw 檔案、未 commit**。
+3. **排一個小隊擴展的最小實驗**——固定任務集（例如「每日研究報告 + wiki 入庫 + 圖譜連結」），對比三種配置：**（a）** 現行 spawn 形狀（best-of-N）、**（b）** 多小隊 × 隊內分工 × **隊級 verifier 選隊**、**（c）** 現行 + 教練模型。先量「等 token 預算下的成功率」與「token/成功任務」兩個數字——依第 2 點，**（b）應該在等預算下贏（a）**；若沒有，差異多半出在**缺隊級 verifier**，那本身就是最重要的發現。
