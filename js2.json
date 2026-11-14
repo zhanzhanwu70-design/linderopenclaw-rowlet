@@ -1,0 +1,98 @@
+[
+  {
+    "name": ".gitignore",
+    "path": ".gitignore",
+    "sha": "6c14091bba6a964a24cbdd65d0aaae64a0d666c0",
+    "size": 33,
+    "url": "https://api.github.com/repos/janestreet/agent_skills/contents/.gitignore?ref=master",
+    "html_url": "https://github.com/janestreet/agent_skills/blob/master/.gitignore",
+    "git_url": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/6c14091bba6a964a24cbdd65d0aaae64a0d666c0",
+    "download_url": "https://raw.githubusercontent.com/janestreet/agent_skills/master/.gitignore",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/janestreet/agent_skills/contents/.gitignore?ref=master",
+      "git": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/6c14091bba6a964a24cbdd65d0aaae64a0d666c0",
+      "html": "https://github.com/janestreet/agent_skills/blob/master/.gitignore"
+    }
+  },
+  {
+    "name": ".ocamlformat",
+    "path": ".ocamlformat",
+    "sha": "3b217634ab752bf7b6ad79258d5d0088d0cb4a8f",
+    "size": 19,
+    "url": "https://api.github.com/repos/janestreet/agent_skills/contents/.ocamlformat?ref=master",
+    "html_url": "https://github.com/janestreet/agent_skills/blob/master/.ocamlformat",
+    "git_url": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/3b217634ab752bf7b6ad79258d5d0088d0cb4a8f",
+    "download_url": "https://raw.githubusercontent.com/janestreet/agent_skills/master/.ocamlformat",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/janestreet/agent_skills/contents/.ocamlformat?ref=master",
+      "git": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/3b217634ab752bf7b6ad79258d5d0088d0cb4a8f",
+      "html": "https://github.com/janestreet/agent_skills/blob/master/.ocamlformat"
+    }
+  },
+  {
+    "name": "CONTRIBUTING.md",
+    "path": "CONTRIBUTING.md",
+    "sha": "45e1a22b9b3ce71c02a5169a1dce909f9c032b61",
+    "size": 2312,
+    "url": "https://api.github.com/repos/janestreet/agent_skills/contents/CONTRIBUTING.md?ref=master",
+    "html_url": "https://github.com/janestreet/agent_skills/blob/master/CONTRIBUTING.md",
+    "git_url": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/45e1a22b9b3ce71c02a5169a1dce909f9c032b61",
+    "download_url": "https://raw.githubusercontent.com/janestreet/agent_skills/master/CONTRIBUTING.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/janestreet/agent_skills/contents/CONTRIBUTING.md?ref=master",
+      "git": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/45e1a22b9b3ce71c02a5169a1dce909f9c032b61",
+      "html": "https://github.com/janestreet/agent_skills/blob/master/CONTRIBUTING.md"
+    }
+  },
+  {
+    "name": "LICENSE.md",
+    "path": "LICENSE.md",
+    "sha": "cb7afe58fa6a98b61f7a572e3318b98c28f91955",
+    "size": 1120,
+    "url": "https://api.github.com/repos/janestreet/agent_skills/contents/LICENSE.md?ref=master",
+    "html_url": "https://github.com/janestreet/agent_skills/blob/master/LICENSE.md",
+    "git_url": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/cb7afe58fa6a98b61f7a572e3318b98c28f91955",
+    "download_url": "https://raw.githubusercontent.com/janestreet/agent_skills/master/LICENSE.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/janestreet/agent_skills/contents/LICENSE.md?ref=master",
+      "git": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/cb7afe58fa6a98b61f7a572e3318b98c28f91955",
+      "html": "https://github.com/janestreet/agent_skills/blob/master/LICENSE.md"
+    }
+  },
+  {
+    "name": "README.md",
+    "path": "README.md",
+    "sha": "171eb3d3fe482f59bc204fb7e897e25a47da0adc",
+    "size": 755,
+    "url": "https://api.github.com/repos/janestreet/agent_skills/contents/README.md?ref=master",
+    "html_url": "https://github.com/janestreet/agent_skills/blob/master/README.md",
+    "git_url": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/171eb3d3fe482f59bc204fb7e897e25a47da0adc",
+    "download_url": "https://raw.githubusercontent.com/janestreet/agent_skills/master/README.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/janestreet/agent_skills/contents/README.md?ref=master",
+      "git": "https://api.github.com/repos/janestreet/agent_skills/git/blobs/171eb3d3fe482f59bc204fb7e897e25a47da0adc",
+      "html": "https://github.com/janestreet/agent_skills/blob/master/README.md"
+    }
+  },
+  {
+    "name": "socratic-tutor",
+    "path": "socratic-tutor",
+    "sha": "13f2666c7b404ce5a0a4b93a3613b99e415a48bc",
+    "size": 0,
+    "url": "https://api.github.com/repos/janestreet/agent_skills/contents/socratic-tutor?ref=master",
+    "html_url": "https://github.com/janestreet/agent_skills/tree/master/socratic-tutor",
+    "git_url": "https://api.github.com/repos/janestreet/agent_skills/git/trees/13f2666c7b404ce5a0a4b93a3613b99e415a48bc",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/janestreet/agent_skills/contents/socratic-tutor?ref=master",
+      "git": "https://api.github.com/repos/janestreet/agent_skills/git/trees/13f2666c7b404ce5a0a4b93a3613b99e415a48bc",
+      "html": "https://github.com/janestreet/agent_skills/tree/master/socratic-tutor"
+    }
+  }
+]

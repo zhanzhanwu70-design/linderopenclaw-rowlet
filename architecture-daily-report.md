@@ -1,101 +1,102 @@
-# 每日 Agent × 軟體開發情報 — 2026-11-11
+# 每日 Agent × 軟體開發情報 — 2026-11-14
 
-> 來源：19 個公開來源（arXiv 3 篇皆 **abstract 級**；VulnCheck〈After 7-months, Glasswing Overwelms Maintainers with Underwhelming Findings〉11-09；InfoQ〈LLM Reliability Layers Under Test〉11-10、〈GitLab 19.5 Makes Agentic Development a Governed Part of the DevOps Platform〉11-06、〈Google Finds that Technical Debt Can Derail Coding Agents Through "Agent Distraction"〉11-10（已於 11-08 收錄，僅複核）；OpenClaw v2026.11.3 release notes；Claude Code v2.1.318／319／322 release notes；GitHub API + Trending；HN Algolia 近 4 日 30 條逐條掃過；InfoQ AI/ML RSS；OpenAI News RSS）。
-> Raw：`/home/amr/llm-wiki/raw/research/architecture-daily-2026-11-11/`
-> Wiki：已入庫 1 source + 5 concepts，並擴充 4 個既有頁（graphify 已同步；6 頁全部 non-orphan，incoming link 皆 ≥1）
-> **未取得**：Martin Fowler `martinfowler.com/articles/` → **403**；LangChain Blog RSS → 只回 feed 標題（無條目）；Papers with Code → 未直接抓取（站點改版重導向），以 arXiv abs 頁為準。
-> **複核為無更新**：MCP spec 最新穩定版仍是 **2026-07-28**（本週無新版本）；OpenAI Codex 近期僅 `rust-v0.167.1` 與多個 `alpha` tag，**body 無實質 release-note 內容**。
-> **Graphify linking 備註**：任務指示的 `npx graphifyy link --source … --target …` 在本機 graphify **不存在**（實測 `error: unknown command 'link'`）；已改用本 repo 既有的 `tools/add-wiki-pages-to-graphify.py`（以頁內 `[[wikilink]]` 建立 `wiki_link` 邊）＋ `cluster-only` 達成等效連結，並**實測 6 頁 incoming link 皆 ≥1**（第一次跑時 `tool-surface-as-least-privilege-boundary` 為 orphan，已補 `agentic-trust-boundaries` 的 inbound link 後重跑確認）。
+> **來源**：40 個公開來源。Agent / AI engineering research：**arXiv API 7 篇（皆 abstract 級）**（2611.12953 架構成本-成功率、2611.17304 生產除錯的 access gap、2611.17115 CapLite、2611.17068 MAPE、2611.17316 CoReMem、2611.17007 Skill Adapter、2611.13960 ActiveSecHarness；另複核 2611.16867 ControlHarbor、2611.03517 Ask-Don't-Equip、2611.07286 code representations）。軟體開發潮流：**InfoQ 6 篇**（GitHub Agentic Workflows GA 11-11、Google AQuA 11-13、Netflix ontology observability 11-13、Technical Debt is Social 11-12 等）、**Martin Fowler 2 篇全文**（〈Tests as data〉11-11、〈Long-horizon agents and durable execution〉11-10）、**AWS Emulator 11-11**（Werner Vogels 引言 + Swaminathan Sivasubramanian 客座）、GitHub Search API、HN Algolia 近 10 日掃描。實務工具與框架：**OpenClaw v2026.11.5-beta.2**（11-12）、**Claude Code v2.1.325**（11-13，changelog 全文）、LangChain 1.5.0 / LangGraph 1.2.22 / Microsoft agent-framework python-1.26.0 / CrewAI 1.15.41 / **dsh v0.2.2-rc.3**、**MCP spec（無更新）**、Codex（僅 rust tag）、A2UI 1.0 / Brave x402 / OpenAI ChatGPT Wallet / OpenAI News RSS。
+> Raw：`/home/amr/llm-wiki/raw/research/architecture-daily-2026-11-14/`
+> Wiki：已入庫 1 source + 6 concepts，並擴充 2 個既有頁（graphify 已同步；7 頁全部 non-orphan，incoming link 皆 ≥1）
+> **未取得／無更新**：**Papers with Code**（站點改版，`/api/v1/papers/` 回 HTML，root 302 → huggingface.co/papers/trending，無可解析條目）｜**GitHub Trending HTML**（週榜抓取成功但 DOM 與解析規則不符，15 個 repo 全解析失敗 → 改用 GitHub Search API）｜**Anthropic Research RSS**（404）｜**InfoQ AI/ML feed**（`feed.infoq.com/ai-ml-eng` → 410 Gone，改用 `infoq.com/feed`）｜**Cursor / Windsurf**（GitHub 無 release／API 404）｜**MCP spec**（最新穩定版仍 2026-07-28，本週無新版）｜**OpenAI Codex**（僅 `rust-v0.169.0` / `rust-v0.171.0-alpha.5`，body 無實質 release note）｜**SWE-agent**（最新 release 仍 v1.1.0／2025-05，近一年半無更新）。
+> **Graphify linking 備註**：任務指示的 `npx graphifyy link --source … --target …` 在本機 graphify **不存在**（實測 `error: unknown command 'link'`）；已改用本 repo 既有的 `tools/add-wiki-pages-to-graphify.py`（以頁內 `[[wikilink]]` 建立 `wiki_link` 邊）＋ `cluster-only` 達成等效連結，並實測 7 個新頁 incoming link 皆 ≥1（source 6、architecture-cost 4、access-gap 4、schema-policy 4、memory-anchors 1、merge-gate 2、agent-native 1）。
 
-**一句話總結：今天有五條來自四個不同領域的獨立訊號，全部指向同一個瓶頸位置的移動——瓶頸不再是「能不能生成」，而是「誰來驗、來得及驗嗎，以及驗的東西是不是真的被抽取出來了」。** Anthropic Project Glasswing 七個月後的帳單最刺眼：**回報 37,966 個 findings，只有 217 個被標記修好，9 月以來新增 12,000 個卻只多了 15 個修補**；curl 拒絕 34 份已發布報告中的 19 份為漏洞。InfoQ 的可靠性層實驗給出另一個角度：**沒有任何驗證層能救回 extractor 漏掉的 mention**，最大的增益來自對齊標註慣例而不是換模型。與此同時，MIRIX-2.0 把記憶整併搬到**寫入路徑之外**（AutoDream 關掉反而在五個計時基準都更快），MaxIM 把「摘要要 grounded」寫成**互資訊的目標項**而不是 prompt 裡的一句話，而 OpenClaw / GitLab / Claude Code 在同一天各自把**工具面、憑證隔離、失敗可見性、fail-closed** 拉到平台層。**harness 的下一個瓶頸是「驗證產能 + 抽取召回 + 最小權限」，不是「再多一層 agent」。**
+**一句話總結：今天有五條來自四個不同領域的獨立訊號，全部指向同一個轉移——控制點正在從「模型寫什麼」搬到「誰寫規格、誰寫合約、誰拿到存取權、誰驗」。** 受控實驗（arXiv 2611.12953）第一次量化地說：加架構的成本要用任務成功率買回來，否則 **single agent 就是效率預設**，而**技能品質（73.1%／67.4%／<67.4%）比「single vs multi」是更大的效果變數**。生產除錯的 field observation（2611.17304）給出更尖的診斷：agent 卡住**不是因為不會推理，而是因為看不到生產狀態**——5 件 concurrency 事故**全部**有 access gap，而它的錯誤假設「與它看得見的證據一致、不是捏造」。安全那邊（CapLite）更直接：**別讓 agent 自己寫安全政策**——15 個 open-weight 模型有 13 個寫不出來，CaMeL 的程式有 68% 的 episode 根本跑不起來；改從 tool schema 推導政策、write 先 commit 後讀，13,935 個受攻擊 episode **零成功**。工程方法論端，AWS Emulator 與 Martin Fowler 同日給出同一答案：**agent 寫實作，人寫 spec 與合約**——Fowler 更要求把合約放進「**測試資料**」而不是「測試程式碼」，這樣 agent 改不到它。**對 OpenClaw 而言，這把「我們還缺什麼」從清單變成四條可操作的規格。**
 
 ---
 
 ## 今日 5 個重點
 
-### 1. Agent 生成的安全發現快到維護者驗不過來——「驗證洪水」的第一份大規模量測
+### 1. 架構第一次有了受控的帳：加結構要用任務成功率買回 1.4–4.7× tokens 與 2.6–5.8× latency
 
-- **發生什麼**：VulnCheck 追蹤 Anthropic Project Glasswing 七個月（11-09）：**442 個** CVE 可歸因 Anthropic（約佔今年所有 CVE 的 0.5%），但**僅 2 個**被確認在野利用；Anthropic 回報的 **37,966** 個 findings 中**只有 7,349（19.4%）已公開、只有 217 個標記為已修**；9 月以來新增近 **12,000** 個 findings 卻只記錄 **15** 個額外修補；**1,654（4.4%）** 被標為 duplicate（≈已修數的 **8 倍**），另有 419 個 withdrawn。Anthropic 宣稱的 true positive rate 從 90.8% 升到 94.2%，引發其如何計算 duplicate／withdrawn 的疑問。**Anthropic 的 OSS Scanner 把驗證工作轉移給維護者**：curl **拒絕 34 份已發布報告中的 19 份**為漏洞，只確認 6 份為低嚴重度，9 份待評估。
-- **為什麼重要**：這是「驗證吞吐是新的瓶頸」在**安全領域**的實測版本，而且比 coding 領域更嚴苛——coding 領域的瓶頸是「agent 產生的變更驗不過」，安全領域是「agent 產生的**指控**驗不過，而且每一份指控都要消耗一個真實維護者的信任」。**19/34 的維護者拒絕率**意味著 scanner 產出若未經維護者確認就外流，會直接侵蝕報告的可信度基準。更關鍵的是結構：**Anthropic 的真陽性率是自報的，唯一的外部檢定手段就是維護者的接受／拒絕**。
-- **可信來源**：<https://www.vulncheck.com/blog/anthropic-glasswing-november-update>
+- **發生什麼**：arXiv 2611.12953 固定模型／任務／工具，**只改架構**，比較四種設計（function-calling single agent、skill-augmented agent、centralized multi-agent orchestration、triage swarm；8 arms）× 13 條 enterprise SOPs。三條結論：**沒有通用最佳架構**（同一條 SOP 成功率從 <10% 到近 100%，aggregate 上無統計可分性）；**每個協調 arm 花 1.4–4.7× tokens、2.6–5.8× latency，換來通常很小、很少顯著的增益 → single agent 是效率預設**，而**高品質 skill 把成功率從 67.4% 拉到 73.1%、劣化 skill 掉到 baseline 以下**；**實作品質 > single-vs-multi 的選擇**——一個平庸的 multi-agent 實作輸給 single agent，經**針對性重設計**後卻成為唯一顯著勝出的 arm（**75.6% vs 67.4%**）。
+- **為什麼重要**：這是「我們的 skill 層與 multi-agent 層到底值多少」的第一份控制後證據，方向對多 agent 派不利：**沒有帳的 swarm 就是那些「通常很小、很少顯著」的協調 arm**。它同時把長期爭論「single 還是 multi」翻轉成可操作問題——**skill 品質與實作品質是更大的變數**。與既有 [[worst-case-aggregation-single-agent-dominates]] 及 11-14 群體研究 #28「swarm 結構本身不是收益」一致。
+- **來源**：<https://arxiv.org/abs/2611.12953>（2026-11-07，abstract 級）
 
-### 2. MIRIX-2.0：記憶的整併應該在寫入路徑之外，而且可以是選配的
+### 2. 生產除錯的瓶頸是「存取權」不是「推理力」——錯誤假設與可見證據一致，不是捏造
 
-- **發生什麼**：arXiv:2611.12068（11-09 提交）MIRIX-2.0。六個 typed memory agents **保留完整紀錄作為 system of record**；**provenance hypergraph** 以 n-ary frames **引用其 rows** 來索引 episodic 與 semantic 紀錄；**retrieval 在明確預算下執行**，所以「一個問題所檢視的證據量不隨歷史增長」。**AutoDream merges duplicate anchors outside the write path without rewriting any record, and it distills task sessions into skills.** 成效：LoCoMo **91.4%**、LongMemEval-S **72.6%**（領先最強 baseline **14.3 點**）；**AutoDream 關閉時**在 single-hop／multi-hop document QA 上仍比 HyperMem 高 **31.0／22.0 點**，且「**AutoDream 關閉時，MIRIX-2.0 在五個計時基準全都比 HyperMem 快**」。程序性記憶在 MetaClaw-Bench **49.2%**，高於 MetaClaw 自家 skill library 的 **44.0%**。不需 fine-tuning，code public。
-- **為什麼重要**：最有結構性意義的不是分數，是**「關掉整併層反而更快」**——它證明 consolidation 是一個**可選、非同步、且要付延遲成本**的層，而不是每次寫入的同步步驟。加上「不改寫任何紀錄」與「provenance hypergraph 引用 rows」，整併後**仍可追溯回原始 row**。另外「蒸餾 task sessions 成 skills」與「單一寫者記憶頁」互補：**技能是從會話蒸餾出來的產物，不該散落在會話裡**。
-- **可信來源**：<https://arxiv.org/abs/2611.12068>｜<https://github.com/Mirix-AI/MIRIX>
+- **發生什麼**：arXiv 2611.17304 對 Claude Code 的 field observation：在生產訊息派送引擎上診斷 **8 起**資料庫事故。每件 root cause 依賴 runtime concurrency 的事故，agent 都「宣布原因 → 送修 → 之後撤回」，每次錯判都花掉一個 deploy-and-observe cycle。**最具普遍性的瓶頸是對生產狀態的存取權**：缺 live lock views、**未截斷的** deadlock reports、read-only execution、明確環境脈絡。**5 件 concurrency 事故全部有 access gap**（1 件單獨、4 件同時併發 reasoning error）；**3 件不依賴 concurrency 的事故，agent 現有的東西就夠了**。★ 作者強調：**錯誤假設與它看得見的證據一致，不是捏造** → 提議在既有安全控制內加一層 **forensics layer**。
+- **為什麼重要**：這把「agent 為什麼一直猜錯」從**歸因問題**改成**工具面問題**。對 OpenClaw：不要用 prompt 教它更小心推理，要給它**唯讀的生產狀態存取**。Netflix 同日（InfoQ 11-13）的 ontology-driven observability 是企業版同母題——一次 regression 調查要 ~4 小時，多數時間花在**重建系統之間的關係**而非分析資料。
+- **來源**：<https://arxiv.org/abs/2611.17304>（2026-11-12，abstract 級）＋ <https://www.infoq.com/news/2026/11/netflix-ai-driven-observability/>
 
-### 3. InfoQ 可靠性層實驗：驗證層的上限是抽取器，不是模型
+### 3. 安全政策不能由 agent 自己寫：13/15 個模型寫不出來，CaMeL 有 68% 的 episode 跑不起來
 
-- **發生什麼**：InfoQ（11-10，Pushpdeep Mishra／Wejdan Bagais，reviewed by Hien Luu）〈LLM Reliability Layers Under Test〉。五條結論：(a) **reliability layers 依可信度排序答案，但幾乎沒有修正任何一個**；**yield**（正確答案數 ÷ 全部紀錄數）揭露 accuracy 隱藏的東西；(b) **deterministic code 可以證明答案錯，永遠不能證明答案對**——它抓得到不存在的 code 與缺漏的 span，但貌似合理的答案仍需模型或人；(c) **recognition beats generation**——從記憶回想 SNOMED code，模型**捏造 13–18% 不存在的碼**；改成從選單挑選，分數高十倍；(d) temperature 0 下**五個模型家族有四個完全重現輸出**，第五個三次執行有 70% 的 mention 一致；(e) **detection 設下硬上限**：**沒有任何一層能救回 extractor 漏掉的 mention**，因此**最大的增益來自對齊 corpus 的標註慣例**，而非 domain-adapted 模型。
-- **為什麼重要**：這把「驗證」從**模型能力問題**重新定位成**召回問題**。我們先前得到的「agent 不會自修 instruction file」是同一個形狀：兩個層級的失敗都是**上游缺口不會被下游修復**。所以投資順序是 **extractor recall → 標註慣例對齊 → 才是 verifier**；倒著做只會得到「排序變好了但沒幾個被修正」的假進步。Recognition ≫ generation 則直接命中我們的 skill 與 wiki：讓 agent **從受控選單挑**永遠比让它**憑記憶生成**可靠。
-- **可信來源**：<https://www.infoq.com/articles/llm-reliability-layers-limits-accuracy/>
+- **發生什麼**：arXiv 2611.17115（CapLite）實測現行 enforcement 防禦（CaMeL / Progent / IPIGuard / DRIFT）——它們都要求**agent 自己的模型**先寫出安全產物（程式、權限政策、依賴圖、constraint list）再由程式強制。**15 個 open-weight 模型中有 13 個（1.7B–12B）寫不出來**：寫出的 policy/graph/constraint 在 **Progent 14 個、IPIGuard 13 個、DRIFT 11 個**模型上可被攻破，**CaMeL 的程式高達 68% 的 episode 根本跑不起來**。CapLite 改為**從 tool schema 推導政策**、**在任何 tool result 被讀取前先 commit write 呼叫**，且一個 write 只有在「所有決定受影響對象／金額／目的地／物件的參數」都出現在使用者請求中才放行 → **13,935 個受攻擊 AgentDojo episode 零攻擊成功**，under-attack utility **29.0% vs CaMeL 27.2%**，token **只要 CaMeL 的 18%**，每 token utility 為所有 enforcement 防禦中最高。
+- **為什麼重要**：把我們的 skill/policy 設計原則換掉一句話：**「由 LLM 寫出的 guardrail 不是 guardrail」**。對應到 OpenClaw 的同一位置是 `permissions.allow` 與 skill 的 `allowed-tools` 宣告。今天 Claude Code v2.1.325 恰好把這件事寫死：**scheduled tasks 與 `/loop` 在執行「宣告了 allowed-tools 或 hooks 的 skill」前必須先問**，要無人值守跑須把 `Skill(name)` 加進 `permissions.allow`。同方向：**能力宣告要能被檢查，而不是被信任**。
+- **來源**：<https://arxiv.org/abs/2611.17115>（2026-11-12）＋ <https://code.claude.com/docs/en/changelog>（v2.1.325, 2026-11-13）
 
-### 4. 工具面、憑證與失敗可見性——三個平台在同一天各自把它們拉到產品層
+### 4. 記憶與 skill 都變成「可演化的程式 + 線上路由」：錨點要指到 repo 位置與可執行檢查
 
-- **發生什麼**：(a) **OpenClaw v2026.11.3**（11-10）：**Visible tool failures**——**回報無回應的 tool failure，而不是靜默結束一個 user-addressed turn 當成成功**；**Private task results**；**Reliable child-task handoffs**（取消 child 後可交接，不被已取消 child 的 receipt 堵住）；**Bounded authentication**；**Sandboxed image access**；**Verified workspace connections**；另有一整組 **credential isolation** 修正——plugin 結果綁其連線憑證、Firecrawl key 綁其 endpoint、embedding 憑證綁其目的地、config 讀取遮蔽 inline env 憑證、managed Signal daemon 與 bundled language server **不再繼承無關的 Gateway secrets**。(b) **GitLab 19.5**（InfoQ 11-06 報導；版本 10-15 發布）：GitLab MCP server **GA**、Claude Code／Cursor 可存取更廣工具目錄並啟動或監控 Duo agents／flows、**管理員可選擇暴露哪些 MCP toolsets**（「giving an agent every available tool increases both context consumption and the number of actions」→ toolset selection 是一種 **least-privilege agent design**）、**MCP rate limits**（Free 60／Premium・Ultimate 600 req/min，reconnect 與 retry 計入）、**Externally Connected Agents** 納入 AI Governance Dashboard（可見哪個 agent、由誰、對哪個 project）。(c) **Claude Code v2.1.319／v2.1.318／v2.1.322**（11-09～11-10）：auto mode 在 telemetry 或 feature flags 關閉時（含 LLM gateway 後方），**伺服器無法檢查的呼叫改為「詢問或拒絕」，不再 fallback 到內建 classifier**（fail-closed）；terminal 支援 **MCP tasks**；mod 的 `$.model.fork` 可設 **`effort`**，讓側邊小任務用低 effort；v2.1.322 為 Vertex fast mode。
-- **為什麼重要**：三件事看似獨立，實則是同一條主線的三個切面——**「agent 碰得到什麼、碰壞了會不會被看見、碰不到的會不會被擋下」**。OpenClaw 的 visible tool failures 直接對應我們每週遇到的「靜默成功」；GitLab 把工具集選擇做成管理員開關，等於**把 least privilege 從設計建議變成平台預設**；Claude Code 在無法檢查時選擇詢問或拒絕，是同一個 fail-closed 判斷。對 OpenClaw 最直接可攜式的一條是 **effort 分層**：側邊小任務不該繼承主 session 的高 effort 與全工具面。
-- **可信來源**：<https://github.com/openclaw/openclaw/releases/tag/v2026.11.3>｜<https://www.infoq.com/news/2026/11/gitlab-19-5-agentic-platform/>｜<https://github.com/anthropics/claude-code/releases>
+- **發生什麼**：三篇同期論文同向。**MAPE**（2611.17068）以程式演化從極小種子演化整個記憶程式，LoCoMo／LongMemEval 上 accuracy 絕對增益最高 **+12%**、服務成本只要 **35%**，抽出兩條可重用樣式：**保留原始對話作為可檢索證據**（保住抽取時遺漏的細節）＋**依 query intent 組裝檢索到的證據**；把 composition module 移植進 **5 個既有記憶系統，5 個全部變好**。**CoReMem**（2611.17316）用 **prospective segment valuation**（比較「有 vs 沒有某段 trajectory segment」跑**下一個任務**的結果）在**下一個任務還不知道之前**就決定記憶價值，記憶因此圍繞 **anchors：repository locations 與 executable checks** 建構；ChainSWE 上 27B actor 的 resolve rate **21.0% → 25.7%**、step 少 **17%**、cache-aware token 少 **11%**。**Skill Adapter**（2611.17007）把 skill 拆成**通用程序 + 個人化 Adapter** 兩層，由 routing agent 依當前 subtask／進度／環境回饋在線挑選並維護 task-level skill library，相較 SkillRL 成功率平均 **+11.43 pp**。
+- **為什麼重要**：三篇合起來給出一個可執行的記憶／skill 架構規格：**記憶不是摘要，是帶 provenance 的錨點集合；錨點最好指到「repo 位置 + 可執行檢查」而不是指到一段散文**。對我們的 llm-wiki 與 skill 系統直接可套用：wiki 頁面若只是「一段摘要」，它是抽取層；若它帶著「在 repo 的哪個位置、有哪個可跑的檢查」，它就是 CoReMem 意義上的 anchor。Skill Adapter 的兩層拆分也解釋了為什麼「通用 skill + 本地 adapter」比「一個大而全的 skill」更能在長程任務存活。
+- **來源**：<https://arxiv.org/abs/2611.17068>／<https://arxiv.org/abs/2611.17316>／<https://arxiv.org/abs/2611.17007>（皆 2026-11-12，abstract 級）
 
-### 5. MaxIM：把「摘要要 grounded」從 prompt 要求變成可最佳化的目標項
+### 5. 工程師的新工作是把合約寫成 agent 改不到的東西：spec + fidelity test + merge gate
 
-- **發生什麼**：arXiv:2611.12825（11-09 提交，**NeurIPS 2026**）MaxIM。將增量摘要表述為 **capacity-constrained, information-theoretic reward-shaping** 問題；從 value suboptimality bounds 出發，**限制序列資訊損失**會促使**最大化對未來、任務相關目標的預測 log-likelihood**（predictive sufficiency 的變分下界）；**遞迴一致性條件**透過**最大化與已觀察歷史的互資訊（MI）**來確保摘要 grounded；以**參數化非對稱 critic**計算 step-wise 變分 MI 下界做 dense reward shaping，緩解 credit assignment。實驗：長時程科學閱讀與多輪對話基準上勝過 RL、SFT、prompt-focused baselines，在**嚴格 token 預算**與**更長時程**下於 factual grounding、autorater 指標與下游任務效用皆優，且**不需昂貴的人類偏好標籤**。
-- **為什麼重要**：過去我們對 compaction 的處理是「在 prompt 裡要求摘要要 grounded」——這是一個**不可驗證的期望**。MaxIM 把它變成一個**有下界的量**（摘要與已觀察歷史的互資訊），而且**不需要人類偏好標籤**就能訓練 → 這給了 compaction 一個**客觀回饋訊號**，讓 A/B 判準不再靠「看起來比較好」。與第 3 點合起來構成一條完整命題：**先確保抽取沒漏，再確保摘要有根據。**
-- **可信來源**：<https://arxiv.org/abs/2611.12825>
+- **發生什麼**：**AWS Emulator**（11-11）把這個轉移做成可運作系統：**400+ 個 Smithy API models、涵蓋 200+ 個 AWS services，全部由 agent 寫成並測試**；方法是把 **fidelity tests 先對真實 AWS 跑通以記錄真實行為**，agent 再建 emulator 直到通過同一組 test，仍失敗的 test 就是缺口；守門是 **merge gate**——深度自動化檢查 ＋ **多個 security agent 各以不同攻擊角度做對抗審查** ＋ 一般 code reviewer ＋ 決定性的「不得觸碰某段程式碼」檢查。★ Swaminathan 的量測：重建 Alf replication engine，**人工監督四晚**才發現「它根本沒辦法檢查自己的結果」；**一旦有了 spec 與 test environment，重建花了約兩小時**（人做四個月）。同日 **Fowler〈Tests as data〉**（11-11）：**AI 寫程式碼後開發者變成它的客戶 → customer tests（不是 developer tests）成為人與 AI 的主要合約 → 把合約移進「測試資料」而不是「測試程式碼」，保護它不被 agent 的意外修改弄壞**（並指出關鍵新事實：DSL parser 與自訂 test runner 過去昂貴難維護，現在 AI 讓它們變便宜）。**〈durable execution〉**（11-10）補失敗面：**runtime 記錄每一個與外部世界互動的步驟結果，失敗時重跑並跳過已完成步驟**。
+- **為什麼重要**：今天三個來源（AWS、Thoughtworks、GitHub）指向同一件事——**人類產出物的重心從程式碼移到合約與守門**，而合約必須放在 agent 碰不到的地方。GitHub Agentic Workflows GA 同日示範制度面：**agent 以唯讀權限啟動、變更由另一個持有自己 write token 的 job 套用**、套用前有 threat-detection job 掃描、預設 **1,000 AIC（$10）/run**、enterprise 預設 **5,000 AIC/日 + 400 AIC/threat-detection run + 20 分鐘 timeout**——★ 但作者自己在 FAQ 寫明**這些保護不會自動延伸到直接 write 權限，也不會延伸到作者自行加入的 custom job**，且 ARC 的 DinD sidecar **預設 privileged**；實測者更保守（自訂 100 AIC/15 turns/10 分鐘，並明寫「叫 agent 忽略 issue 文字裡的指令本身不構成保護」）。
+- **來源**：<https://www.allthingsdistributed.com/2026/11/aws-emulator-and-the-engineers-job-when-agents-write-the-code.html>＋ <https://martinfowler.com/articles/tests-as-data.html>＋ <https://martinfowler.com/articles/durable-execution-agents.html>＋ <https://www.infoq.com/news/2026/11/github-agentic-workflows-ga/>
 
 ---
 
 ## 對 OpenClaw / Linder 的啟發
 
-1. **把「驗證洪水」當成容量問題排程，不要當成品質問題排程。** 今日四個領域同時顯示同一件事（安全 findings、文件債、agent distraction、抽取召回）：我們的瓶頸是**驗證產能**。可執行版本：(a) 對每個自動產出的主張（finding、wiki 命題、報告結論）標一個**驗證狀態欄**（`unverified` / `maintainer-rejected` / `confirmed`），並**明確記錄被維護者拒絕的數量**——那比自報真陽性率可信；(b) 每週跑一次**過期性稽核**（對 7 天前寫入的 wiki 命題重新抽證），把維護者接受率當成 cron 的健康指標，而不是只看有沒有跑完；(c) 報告要同時報 **yield**（正確紀錄數 ÷ 全部紀錄數），否則成功率會隱藏洪水。
-2. **記憶整併改走「寫入路徑之外 + 不改寫紀錄 + 有 provenance」三條件。** 具體到 OpenClaw：daily memory 維持 append-only（現況已對），但**補上 provenance 欄位**——每個蒸餾條目帶一個 `sources:` 指向產生它的會話段落或檔案範圍；且**整併（dreaming／蒸餾成 skill）不得就地改寫來源檔**，只寫新頁並建立連結（這正是 Anthropic 案例中「共享表被互相覆寫 → 72% 覆蓋率」的教訓）。因為「關掉反而更快」是已量測的事實，整併還應該**做成可開關的背景層**。
-3. **給子任務設「低 effort + 窄工具面」，並在 harness 層設 fail-closed。** 兩條外部證據指同一方向：Claude Code 的 `$.model.fork` `effort` 選項（側邊小任務用低 effort）與 GitLab 的 toolset 選擇（least privilege）。可執行版本：OpenClaw 的 `sessions_spawn` 在派**研究／查證型**子任務時明確指定 `toolsAllow` 白名單（`read`／`web_search`／`memory_search`／唯讀 `exec`）而非繼承全套工具；並且**當子任務的工具呼叫無回應時必須報成失敗、而不是回傳空成功**——這正是 OpenClaw v2026.11.3 的 visible tool failures 修的同一個 bug，我們要把它當成**回歸測試**而不是一條 release note。
+### 1. 每個新增的 agent 層都要附一張「帳」：成功率增益 vs token/latency 倍數
+
+2611.12953 的量化標準可直接變成設計守則。**任何新加的 swarm / multi-agent / skill 層，若沒有附上「任務成功率增益 ÷ token 倍數 ÷ latency 倍數」的欄位，就預設是那些「通常很小、很少顯著」的協調 arm。** 落地：(a) 在 wiki 的 agent 架構頁加統一的「成本-收益帳」區段（沿用 [[cost-per-completed-task-not-per-token]] 的量法）；(b) 在每日研究 cron 的報告模板加入固定的「架構帳」欄位。**同時把爭論順序改正：先問「skill 的品質能不能拉高（67.4% → 73.1%）」，再問「要不要 multi-agent（可能 75.6% 但要重設計）」。**
+
+### 2. 生產除錯路徑要補「唯讀 forensics 層」，而不是再教 agent 推理
+
+依 2611.17304 的診斷（access gap 在 5/5 concurrency 事故皆存在、且錯誤假設與可見證據一致）與 Netflix 的 ontology 觀點（缺的是關係不是資料），可直接排一個可執行實驗：**建立唯讀的生產狀態存取面**（live lock view、未截斷的 deadlock／timeout 報告、read-only exec、明確的環境與部署版本脈絡），包成一個 skill。驗收用 AQuA 的做法：**產出的結論必須引用 deployed snapshot 的有效行號／有效指標位置，而不是給一個自信分數**——「根因是否可被引用」比「回答是否自信」可靠。
+
+### 3. 把政策與合約移出 agent 可改寫的範圍，並讓 skill 能力宣告可被檢查
+
+CapLite 與 Fowler 指向同一動作：**安全政策由 tool schema 推導、而不是由 LLM 寫出**；**合約放進資料（測試資料、goal.md、fidelity test）而不是放進 agent 會改寫的程式碼**。對 OpenClaw 的具體對應：(a) skill 的 `allowed-tools` 與權限授予走「可稽核的宣告 + 預設需核准」，與 Claude Code v2.1.325 新規一致；(b) 我們的驗收條件（wiki 頁 frontmatter 完整性、raw 路徑存在、wikilink 可解析、incoming link ≥1）應該寫成**可執行的檢查器**，讓 agent 產出後自動過關，而不是寫成「請遵守」的規則；(c) 長程 cron 工作要參照 durable execution——**每個與外部世界互動的步驟都要能被跳過與重放**。
+
+### 4. 記憶與 skill 兩層化，錨點指到「repo 位置 + 可執行檢查」
+
+CoReMem 的 anchor、MAPE 的兩條樣式、Skill Adapter 的兩層拆分可直接套到我們自己的 wiki/skill 系統：**通用 skill ＋本地 adapter**（通用程序不動，個人偏好寫成 adapter，由 routing 依當前子任務挑選）、**記憶錨點指到可執行檢查**（wiki 頁對應到 graphify query + 一條驗證指令）、**保留原始對話／原始來源作為可檢索證據**（不要只留抽取後的摘要——這正是我們既有的 extraction-ceiling 結論）。這樣記憶才能像 MAPE 說的那樣跨系統移植。
 
 ---
 
 ## 值得追蹤的 repo / paper / article
 
-- arXiv:2611.12068 — MIRIX-2.0: Multi-Agent Memory System（AutoDream、provenance hypergraph、budgeted retrieval）— <https://arxiv.org/abs/2611.12068>
-- arXiv:2611.12825 — MaxIM: Maximally Informative Incremental Summarization via RL（NeurIPS 2026）— <https://arxiv.org/abs/2611.12825>
-- VulnCheck — After 7-months, Glasswing Overwelms Maintainers with Underwhelming Findings — <https://www.vulncheck.com/blog/anthropic-glasswing-november-update>
-- InfoQ — LLM Reliability Layers Under Test: Accuracy, Yield, and the Limits of Verification — <https://www.infoq.com/articles/llm-reliability-layers-limits-accuracy/>
-- InfoQ — GitLab 19.5 Makes Agentic Development a Governed Part of the DevOps Platform — <https://www.infoq.com/news/2026/11/gitlab-19-5-agentic-platform/>
-- OpenClaw v2026.11.3 release notes（visible tool failures／credential isolation／child-task handoff）— <https://github.com/openclaw/openclaw/releases/tag/v2026.11.3>
-- GoogleChrome/modern-web-guidance（Chrome／Edge／Firefox／MDN 共同維護的 agent skills，CLI 有 `search`／`retrieve`／`legacy-scan`）— <https://github.com/GoogleChrome/modern-web-guidance>
-- yetone/magpie（agent 的模型路由層做成桌面選單：Codex on DeepSeek、Claude Code on Kimi）— <https://github.com/yetone/magpie>
+- arXiv:2611.12953 — *Agent Architecture Cost-Success Trade-offs: A Controlled Evaluation across Enterprise-Style SOPs* — <https://arxiv.org/abs/2611.12953>
+- arXiv:2611.17304 — *Where LLM Agents Get Stuck Debugging Databases: Access More Than Reasoning* — <https://arxiv.org/abs/2611.17304>
+- arXiv:2611.17115 — *CapLite: Prompt-Injection Defense for Small Language Model Agents without Model-Written Security Artifacts* — <https://arxiv.org/abs/2611.17115>
+- arXiv:2611.17068 — *Discovering Effective Agent Memory Designs through Program Evolution*（MAPE；code: <https://github.com/ash-ding/MAPE>）— <https://arxiv.org/abs/2611.17068>
+- arXiv:2611.17007 — *Skill Adapter: Personalized Modification and Online Routing of General-Purpose Skills* — <https://arxiv.org/abs/2611.17007>
+- Martin Fowler — *Tests as data: ensuring AI-generated code does what we want* — <https://martinfowler.com/articles/tests-as-data.html>
+- AWS — *AWS Emulator and the engineer's job when agents write the code*（repo <https://github.com/aws/aws-emulator>）— <https://www.allthingsdistributed.com/2026/11/aws-emulator-and-the-engineers-job-when-agents-write-the-code.html>
+- InfoQ — *GitHub Makes Agentic Workflows Generally Available with Isolation and Budget Controls* — <https://www.infoq.com/news/2026/11/github-agentic-workflows-ga/>
+- InfoQ — *Google Open Sources Ambient Quality Agent (AQuA)* — <https://www.infoq.com/news/2026/11/google-ambient-agent-prod/>
+- Google — *A2UI 1.0* — <https://developers.googleblog.com/a2ui-10-build-delightful-fast-reliable-agentic-experiences/>
+- google/elephant-goldfish-model（Elephant 持脈絡、Goldfish **無前情**審閱 → anti-anchoring 模式；18,643★）— <https://github.com/google/elephant-goldfish-model>
+- deepseek-ai/deepseek-harness（280,535★；v0.2.2-rc.2/rc.3：Worktree 審閱、具名多層 SubAgent、AgentTeam、session import）— <https://github.com/deepseek-ai/deepseek-harness>
 
 ---
 
 ## 下一步建議
 
-1. **把「驗證狀態欄 + 維護者拒絕率」做成每日報告的固定欄位**，並在 wiki frontmatter 加 `verified:` / `rejected_count:`——這是三條建議裡唯一能立刻產生新資訊的改動，且不需等實驗。
-2. **安排一個小實驗（可在本週內完成）**：對 `wiki/` 中最近 30 天的 10 條關鍵命題做一次**人工複證**，記錄 (a) 仍成立、(b) 已被推翻、(c) 證據不足無法判定三種結果的數量。這會直接給出我們的「驗證洪水」基線數字，也順便測試「unclassified ≠ insufficient」在實務上是否可操作。
-3. **不要急著寫新的 skill，先做既有的失效回歸**：OpenClaw v2026.11.3 的 visible tool failures 與我們既有的「靜默成功」問題是同一個 bug 型態——先寫一個最小測試證明我們的流程在 tool call 無回應時會報失敗（而非回傳空成功），再考慮要不要新增 skill。這個順序的收益是**先修系統、再疊技能**。
+1. **把今天的四條命題做成可執行的「架構帳」模板**：在 wiki 新增「Agent 層成本-收益帳」欄位定義（任務成功率、token 倍數、latency 倍數、可替代的單 agent 實作、是否為重設計版），並回頭用它檢視我們現有的 swarm / skill 層——這是唯一能把 2611.12953 變成制度的方式，而不是只讀過。
+2. **排一個唯讀 forensics 實驗**：用一條真實的生產除斷需求，比較「只給 agent 現有工具」vs「加一層唯讀生產狀態存取（lock view、未截斷錯誤報告、read-only exec、環境脈絡）」，以**根因是否可被引用到 deployed snapshot 的具體位置**作為驗收；同時用 CapLite 的原則檢查我們的 skill 權限宣告。
+3. **讓 wiki 頁面從「摘要」升級成「錨點」**：在 page template 加 `source_path` + 一條可執行驗證欄位（graphify query / link check / 腳本），對齊 CoReMem 的 anchor 定義；並在報告模板加入固定的「架構帳」欄位。
 
 ---
 
-## 本日查過但無實質更新的來源（誠實記錄）
+## 本日已入庫（llm-wiki）
 
-- **MCP spec**：最新穩定版仍是 **2026-07-28**，本週無新版本。
-- **OpenAI Codex**：近期僅 `rust-v0.167.1` 與多個 `rust-v0.169.0-alpha.*`／`rust-v0.167.0-alpha.*` tag，**body 無實質 release-note 內容**。
-- **Martin Fowler**：`martinfowler.com/articles/` 抓取回 **403**，今日未取得文章清單；改以 InfoQ RSS 覆蓋該面。
-- **LangChain Blog RSS**：抓取只回傳 feed 標題（無條目），**未取得內容**。
-- **Anthropic news 頁**：僅取得連結清單，今日無 agent 架構／方法論條目。
-- **OpenAI News RSS**：近 5 筆全為產品／公司公告，非架構或方法論更新。
-- **Multi-step SWE**（arXiv:2611.07166）、**Harness²**（google-research/harness2）、**dsh-superagent** 已於先前日期收錄，本次僅複核不重複入庫。
+- **Raw**：`raw/research/architecture-daily-2026-11-14/`（`raw-notes.md` 29.2 KB + `source-meta.yaml` 0.9 KB）
+- **新增 source**：`sources/daily-research-2026-11-14-architecture-cost-success-access-gap-and-schema-derived-policy`
+- **新增 concepts（6）**：`architecture-must-be-justified-by-task-success`、`access-gap-not-reasoning-gap`、`policy-derived-from-tool-schema-not-model-written`、`memory-anchors-are-locations-and-executable-checks`、`spec-and-fidelity-test-are-the-merge-gate`、`agent-native-interface-and-payment-layers`
+- **擴充既有頁（2）**：`worst-case-aggregation-single-agent-dominates`（補受控實驗層級的同一結論）、`tool-surface-as-least-privilege-boundary`（補 schema 推導政策 / 唯讀 forensics 層 / agent-native 支付層三條後繼證據）
+- **更新**：`wiki/index.md`、`wiki/log.md`；graphify 已同步（7 頁 incoming link 皆 ≥1，`cluster-only` 完成，429 communities）
 
----
+## 誠實限制
 
-## Wiki 入庫紀錄
-
-- **Raw**：`/home/amr/llm-wiki/raw/research/architecture-daily-2026-11-11/`（raw-notes.md 17.7 KB + source-meta.yaml 0.8 KB）
-- **Wiki 新增 6 頁**：
-  - `wiki/sources/daily-research-2026-11-11-verification-flood-write-path-consolidation-and-tool-surface-governance.md`
-  - `wiki/concepts/verification-flood-generation-outpaces-triage.md`
-  - `wiki/concepts/consolidation-outside-the-write-path.md`
-  - `wiki/concepts/extraction-recall-is-the-verification-ceiling.md`
-  - `wiki/concepts/tool-surface-as-least-privilege-boundary.md`
-  - `wiki/concepts/grounding-as-an-optimization-target.md`
-- **擴充既有頁 4 個**：`verification-throughput-is-the-new-bottleneck`、`dreaming-as-offline-memory-consolidation`、`compaction-provenance-laundering`、`agentic-trust-boundaries`
-- **Index / Log**：已更新 `wiki/index.md`、`wiki/log.md`
-- **Graphify**：`tools/add-wiki-pages-to-graphify.py` → **PASS: Added 2130 wiki page nodes and 14796 wiki links**；`cluster-only` → 完成；**實測 6 頁 incoming link 皆 ≥1（全部 non-orphan）**。
+arXiv **7 篇皆 abstract 級**（未讀全文）；AWS / Google / Brave / OpenAI 數字皆**廠商自述**，無獨立複現；Fowler 兩篇是**觀點＋實踐主張**非受控實驗；CapLite「零攻擊成功」僅在 **AgentDojo** 基準內；CoReMem / MAPE / Skill Adapter 的數值來自**三種不同的量**（resolve rate / accuracy / success rate）**不可相加**；MAPE repo **star = 2**，尚無外部檢驗；Google AQuA 的 replay 結果來自受控重放而非生產流量；本次未下載或執行任何 repo 程式碼、未跑 benchmark、未修改既有 raw 檔案、未改 cron／設定。
