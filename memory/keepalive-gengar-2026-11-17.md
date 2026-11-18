@@ -349,3 +349,60 @@ job: `9d8b6001-3178-46bf-ad9b-dfbb1ec0faa7` — Gengar Keep-Alive（每 3h，ses
 - ⭐ **第三條可攜教訓（SQL % 格式化踩雷）**：helper 若用 Python `%` 字串格式化去組 SQL，而 SQL 內含 `strftime('%m-%d %H:%M')`，會靜默把格式字串吃掉 → 回傳空清單、看起來像「沒有任何核准單」。正解：**SQL 一律用參數化（`?` + argv 傳值）、db 路徑用 argv 傳入、錯誤輸出到 stderr**。這條同樣適用於我自己的任何 sqlite 查詢腳本。
 - 本輪複驗（WAL 齊全下）：`channel_ingress_events` 最新一筆仍是 **11-17 02:58:18 celesteela**，03:00 起 0 筆、11:00 起 0 筆、全表 6160 筆 → 13:02 報告的「inbound 全黑」結論經 WAL 完整版驗證成立。
 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+---
+
+## 2026-11-17 22:02 — Gengar Keep-Alive 巡檢（cron 9d8b6001，22:02–22:08 台北）
+
+**結果：PASS — lane 雙向通；13:02 那一輪的兩大未結案（gateway 未重啟 / Discord inbound 全黑）皆已解。**
+
+### 1) 三項關鍵事實落地（前後兩輪未解項目已收斂）
+- **Gateway 已在 2026-11-17 13:19:32 重啟完成。** 證據：`systemctl --user show openclaw-gateway` → `ActiveEnterTimestamp=Tue 2026-11-17 13:19:32 CST`、`NRestarts=0`、`ActiveState=active/running`（22:04 時 uptime ≈ 8h44m）。→ 13:02 報告的「重啟尚未落地」在**當時**成立，但**在 13:19:32 之後已不成立**（該結論只檢查到 13:0X，時間窗錯過了）。
+- **Discord inbound 已恢復**：唯讀複驗 `channel_ingress_events`（cp .sqlite + -wal + -shm → /tmp，python sqlite3 ro）→ 13:20:00 起 **711 筆，全部 status=completed**；21:00 起 78 筆；最新一筆 **22:06:02 celesteela / completed**（22:05:40 mrmime、22:04:27 gengar）。by account：celesteela 690 / mrmime 14 / gengar 5 / rowlet 2。→ 斷線區間 ≈ **10h20m（03:00 → 13:20:48）**，與耿鬼回報一致。
+- **`operator_approvals` 三張票（04:06:36 / 07:22:20 / 13:05:50）皆 expired + decision=deny + terminal_reason=timeout**，但 gateway 仍在 13:19:32 重啟了 → **重啟不是透過這三張核准單達成的**（operator 在核准窗之外自行執行，或走別的管道）。事後看不必再開第 4 張票。
+- **429／overload 風暴已結束**：gateway journal 最近 3 小時僅 **1 筆 HTTP 429 + 1 筆 overloaded_error**（對照 13:02 的 6 小時 12 筆 overloaded）；耿鬼側最近 60 分鐘 = 0。
+
+### 2) Fleet tally（50 jobs / 45 enabled）：ok 32 / error 6 / skipped 6 / none 1
+- 對比 13:02（ok 31 / error 8 / skipped 5 / none 1）：**error 8→6、skipped 5→6、ok 31→32**。
+- ⭐ **13:02 的最大惡化已翻綠**：`heartbeat-mrmime`（errs 8 → **0**，22:01 跑完，**耗時 186s** < 600s 門檻）與 `heartbeat-rowlet`（errs 8 → **0**，21:38 → **skipped / 514ms / no-route 綠燈閒置**）。12:40 operator 熱改 `agents.entries.mrmime.heartbeat.{isolatedSession,lightContext}` + cron 層 sessionTarget 調整**確實生效**（先前 13:02 說「兩層都要改」→ 兩層都改了）。
+- 6 支 skipped 全是 no-route heartbeat（rowlet / celesteela / greninja / picturecat / roaringmoon / gengar），errs 皆 0 → 綠燈閒置，非故障。
+- keep-alive 家族：Gengar 9d8b6001 **ok（本輪 running）** / Picturecat 02eb0989 ok / Celesteela 880b5c17 ok；Charizard 1b2165f9、Rowlet ee14ba4c、RoaringMoon ee3def26、gengar b7a56e10 **刻意停用**。
+- `heartbeat-flaaffy` 6e93c179 仍 status idle / lastStatus=none（排程形同停擺，待 Linder 決定）→ 沿用未結案。
+
+### 3) 紅單（6 支，皆非本 job lane）
+| Job | agent | errs | 最後失敗 | 症狀 | 性質 |
+|---|---|---|---|---|---|
+| 每日 Agent × 軟體開發潮流研究 a72cb46b | rowlet | 6 | 11-17 10:00 | API rate limit | Token Plan |
+| 每日資安建議 911eee45 | — | **5** | 11-17 21:00 | API rate limit | Token Plan（**本輪新增第 5 次**） |
+| 每日論文討論 58fe15dc | rowlet | 5 | 11-17 07:00 | API rate limit | Token Plan |
+| Jormungand daily all-agent health 40e09cd1 | mrmime | 4 | 11-17 03:29 | All models failed (4) 429 | 陳舊紅單 |
+| 晨間情報 pipeline 45ccf4e9 | roaringmoon | 4 | 11-17 08:15 | 600s timeout (model-call-started) | 逾時 |
+| 每日 OpenClaw 備份（mrmime） | mrmime | 4 | 11-17 16:49 | AI service temporarily overloaded | **本輪新紅單**（過載，非配額） |
+- 已恢復：`PTCGP Meta Analysis` 09c7940b（auth temporarily unavailable）→ 現 ok。
+- 共同根因仍是**單一 MiniMax Token Plan**：OpenAI 餘額 0 → 所有 fallback（M2.7 / portal / minimax）都還是同一份 plan，沒有跨廠商冗餘。
+
+### 4) 耿鬼 lane 回報（22:04–22:06，雙向通確立）
+- `sessions_send` → `agent:gengar:main` accepted（runId `f8beb2b5-949a-48ef-8989-6e4f55138992`），耿鬼回完整 lane 表，並**回送本 cron session**（24ea2b0f）→ 雙向通（已接受 → 已讀回）。
+- 耿鬼側 7 顆自有 job：**有 route 的全 ok / errs=0**（Watchdog 29c2d630、English coach ac9e7ada、BBC 88810bfe、skill-review 7767e03b、版本檢查 f5148ff0）；`heartbeat-gengar` c29eca0f = skipped / errs=0（no-route）；`b7a56e10` = 刻意停用。→ 上一輪耿鬼說「你問 8 顆，我只有 7 顆」→ 確認是 **7 顆**（6 enabled + 1 disabled）。
+- Discord：**ON / state OK / accounts 9/9**；今日投遞全成功（English reminder 05:00 + 05:02 retry、BBC 07:00 delivered）→ outbound 從未是壞的那半。
+- 耿鬼 watchdog 已再進化：比對 gateway process start time vs 核准票建立時間，**gateway 已重啟過就抑制那張 expired 票**（避免重複報噪音）→ 連兩輪印 NO_REPLY（健康）。
+
+### 5) 系統面
+- `elle.service` 崩潰迴圈**仍在**（13:04 = 100,952 → 22:04 = **102,025** restarts，ActiveState=activating/start-pre）。root cause 不變：`/home/amr/elle_builder_package` 目錄不存在 → 每秒重啟純浪費。需 root 才能 stop/mask → 維持只回報不動手。
+- 磁碟：/` 468G 用 259G（59%），186G 可用 → 無壓力。
+- Gateway 端無 `prepared model runtime plugin generation was superseded` 告警（13:02 時 1 小時 7 筆）→ 已收斂。
+
+### 6) 邊界遵守
+未 systemctl / 未 kill PID / 未 restart gateway / 未改 cron 排程、payload、provider、model、fallback、llm-wiki；未再開第 4 張 gateway 重啟票（已無必要）；量測全唯讀（sqlite 走 cp .sqlite+-wal+-shm → /tmp + python sqlite3 ro，SQL 參數化）。
+
+### 7) 仍未結案（owner 側）
+MiniMax credits / 跨廠商 provider（OpenAI 餘額 0）；a72cb46b(6) + 911eee45(5) + 58fe15dc(5) 停用倒數（10 次自動停用）；6 支 no-route heartbeat 要不要釘 target（釘＝每 30 分鐘洗 DM）；elle.service 崩潰迴圈（需 root）；heartbeat-flaaffy 是否啟用；llm-wiki 未提交變更。
+
+### 8) 方法論補一條（本次再驗）
+`channel_ingress_events.received_at` 存的是 **epoch ms 字串**，用 ISO 字串比較會靜默回 0 筆（看起來像「inbound 仍全黑」）→ 必須 `CAST(received_at AS INTEGER) > ?` 或轉 epoch 參數化比對。與上次的 WAL 三檔 + SQL 參數化教訓同族：**先驗欄位型別，再下條件**。
+<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 9) 22:08 — 耿鬼 lane alive 回訊落地（inter-session route 讀回確認）
+- 耿鬼的 "lane alive" 長訊於 22:07:14 以 inter-session 訊息正式注入本 run session（`sourceSession=agent:gengar:main`, `sourceTool=sessions_send`）→ **雙向通由「已接受」升級為「已讀回」**（與 11-16 16:07 同款語意）。
+- 數字對帳：耿鬼報 706 筆 ingress（22:04 量測）／我方唯讀複驗 711 筆（22:08 量測）→ 差 5 筆＝量測時刻差，非矛盾；by account 皆 celesteela 佔絕大多數（687 vs 690）。gateway 重啟時間 13:19:32 雙方一致。
+- ⭐ **已向耿鬼更正一項我方口誤**：先前提示寫「你側 8 顆 cron」，CLI 實查 gengar-owned = **7 顆**（6 enabled + b7a56e10 disabled）；「8」是沿用 11-16 日誌的舊數字。→ 以後 fleet 計數一律以 `openclaw cron list --all --json` 當輪實查為準，不引用前輪口述數字。

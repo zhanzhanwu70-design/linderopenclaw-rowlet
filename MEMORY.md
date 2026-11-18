@@ -336,11 +336,6 @@
 - **graphify query**: 51 nodes found，Community 0(core mechanism)/1(optimization)/2(related systems)
 - Graph 有 node count bug（cluster-only 報 8648 vs 9448），暫不處理
 
-## Promoted From Short-Term Memory (2026-09-05)
-
-<!-- openclaw-memory-promotion:memory:claim:872e23fe28e7 -->
-- 完成: [x] 寫 metadata.json → 同上 [score=0.751 signals=6 recalls=0 avg=0.620 source=memory/2026-08-30.md:16-16] <!-- trigger: metadata.json, 完成, 同上 --> <!-- importance: 8 -->
-
 ## 蒸餾層的權威性陷阱（2026-10-31 新增）
 
 來源：arXiv:2610.26836 *Same Simulation, Different Evidence*（UC Riverside + UC Irvine）。
@@ -353,3 +348,21 @@
 - **淨值 ≈ 0 不等於無害**：GPT-5.4 的 build +4.1 pp 抵銷了 closure −7.2 pp → 評估 context 管理**必須分階段報告**（build / exposure / closure），不能只看 final accuracy。
 - **Hybrid 是 safe default**：塞得下就內聯（不需知道工具語意、不需額外指令、還更省 token）；**檢索應是容量不足時的 fallback，不是預設路徑**。
 - **可攜 protocol**：配對重播——checkpoint 取在「執行結果進模型之前」，兩臂共用檔案/prompt/history/預算，唯一差異是交付方式 → 可驗證任何「要不要把這個輸出放進 context」的決策。
+
+## Promoted From Short-Term Memory (2026-11-18)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-11-16.md:33:41 -->
+- ## Gengar Keep-Alive 巡檢（cron 9d8b6001，11:38 台北）— 同一支 Picturecat 那節的姊妹篇 [score=0.852 signals=3 recalls=3 avg=1.000 source=memory/2026-11-16.md:33-34] <!-- trigger: gpt, openai, keep-alive --> <!-- importance: 9 --> <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+<!-- openclaw-memory-promotion:memory:memory/2026-11-16.md:1:16 -->
+- # 2026-11-16（週一） ## Picturecat Keep-Alive 巡檢（cron 02eb0989，11:38 台北） [score=0.847 signals=3 recalls=3 avg=1.000 source=memory/2026-11-16.md:1-4] <!-- trigger: gateway, keep-alive, v2026.8.2 --> <!-- importance: 8 --> <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+<!-- openclaw-memory-promotion:memory:memory/2026-11-16.md:22:37 -->
+- ### 為什麼不改成「把 openai-codex 加進 allow」 - mrmime 2026-11-15 實測：`openai-codex/gpt-5.5` 打到 `https://api.openai.com/v1/responses` 且用 sentinel key `openai-oauth` → **HTTP 401 invalid_api_key**；自建 `chatgpt-codex` provider 也接不上。放行也不會成功，改用 minimax 才是有效解。 - 但「要不要把 codex 這條路真的修通」是全域 policy / provider 層級的決定 → 留給 Linder，不在 unattended run 裡自行放寬 modelPolicy。 ### 給 Linder 的待決事項 1. MiniMax Token Plan 額度今日 07:00 前後見底（429），若要穩定跑 07:00 晨間批次，需確認額度或加 fallback provider。 2. `openai-codex` provider 端點錯誤（401）是否要修 provider 設定。 3.... [score=0.847 signals=3 recalls=3 avg=1.000 source=memory/2026-11-16.md:22-37] <!-- trigger: gpt, openai, openai-codex --> <!-- importance: 8 --> <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+## Picturecat Keep-Alive 巡檢 — 03:00 槽雙重負載（2026-11-18 13:02 實測）
+
+<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **03:00 台北有兩支 30 分鐘級 agentTurn job 同時起跑**：`36b493db` Memory Dreaming Promotion（`0 3 * * *` tz=None=gateway local、`timeoutSeconds=None`、`toolsAllow=["*"]`、declarationKey `memory-core:memory-dreaming-promotion`）＋ `40e09cd1` Jormungand daily all-agent health（`0 3 * * *` tz=Asia/Taipei）。今日 03:00 實測：dreaming 跑 30.1 分鐘（ok），Jormungand 30.1 分鐘 timeout（ce=5），期間 03:02:50 八個 Discord client 同批 close → inbound 瞎約 59 分鐘（04:44 重啟後恢復）。
+  → **只搬走 dreaming 只減半負載**；兩支都要錯開。且 dreaming 屬 plugin-declared job，CLI 改可能被 declaration reconciliation 還原 → 治本在 memory-core plugin。
+- **Discord runtime 的判準是 `channels status` + journal，不是 agent 自述**：agent 會回「Discord inbound working: yes」但那只代表 delivery context 物件存在，不代表 WS READY。判讀用 `READY wait timed out` 筆數（2026-11-18：重啟前 2023 筆、重啟後 0 筆）。
+- **「prepared model runtime plugin generation was superseded」會在多支 agentTurn job 同分鐘起跑時出現**（durationMs=6 瞬間死），已從 gengar/picturecat/mrmime 蔓延到 **rowlet lane**（2026-11-18 13:00 起 rowlet nested+session 各 2 筆）。
+- 本 job（cron `02eb0989`）fallback 鏈 4 個候選**全屬同一 MiniMax Token Plan** → 跨廠冗餘恆為 0；429 時四個一起死，紅單佔 fleet 紅單的 18/20。

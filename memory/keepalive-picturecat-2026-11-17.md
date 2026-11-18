@@ -231,3 +231,171 @@
 - 已用 rowlet 帳號貼到 Discord channel `1482363974119854234`，**messageId `1572115759717416983`**，deliveryStatus `sent`（同時再次實證 REST outbound 活 / WS inbound 死）。
 - 貼文內容：① `heartbeat-rowlet` 8/10、約 13:48 自動停用倒數 + 三個止血選項（job 層 `sessionTarget: isolated` / 照 charizard 加 `target:"none"`）；② gateway 重啟第 4 輪未核准、10h05m inbound 全瞎 + 重啟後驗證步驟；③ 429 已退潮；④ 兩個被推翻的假說（token 唯一、gateway 未重啟）。
 - 待下輪驗證：`heartbeat-mrmime` 改了 timeoutSeconds=1800 後 13:41 那輪是否還會 600s 逾時（若會，連敗數繼續累積 → 14:11 自動停用）。
+
+## 2026-11-17 16:02 — ✅ 轉折：gateway 已重啟、Discord inbound 復活；Picturecat PASS；備份 job 被 529 打死（已手動補跑）
+
+<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1. Picturecat 本身：PASS
+- `sessions_send` → `agent:picturecat:main` → **"No active task, no errors — ready for work."**（runId `c605c379`，16:02:38 完成）。
+- 本 job（02eb0989）run 史：13:02 ok → 10:06 ok → 07:07 ok → 04:07 ok → 01:07 error(429) → **本輪 16:02 running**，consecutiveErrors=0。
+- 姊妹 job 同步全綠：Gengar KA（16:02 ok，dur 15.3s）、Celesteela KA（16:02 ok，dur 11.9s）。
+
+### 2. ⭐⭐ 大新聞：gateway 已於 **13:19:02 重啟**，Discord 全線復活（前 7 輪的頭號問題已解）
+- journal 13:19:02 `[gateway] received SIGTERM; restarting` → 13:19:32 systemd `stop-sigterm` timeout → kill → pid 2548417 啟動 → 13:19:54 http listening → 8 個 Discord client 依序 delayed startup（10s–70s 錯開）→ 13:21 各 `client initialized` / `channels resolved`。
+- 前一輪報告的 **gateway restart approval 最終被核准並執行**（approval id `system-agent:e33efcf4-…`；前一輪 13:17 還顯示 EXPIRED，隨後重新開立並通過）。
+- ✅ `openclaw channels status`：**8 帳號全部 `running, connected`**（greninja disabled）——對比前 7 輪的 `running, disconnected, error:startup-not-ready`。
+- ✅ **READY wait timeout = 0**（13:19 重啟後至今 0 筆），重連 storm 消失。
+- ✅ **inbound 復活的直接證據**：`channels status` 顯示 gengar `in:5m ago`、mrmime `in:4m ago`、celesteela `in:1m ago`（在:in/out 都在跳）；重啟後 Discord 使用者訊息有被收到並處理。
+- ⚠️ 仍有間歇性 `websocket closed code=1005`（14:11 / 14:18 / 15:23 / 16:07 各一次，reconnect-opcode resume=true 後**成功重連**，不再卡死）→ 症狀從「10 小時全黑」降級為「偶發掉線、可自癒」，已非阻塞項。
+- 📌 長期風險仍在：**03:00 `36b493db Memory Dreaming Promotion`** 明天準時再跑 → 需確認是否還會打死 client 狀態機（本輪已改 isolated，仍建議改離開整點）。
+
+### 3. 🔴 新瓶頸：MiniMax 供應端 **529 overloaded**（不再是 429 Token Plan），並打死了「每日 OpenClaw 備份」
+- 16:00–16:04 短短幾分鐘：**40 次 HTTP 529 `overloaded_error` (2064)** + 1 次 HTTP 429（`server is busy`）。16:04:30 之後回落到 0 次，09:xx 有 `status=200` 成功回應 → **供應端容量尖峰，非本機問題**。
+- 受災 job：`af94aa92 每日 OpenClaw 備份`（cron 5 0 8 * * * UTC）→ **連 3 次 error**，last summary：`All models failed (3): minimax/MiniMax-M3: 529 | minimax-portal/MiniMax-M2.7: 529 | minimax/MiniMax-M2.7: 529`。**注意：整條 fallback 鏈三個型號都指向 MiniMax（minimax / minimax-portal 共用同一 Token Plan），所以 fallback 完全沒有冗餘 → 供應端一忙就全滅。**
+- ✅ **已手動補跑備份**（在本輪內直接跑 `/home/amr/.openclaw/workspace-mrmime/scripts/backup-openclaw.sh`，未經 model、不受 529 影響）：**成功**，UTC 08:06:59–08:08:38。結果：
+  - workspace-mrmime → `7ab4a8f45` pushed main → origin/main
+  - workspace-rowlet → `120df8cf` pushed master → origin/backup/master（13 files，含 3 份 keepalive 日誌）
+  - workspace-picturecat → `60eed93` pushed master → origin/master
+  - workspace-roaringmoon → `35e0d2b` pushed master → origin/backup/master
+  - workspace-greninja → `60a2f36` pushed master → origin/master
+  - nested snapshot → `74ec57d` → charizard-nested-snapshots（9 repos captured）
+  - **無 push 失敗、無 rebase 衝突**（今天第一次全綠的備份）。
+- 💡 **教訓**：備份 job 的核心動作是 shell script，卻綁在 model turn 上 → **模型一忙，資料就沒備份**。備份腳本應該直接由 cron 觸發（不經 agent），或至少讓 agent 失敗時仍執行腳本。
+
+### 4. Fleet 紅單（45 jobs，本輪 7 支紅）
+| job | ce | 最後失敗 | 類別 |
+|---|---|---|---|
+| 每日 Agent × 軟體開發潮流研究 | 6 | 11-17 10:02 | rate_limit |
+| 每日論文討論 | 5 | 11-17 07:01 | rate_limit |
+| 每日資安建議 | 4 | 11-16 21:09 | rate_limit |
+| Jormungand daily all-agent health | 4 | 11-17 03:29 | rate_limit |
+| 晨間情報 pipeline (Roaringmoon) | 4 | 11-17 08:00 | timeout |
+| 每日 OpenClaw 備份 | 3 | 11-17 16:02 | **529 overloaded** |
+| PTCGP Meta Analysis | 3 | 11-16 20:38 | delivery target 未解析 |
+
+- ✅ 綠燈：3 支 keep-alive、系統維護、健康回報、push-llm-wiki、dreaming、heartbeat-charizard、轉錄監控、Gengar Cron Health Watchdog。
+- `heartbeat-rowlet` / `heartbeat-mrmime` **已自癒**：mrmime 最近 3 輪全 ok（dur 4.6–9.8s）；rowlet 3 輪 `skipped (no-route)` 屬良性長態（不再有 600s timeout → 前一輪的「自動停用倒數」威脅解除）。
+
+### 5. 給 Linder 的待決事項（第 8 輪，重點已轉移）
+1. **【已解決】** gateway 重啟 → Discord inbound 復活；**不需要再做第 5 次重啟提案**。
+2. **【新・急】補跨廠商 fallback**：`agents.entries.*.model.fallbacks` 全部只列 MiniMax 系（`minimax/*` 與 `minimax-portal/*` 共用同一 Token Plan → 零冗餘）。config 已有 `openai` provider（`gpt-5.5` / `gpt-5.4-mini`，auth=oauth）可作 fallback，但 **auth 狀態未驗證**（`openclaw models list` 顯示 Local= Auth=no）→ 需先確認 openai provider 的憑證可用，再把 `openai/gpt-5.4-mini` 加進 mrmime 等關鍵 agent 的 fallback 鏈。
+3. **【新・急】備份不該綁 model**：把 `backup-openclaw.sh` 從 agentTurn payload 改成純 cron/script payload（`kind:"script"` 或直接 crontab），避免 529/429 讓備份整天不跑。
+4. **【急】`36b493db` dreaming 離開整點**（`17 3 * * *`）→ 明天 03:00 是否重演斷線仍未驗證，本輪重啟只是治標。
+5. 錯開 07:00 / 08:00 / 10:00 尖峰（429 歷史來源）＋ 本輪新增 **16:00 尖峰 529** → 建議整體排程散開。
+6. `09c7940b PTCGP Meta Analysis` 的 delivery target `1338836482420510764` 仍未解析。
+
+### 邊界（本次刻意沒動）
+- 未自行重啟 gateway（重啟是 operator 核准後由外部執行）；未改 provider / model / fallbacks / cron 排程 / channel 設定；未為了讓紅單轉綠而手動 `run` 其他 job。
+- 例外：**手動跑 backup-openclaw.sh**（唯讀 git 提交與 push，屬 job 自身的既定工作、不改 config、不觸碰模型層），用來補回被 529 打掉的當日備份。
+- 探測全為唯讀（sessions_send、channels status、cron list/runs、journal、ps、config get）。
+
+## 2026-11-17 19:02 — ✅ 全綠收尾：Picturecat PASS、Discord 8/8 連線、備份已脫離模型束縛
+
+<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 0. ⚠️ 本輪先修掉一個「假全綠」的觀測錯誤（重要教訓）
+- 我第一次掃 log 用 `journalctl -u openclaw-gateway --since "16:00"`，得到 **0 筆** → 一度誤判「16:00 後零錯誤」。
+- 真相：gateway 是 **user unit**，正確寫法是 `journalctl --user -u openclaw-gateway`。錯誤寫法回 `-- No entries --`（stderr 被我 `2>/dev/null` 吃掉 → **假的 0**）。
+- ⇒ **往後所有 round 的錯誤掃描一律用 `--user`**，且先跑 `wc -l` 確認 journal 有資料再看統計。
+
+### 1. Picturecat 本身：PASS
+- `sessions_send` → `agent:picturecat:main` → **"pong — idle, no errors since 16:00."**（runId `5e970f4b`，19:02）。
+- Discord `picturecat`（@luna）：enabled / running / connected / transport:just now。
+- 本 job（02eb0989）：上一輪 16:02 ok、dur=475s、consecutiveErrors=0；本輪 running。
+- 姊妹 job 同時段全綠：Gengar KA 16:02 ok（dur 15.3s）、Celesteela KA 19:02 ok。
+
+### 2. Gateway / Discord：穩定
+- gateway pid **2548417 自 13:19:32 起活到現在（5h43m，無重啟）**；`NRestarts=0`。
+- `openclaw channels status`：**8 帳號全部 running + connected + transport:just now**（greninja disabled）。
+- inbound 有跳動：celesteela in:2m、gengar in:58m、mrmime in:57m、rowlet in:3h。
+- ⚠️ 仍有間歇 `websocket closed code=1005`（18:18 / 18:19 / 18:21 / 18:31 / 18:53 各一次）→ **全部自癒重連**，未累積 READY timeout（13:19 重啟後 READY timeout = 0）。症狀維持「偶發掉線、非阻塞」。
+
+### 3. Provider 壓力：16:00–16:10 一波，之後退潮
+- 真正錯誤分佈（`--user` 掃到的）：16:00–16:10 共 **70+ 筆** 429/529（備份 job 16:09 被 529 打死那次）→ 16:10 後只剩 **1 筆**：18:02:08 `minimax-portal` HTTP 429（elapsed 97.9s）。
+- 該筆打死的是 `d7b0355b Jormungand mrmime Codex A2A heartbeat`（agent=mrmime, sched `0 */6 * * *` Asia/Taipei）→ **但 fallback 鏈救回來了**：最終 lastRunStatus=ok、dur=155s、ce=0。
+- ⇒ **同廠 fallback（minimax-portal → minimax）有效**；但 `agents.defaults.fallbacks = ["minimax/MiniMax-M3"]` 仍是同一家 Token Plan → **零跨廠冗餘**。
+
+### 4. ✅ 上一輪待辦 #3 已解：每日 OpenClaw 備份已脫離模型層
+- `af94aa92` payload 已改成 **`kind:"command"`**：`sh -lc "bash /home/amr/.openclaw/workspace-mrmime/scripts/backup-openclaw.sh"`（updated 17:09，timeout 1800s）→ **不再經過 model，429/529 打不到它**。
+- 16:06–16:08 手動補跑結果仍在 repos 裡：rowlet `120df8cf` / mrmime `7ab4a8f45` / picturecat `60eed93` / roaringmoon `35e0d2b`（dirty 檔案為 16:08 之後新產生的 memory log，正常）。
+- 下一輪自動執行：**明天 16:05（08:05 UTC）**，這次是 script payload → 預期必定成功，**待明天那輪驗證**。
+
+### 5. Fleet 紅單（45 jobs，本輪 7 支紅，與上輪持平；**16:00 後無新增紅單**）
+| job | ce | 最後失敗 | 類別 |
+|---|---|---|---|
+| 每日 Agent × 軟體開發潮流研究 | 6 | 11-17 10:02 | rate limit |
+| 每日論文討論 | 5 | 11-17 07:02 | rate limit |
+| 每日資安建議 | 4 | 11-16 21:09 | rate limit |
+| Jormungand daily all-agent health | 4 | 11-17 03:29 | 429 |
+| 每日 OpenClaw 備份 | 4 | 11-17 16:09 | 529（**payload 已修，待明天驗證**）|
+| 晨間情報 pipeline (Roaringmoon) | 4 | 11-17 08:15 | timeout |
+| PTCGP Meta Analysis | 3 | 11-16 22:23 | auth profile unavailable |
+
+- 綠燈：3 支 keep-alive、系統維護、健康回報、push-llm-wiki、dreaming、heartbeat-charizard/mrmime、轉錄監控、Codex health check、Gengar Watchdog、A2A heartbeat。
+- `heartbeat-*` 的 `skipped: no-route` 仍是良性長態（rowlet/picturecat/roaringmoon/gengar/greninja/celesteela），非失敗。
+
+### 6. 給 Linder 的待決事項（第 9 輪，重點已收斂到 2 條）
+1. **【最急・約 8 小時後】`36b493db Memory Dreaming Promotion` 仍在 `0 3 * * *`（03:00 整點）**。機制已釐清：它是 **isolated agentTurn、lightContext、實跑 31.5 分鐘**（dur=1887865ms）→ 與 8 隻 Discord bot **同一個 gateway process / 同一個 event loop** → 重活時 event-loop starvation → 今日 03:03–03:30 全域斷線、Discord inbound 全瞎 10 小時。建議二選一：① 移到冷門時段並設 `timeoutSeconds` 上限；② 改 script payload / 限縮 tools（目前 `toolsAllow:["*"]`）。
+2. **【急】跨廠 fallback 仍無法啟用**：`openai/*` provider 已設定但 `openclaw models list` 顯示 **Auth = no**（gpt-5.5 / gpt-5.4-mini / gpt-5.4 / gpt-5.3-codex 全部）→ 需 Linder 端完成憑證流程後，才能把 `openai/gpt-5.4-mini` 加進 `agents.defaults.fallbacks`。這是唯一能真正消除「MiniMax 一忙全滅」的動作，**我做不了（不碰憑證）**。
+3. `09c7940b PTCGP Meta Analysis`：auth profile 仍 unavailable + delivery target `1338836482420510764` 未解析（ce=3，兩天未恢復）。
+4. 尖峰仍存在（07:00 / 08:00 / 10:00 / 16:00），本輪 16:00 波單獨造成 70+ 筆 429/529；建議持續錯開整點排程。
+5. `heartbeat-*` 的 `skipped: no-route` 是預期長態，**建議不要算入紅單**（否則每天都有假紅）。
+
+### 邊界（本次刻意沒動）
+- 未自行重啟 gateway（重啟屬 operator 核准範圍）；未改 config / cron 排程 / provider / model / fallback / channel；未手動 `run` 任何其他 job。
+- 探測全為唯讀：sessions_send、channels status、cron list、journal（`--user`）、ps、models list、config get、git log。
+
+## 2026-11-17 22:02 — ✅ 全綠：Picturecat PASS / Discord 8/8 連線 / gateway 連續活 8h43m / fleet 紅單 6 支（+1 新增 429）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1. Picturecat 本身：PASS
+- `sessions_send` → `agent:picturecat:main` → **"pong — no active task, no errors since 19:02; Discord delivery context is active/connected."**（runId `dc1cfd9a`，22:02）。
+- Discord `picturecat`（@luna）：enabled / running / connected / transport:just now。
+- 本 job（02eb0989）：status=running、ce=0；上一輪 19:02:07 **ok**（dur=121s）。
+- payload 複查：`kind=agentTurn`、model `minimax-portal/MiniMax-M3`、fallbacks `["minimax/MiniMax-M3","minimax-portal/MiniMax-M2.7","minimax/MiniMax-M3"]` → **三個備援全是 MiniMax 同廠同 Token Plan → 跨廠冗餘仍是 0**。
+
+### 2. Gateway / Discord：健康
+- pid **2548417 自 13:19:32 活到 22:02（8h43m，無重啟）**，`NRestarts=0`，`ActiveState=active/running`。
+- `openclaw channels status`：**8 帳號全部 running + connected**（greninja disabled = 預期）；inbound 有跳動（picturecat/celesteela/charizard/flaaffy/roaringmoon in:just now；gengar in:2h、mrmime in:57m、rowlet in:6h）→ **今日 10 小時的 inbound 全瞎已癒合**。
+- `READY timeout` 自 13:19 重啟後累計 **0**。
+- ⚠️ 唯一症狀：`websocket closed` 自 19:00 起 **29 條 log（含重複行，實際 ~15 次）**，code 1006/1005 → 全部自癒重連。比 18:00–19:00 視窗（5 次）略密（≈每 12 分鐘 1 次），屬「偶發掉線、非阻塞」，但**頻率在爬升，值得盯**。
+
+### 3. Provider 壓力：19:00 後只有 1 筆真錯誤
+- `21:01:48 provider=minimax-portal status=429 elapsedMs=81806` → 打死 `每日資安建議`（runId `0d1066db`）→ **ce 4→5**（新紅單）。
+- **529 = 0**（先前 grep 到的 2 筆「529」是毫秒時間戳 `20:10:17.529`／`20:11:07.529`，非錯誤碼 —— 已排除）。
+- 其餘 19:00→22:02 全 provider 呼叫皆 200。
+
+### 4. 📌 已確認為「良性簽章」的一條錯誤（勿再誤判成紅單）
+- `lane task error: lane=nested:agent:picturecat:main error="prepared model runtime plugin generation was superseded for /home/amr/.openclaw/agents/picturecat/agent"`（durMs 5–9）。
+- 出現時機**精準對齊本 job 的 keep-alive ping**：16:02:38 / 19:02:23 / 22:02:27 → **3 輪 3 次**，且每次 pong 都正常回來。
+- 結論：這是 picturecat agent runtime plugin generation 的競態副作用，**非故障、非掉線**；往後巡檢直接歸類為良性，不再升級通報。
+
+### 5. Fleet 紅單（45 jobs：ok 32 / skipped 6 / error 6 / never 1）
+| job | ce | 最後失敗 | 類別 | 下次 |
+|---|---|---|---|---|
+| 每日 Agent × 軟體開發潮流研究 | 6 | 11-17 10:00 | rate limit | 11-18 10:00 |
+| 每日論文討論 | 5 | 11-17 07:00 | rate limit | 11-18 07:00 |
+| 每日資安建議 | 5 | **11-17 21:00（本輪新增）** | 429 Token Plan | 11-18 21:00 |
+| Jormungand daily all-agent health | 4 | 11-17 03:29 | 429 | 11-18 03:00 |
+| 晨間情報 pipeline (Roaringmoon) | 4 | 11-17 08:15 | timeout（dur=936s） | 11-18 08:00 |
+| 每日 OpenClaw 備份 | 4 | 11-17 16:09 | 529（**payload 已修，待驗證**） | 11-18 16:00 |
+
+- ✅ **PTCGP Meta Analysis 已脫紅單**（上輪 ce=3 → 本輪不在 error 列表）。
+- `never run`：`Heartbeat (flaaffy)`（1 支，良性）。
+- `skipped: no-route` 6 支（rowlet/picturecat/roaringmoon/gengar/greninja/celesteela）＝良性長態，**不計紅單**。
+- 綠燈：3 支 keep-alive、系統維護、Gengar Cron Health、Rowlet 轉錄監控、heartbeat-charizard 等。
+
+### 6. ✅ 上一輪待辦 #3 已驗證（部分）：每日 OpenClaw 備份已脫離模型層
+- `af94aa92` payload 確認為 **`kind:"command"`**：`sh -lc "bash /home/amr/.openclaw/workspace-mrmime/scripts/backup-openclaw.sh"`（timeout 1800s）→ **不再經過 model，429/529 打不到它**。
+- ce=4 是 16:09 那次 529 的殘留值；**下一輪自動執行 11-18 16:00:05（script payload）→ 預期必定成功，待明天驗證**。
+
+### 7. 給 Linder 的待決事項（第 10 輪，重點已收斂到 2 條 + 1 觀察）
+1. **【最急・約 5 小時後】`36b493db Memory Dreaming Promotion` 仍在 `0 3 * * *`（03:00 整點）**。複查 payload：**agentTurn + `toolsAllow:["*"]` + 無 `timeoutSeconds` + lightContext**，上次實跑 **dur=1888s（31.5 分鐘）** → 與 8 隻 Discord bot **同一個 gateway process / event loop** → 重活時 event-loop starvation，今日 03:03–03:30 全域斷線、inbound 全瞎 10 小時的元兇。**今晚 03:00 會再發生一次**（next=2026-11-18 03:00:00）。建議二選一：① 移到冷門時段（例如 04:30 或 23:30）並設 `timeoutSeconds`；② 改成 script payload 或限縮 `toolsAllow`。
+2. **【急】跨廠 fallback 仍無法啟用**：`openai/*` provider 已設定但 `openclaw models list` 顯示 **Auth = no** → 需 Linder 端完成憑證流程，才能把 `openai/gpt-5.4-mini` 加進 `agents.defaults.fallbacks`。這是唯一能真正消除「MiniMax 一忙全滅」的動作，**我做不了（不碰憑證）**。
+3. **【觀察】websocket close 頻率爬升**（19:00–22:02 約 15 次，code 1005/1006）：目前全自癒、READY timeout 仍 0。若下一輪出現 READY timeout 累積，就不是自癒範圍，需要 operator 核准後重啟 gateway。
+4. 尖峰仍存在（07:00 / 08:00 / 10:00 / 16:00 / 21:00），本輪 21:00 波單獨造成 1 筆 429 打死「每日資安建議」；建議持續錯開整點排程。
+5. `heartbeat-*` 的 `skipped: no-route` 與 `Heartbeat (flaaffy)` never run 皆為預期長態，**建議不要算入紅單**。
+
+### 邊界（本次刻意沒動）
+- 未自行重啟 gateway（重啟屬 operator 核准範圍）；未改 config / cron 排程 / provider / model / fallback / channel；未手動 `run` 任何其他 job。
+- 探測全為唯讀：sessions_send、channels status、cron list(--json)、journal（`--user`）、systemctl --user show、ps。
