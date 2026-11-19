@@ -249,3 +249,59 @@ MiniMax credits / 跨廠商 fallback（Anthropic key 一支就能做）；a72cb4
 - 耿鬼補充兩項本輪未掌握的事實：① 它的 heartbeat 已改成 **isolatedSession + lightContext + timeout 600s**，因此最近三次都是 `skipped/no-route`（261ms，不打模型、不燒額度）→ **這是同 fleet 內其他 heartbeat lane 可借用的現成解方**（charizard/roaringmoon/mrmime 現在每輪都真打模型 → 每輪撞 429）。② Discord 近 1 小時 **43 筆 ingress rows**（與本輪 event loop util 0.125、8/8 connected 相符）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
 - 交叉驗證：耿鬼稱「近 1 小時 429 = 34 筆」，本輪以 journal `status=429` 逐事件數到 12:04–12:31 共 48 筆、12:31 後 0 筆 → 兩種計法邊界不同但量級一致，**429 集中在 12:04–12:31 這個窗**的結論成立。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
 - 建議（僅回報，未執行）：把 charizard / roaringmoon / mrmime 三條 heartbeat 的 payload 改為 isolatedSession + lightContext + timeoutSeconds=600，可讓它們在無路由時直接 skip、不再每輪消耗 MiniMax 額度 → 緩解 6/10、6/10、7/10 的自動停用倒數。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+## 2026-11-18 19:02 — lane PASS／Discord 8/8 正常／provider 429=0 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+- **耿鬼 lane PASS**：19:02 `sessions_send` → `agent:gengar:main`，runId `97283130-f374-42eb-8ad8-059f2733774e`；耿鬼明確回覆 lane alive。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **模型與 gateway**：耿鬼回報 `minimax/MiniMax-M3` → fallback `minimax-portal/MiniMax-M3`；本機 `session_status` 同步顯示 gateway uptime 14h19m。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **Discord 獨立複驗 PASS**：`openclaw channels status --json` 顯示 Discord running、lastError=null；8/8 enabled accounts 全部 running+connected+ready、reconnectAttempts=0、lastError=null；greninja disabled/stopped 屬預期。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **event loop 正常**：not degraded，p99 26.8ms、max 39.1ms、utilization 0.065。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **inbound 正常**：唯讀 SQLite 副本實測最近 1 小時 ingress **53 筆**，最新 18:59:47。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **耿鬼側 cron 與額度**：watchdog／English reminder／BBC drill 全綠；heartbeat-gengar 為 skipped/no-route、0 consecutive errors；最近 60 分鐘 429=0。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **仍待處理**：dreaming `36b493db` 仍為 `0 3 * * *` 且 `timeoutSeconds=None`；今晚 03:00 仍有 event-loop starvation → Discord inbound 再瞎的風險；self-heal cron `d4cd45bc` 仍停用。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **邊界**：本輪全為唯讀量測；未重啟、未改 cron/plugin/provider/model/channel。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+## 2026-11-18 22:02 — lane PASS／16:00–17:15 429 雙供應商風暴後歸零／Discord 8/8 正常 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) 本 job 自身狀態 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 本 job `9d8b6001 Gengar Keep-Alive`：`every` 排程、enabled、上一輪 19:02 last=ok、dur 185,038ms、consecutiveErrors=0。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 註：`automations list` 在受限 automation-run session 回傳 0 jobs（只能看自己的 job），故本輪 fleet 量測改用 CLI `openclaw cron list --json`。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 2) 耿鬼 lane 回報（PASS）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `sessions_send` → `agent:gengar:main`，runId `a759a55c-9d63-4018-bf46-4196f28fa324`；回覆 `gengar keep-alive: pong`。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼自報：model `minimax/MiniMax-M3`（API key）→ fallback `minimax-portal/MiniMax-M3`，OpenAI 仍無額度 → 仍無跨廠商對沖；gateway pid 2724303、uptime 17h19m、11-18 04:44:04 起未重啟。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼 heartbeat lane：last=skipped（no-route、261ms）、consecutiveErrors=0（isolatedSession + lightContext 後不打模型）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼側 6 顆 cron 全綠 errs=0；Discord enabled accounts connected **8/8**（greninja disabled）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 3) ⭐ 429：16:00–17:15 曾有一波雙供應商風暴，但近 60 分鐘 = 0<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 近 6 小時 `status=429` 共 **80 筆**，逐 15 分鐘分桶：**16:00 窗 27 筆、17:00 窗 32 筆、18:00 窗 1 筆、21:00 窗 1 筆** → 風暴窗 = 16:00–17:15，其後歸零（近 15 分鐘 0、近 60 分鐘 0）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **新軸向**：供應商拆解 = **anthropic 61 / minimax-portal 35 / minimax 26** → 本波主因**不是** MiniMax Token Plan，而是 Anthropic 端也在滿載；前三家同時被限流的型態，與 12:04–12:31 那波（純 MiniMax）不同型。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 19:02 那輪量到「近 1 小時 429=0」是因為當時風暴尚未爆發（16:00–17:15 在其後）→ **上一輪的綠燈不代表趨勢，時序要看齊 6 小時桶**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 4) Fleet tally（CLI 視角：45 jobs、全部 enabled；disabled 顆不列入）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ok **29** / error **10** / skipped **5** / none **1**（13:02 輪：ok 20 / error 19 / skipped 5 / none 2，基準含 7 顆刻意停用）→ **ok 大幅回升**，紅單從 19 降到 10。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 紅單（errs 排序）：a72cb46b 每日 Agent×潮流研究 **7**、880b5c17 Celesteela Keep-Alive 6、58fe15dc 每日論文討論 6、40e09cd1 Jormungand 全 agent 健康 5、45ccf4e9 晨間情報(Roaringmoon) 5、ae91b967 每日 LLM Wiki 巡讀 4、08b7c00b rowlet-ut-veteran-cpc 維護 4、6ddc8b4c PTCGP Meta 三日彙整 4、9e2cec7c skill-collection-review-mrmime 4、b37129c0 群體智能架構研究 2。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ **視角落差**：耿鬼回報 fleet-wide「9 紅/停用、a72cb46b 已 10 errors」，本輪 CLI 讀到 a72cb46b 僅 **7** errors。兩者計數基準不同（耿鬼含 disabled 顆、且可能讀到較晚的快照）→ a72cb46b 是否已逼近 10 次自動停用門檻**尚無法單向確認**，需下輪複驗。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 5) Discord / event loop（獨立複驗 PASS）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `openclaw channels status --json`：Discord running、lastError=null；9 帳號中 8 個 enabled 全部 running+connected+**lifecycle=ready**、reconnectAttempts=0；greninja disabled/stopped 屬預期。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- event loop **not degraded**：util 0.064、delayP99 35.5ms、delayMax 75.8ms。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 近 1 小時 gateway websocket closed 6 筆（自動重連成功，背景雜訊級）；近 6 小時 READY timeout **0** 筆。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 6) 系統量測<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- gateway pid 2724303、start 2026-11-18 04:44:04、uptime 17h19m、health **200 @ 94ms**、RSS 1,508.9 MB；host uptime 38 天、load 0.84/0.62/0.52、磁碟 **60%**（264G/468G）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `elle.service`（system-level）仍 crash-loop：NRestarts **104,880**（較 13:02 的 103,808 **+1,072**／9h ≈ 119 次/小時 ≈ 30 秒一輪），ActiveState=activating、SubState=start-pre（需 root，未動）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 7) ⭐「prepared model runtime plugin generation was superseded」升溫<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 近 1 小時 **19 筆**（13:02 輪為 7 筆）→ 升溫；24 小時分布：01→3、04→7、07→14、08→**37**、09→11、13→7、19→7、21→**12**、22→7。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 21:00/22:00 兩窗合計 19 筆與「21:00 仍有 1 筆 429 + 本輪 KA 探測」時序吻合 → 判定為**同 agent 多 lane 併發啟動、prepared runtime 被後者取代**的良性症狀，但每小時 19 筆的密度已是 13:02 輪的 2.7 倍，值得下輪追蹤是否隨 lane 數成長。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 8) 未動任何開關（邊界）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- dreaming `36b493db` 仍 `0 3 * * *`、timeoutSeconds=None、toolsAllow 未設；今日 03:00 實跑 dur **1,808,947ms（30.1 分鐘）** → **今晚 03:00 原樣重演 event-loop starvation 的機率高**，風險點仍在（self-heal cron `d4cd45bc` 停用中，待 Linder）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 本輪全為唯讀量測：未改 cron / plugin / provider / model / channel、未重啟 gateway、未 kill 服務、未動 `elle.service`；429 三家皆滿載且無可自動更換的 provider → 維持不自行改 model。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 9) 22:0x 耿鬼回覆複驗與紅單落差收斂 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼回覆與本輪量測**完全一致**：model `minimax/MiniMax-M3` → fallback `minimax-portal/MiniMax-M3`；gateway pid 2724303 / 17h19m / 04:44:04 起未重啟；近 60 分鐘 429=0；heartbeat lane skipped/no-route、errs=0；Discord 8/8 connected；6 顆 cron（`29c2d630` watchdog、`ac9e7ada` English reminder、`88810bfe` BBC drill、`7767e03b` skill-collection-review、`f5148ff0` 版本檢查、heartbeat-gengar）全部 errs=0。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **紅單落差收斂**：兩邊列出的紅單 **ID 集合完全吻合**（ae91b967 / a72cb46b / 45ccf4e9 / 40e09cd1 / 58fe15dc / b37129c0 / 6ddc8b4c / 9e2cec7c / 08b7c00b 共 9 顆），我這邊另多一顆 **880b5c17 Celesteela Keep-Alive（errs=6）**；唯一分歧是**次數**：耿鬼報 ae91b967=9、a72cb46b=10，本輪 CLI `state.consecutiveErrors` 讀到 **4 / 7**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 判讀：自動停用門檻吃的是 `consecutiveErrors`（連敗），**以 CLI 的 4 / 7 為準** → a72cb46b 還剩 3 次連敗才會被自動停用，**尚未到 10**；耿鬼的 9/10 應是累計失敗或跨 job 混算，不構成即時風險。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 結論：兩 agent 視角在「集合層級」一致、在「計數口徑」不一致 → 往後 fleet 紅單一律以 `state.consecutiveErrors` 為準，與另一 agent 交叉比對時只比 ID 集合。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
