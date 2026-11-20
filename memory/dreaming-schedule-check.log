@@ -1,0 +1,18 @@
+=== apply-dreaming-schedule start 2026-11-19T22:31:35+08:00 ===
+restarting openclaw-gateway (user unit, Restart=always RestartSec=5)
+--- post-restart check 2026-11-19T22:33:35+08:00 ---
+[gateway] active
+[managed dreaming job]
+{"schedule":{"kind":"cron","expr":"25 4 * * *"},"payload":{"kind":"agentTurn","message":"__openclaw_memory_core_short_term_promotion_dream__","lightContext":true,"toolsAllow":["*"],"fallbacks":["minimax/MiniMax-M3","minimax-portal/MiniMax-M2.7"],"timeoutSeconds":2400},"nextRunAtMs":1795119900000,"lastStatus":"ok"}
+[discord accounts]
+- Discord celesteela: enabled, configured, running, connected, in:1m ago, transport:just now, bot:@鐵火輝夜-ptcg輔助機器人, , intents:content=limited
+- Discord charizard: enabled, configured, running, connected, transport:1m ago, bot:@噴火龍, , intents:content=limited
+- Discord flaaffy (Flaaffy): enabled, configured, running, connected, transport:1m ago, bot:@茸茸羊, , intents:content=limited
+- Discord gengar: enabled, configured, running, connected, transport:1m ago, bot:@梗鬼, , intents:content=limited
+- Discord greninja: disabled, configured, stopped, 
+- Discord mrmime: enabled, configured, running, connected, transport:just now, bot:@魔牆人偶, , intents:content=limited
+- Discord picturecat: enabled, configured, running, connected, transport:just now, bot:@luna, , intents:content=limited
+- Discord roaringmoon: enabled, configured, running, disconnected, transport:just now, bot:@轟鳴月, , intents:content=limited
+- Discord rowlet: enabled, configured, running, connected, transport:just now, bot:@木木鴞, , intents:content=limited
+[jobs still running]
+=== done 2026-11-19T22:33:38+08:00 ===

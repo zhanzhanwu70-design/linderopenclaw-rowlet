@@ -318,3 +318,81 @@
 
 ### 10) 本輪對外動作（唯一一次外部寫入）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
 - 因 delivery.mode=none（最終回覆只進 run log），沿用前 11 輪做法用 rowlet 帳號把巡檢摘要貼到 Discord channel `1482363974119854234` → **messageId `1572840700003877066`，deliveryStatus `sent`**（同時再次實證 REST outbound 活）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+## 2026-11-19 19:02 — Picturecat Keep-Alive 第 13 輪：lane PASS（本輪轉綠）、**新發現：MiniMax 配額窗今天有「兩個」——下午 16:00–18:00 是第二個尖峰（304 筆）**、Discord 8/8、Gateway 38h 無重啟<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) 本 job 自身狀態：連 4 敗後本輪轉綠（ce 4 → 0）
+- run 紀錄（`openclaw cron runs --id 02eb0989-…`，ts=結束時間 UTC／括號內為台北）：**16:06（dur 252,257ms＝4.2 分鐘）/ 16:07 / 16:08 / 16:13 四連敗**，全部 `errorReason=rate_limit`，四個 fallback（minimax-portal/MiniMax-M3、minimax/MiniMax-M3、minimax-portal/MiniMax-M2.7、minimax/MiniMax-M2.7）**全數 HTTP 429 `Token Plan usage limit reached`（MiniMax code 2056）**；`minimax-portal` 當場還被標 "in cooldown"。
+- 中間 **13:08 那輪是 ok**（dur 365,465ms）→ ce 由 4 歸零；再被 16:06–16:13 打到 ce=4。**本輪 19:02 用 minimax-portal/MiniMax-M3 正常跑完 → ce 4→0**。
+- `openclaw models list`（19:05）：7 個 MiniMax model 全部 `configured`，**無 unavailable / cooldown 標記** → provider 已恢復。
+
+### 2) ⭐⭐ 本輪核心新事實：**配額窗不是「每天只有一個 09:00–13:00」**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 24h `Token Plan usage limit reached` 逐時分布（journalctl 為本地台北時）：
+
+| 台北時 | 09 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 429 筆數 | 102 | 172 | 88 | 101 | **0** | **0** | **0** | **193** | **111** | **0** | **0** |
+
+- 對應 `All models failed` 筆數：09→8、10→13、11→7、12→8、16→15、17→9。
+- → **今日兩個獨立尖峰**：晨窗 09:00–13:00（463 筆，13:00 歸零）、**午後窗 16:00–18:00（304 筆，18:00 歸零）**；13:00–16:00 完全乾淨（3 小時 0 筆）。18:00 之後 0 筆 → 19:02 本輪恢復。
+- **歷史對照（修正既有模型）**：11-16 有 16–17 與 20–22、11-18 有 16–17 → **午後/晚間尖峰是反覆出現的第二峰**，先前 MEMORY.md 寫的「每日準時發生的 4 小時窗口 09:00–13:00」只是**一天中最容易看到的那一段**，不是固定邊界。
+- 被午後窗打紅的 job：`02eb0989` Picturecat KA（16:06–16:13，ce=4）、`880b5c17` Celesteela KA（16:07，ce=2）、`13ac4b5a` 健康回報（17:12，ce=4）—— 三支全部 `rate_limit`。
+
+### 3) 全艦 tally（45 enabled / 50 jobs）
+| 狀態 | 數量 | 明細 |
+|---|---|---|
+| ok | 34 | 含 dreaming `36b493db` ce=0（dur 1,922,307ms）、Jormungand `40e09cd1` ce=0、備份/研究類全綠 |
+| error | 6 | `02eb0989` ce=4（**本輪轉綠**）、`880b5c17` ce=2、`13ac4b5a` ce=4、`ae91b967` ce=5、`08b7c00b` ce=5、`a72cb46b` ce=8 |
+| skipped | 4 | heartbeat-rowlet / picturecat / celesteela / greninja（`no-route`，良性長態） |
+| never | 1 | `6e93c179` heartbeat-flaaffy |
+
+- 紅單 6 支全部根因 = **rate_limit（Token Plan 2056）**，無 timeout / agent-runner-failure。
+- ⛔ **自動停用倒數（ce=10）**：`a72cb46b` ce=8、**每天 10:00 TPE 固定落在晨窗內 → 11-20 ce=9、11-21 ce=10 被自動停用**；`08b7c00b` ce=5、`ae91b967` ce=5。
+- `d4cd45bc discord-selfheal-after-dreaming` **仍 disabled / never run**（良性長態，不計紅單）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 4) Discord runtime：8/8（7 enabled）connected、12h 內 0 次 channel 重啟<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 19:02 `openclaw channels status`：celesteela/charizard/flaaffy/gengar/mrmime/picturecat/roaringmoon/rowlet 全部 `running, connected`，transport 皆 `just now`；greninja `disabled/stopped`（預期）。
+- inbound 新鮮度（in:）：celesteela 5m、mrmime 54m、roaringmoon 31m、gengar 5h、rowlet 6h、charizard 10h；picturecat、flaaffy 視窗內無 inbound。
+- 12h 內：`READY wait timed out` = **0**、`client initialized` = **0**、`channel exited` = 0 → **自 04:19:53 watchdog 那次 channel restart 後已 14.7 小時無任何重啟**。
+- `websocket closed` 8 筆（17:08/17:16/17:36/17:40/17:57/18:15/18:41/19:02）＝每 15–25 分鐘一次自癒重連，**無一筆演變成斷線**。
+- event-loop starvation（真簽章 `[fetch-timeout] … timer delayed Nms, likely event-loop starvation`）：**24h 16 筆全在 03h；12h = 0**（07:00 後無新實例）。
+- `prepared model runtime plugin generation was superseded`：12h 30 筆（07h 12 / 08h 4 / 13h 7 / 16h 7）→ 仍集中在多 job 同時起跑＋配額窗附近。
+- `Codex agent harness` 失敗：24h 16 筆、**12h = 0**（本輪窗內不再出現）。
+
+### 5) Gateway / 主機：無恙<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- pid **2724303 自 11-18 04:44:05 CST 起（38h19m）**、systemd NRestarts=0 / ActiveState=active、`/health` HTTP 200 in **1.17ms**、host uptime 39d49m、load 0.65/0.48/0.46、mem available 20GiB、disk 60%（265G/468G）。
+- `elle.service`（system scope）仍 crash-loop：NRestarts **107,375**（13:07 輪 106,662 → +713／約 6h）、ActiveState=activating；需 root，未動。
+- `openclaw models list` 有 config warning：`a2a-gateway` plugin 缺 compiled `dist/index.js`（TypeScript 原始碼僅支援 source checkout）→ **良性但會讓 A2A plugin 走 source fallback**，值得記一筆。
+
+### 6) 03:00 槽：明天（11-20）03:00 又要重演（距今約 8 小時）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+| job | id | schedule | 現況 |
+|---|---|---|---|
+| Memory Dreaming Promotion | 36b493db | `0 3 * * *`（無 tz = gateway local） | ok、ce=0、dur 1,922,307ms（32.0 分）、next=**11-20 03:00 TPE**（第 4 次） |
+| Jormungand daily all-agent health | 40e09cd1 | `0 3 * * *` tz=Asia/Taipei | ok、ce=0、dur 681,583ms、next=11-20 03:00 TPE |
+| discord-selfheal-after-dreaming | d4cd45bc | `35,50 3,4 * * *` Asia/Taipei | **仍 disabled、never run** |
+
+- ⚠️ **小發現**：`40e09cd1` 今天除 03:00 槽外還在 **15:47–15:59 TPE** 多跑了一輪（ok、dur 11.4 分）→ 非 cron 槽內時間，疑為手動 `cron run` 或外部觸發（來源待查，低優先）。
+- `36b493db` 仍為 **plugin-declared**（declarationKey `memory-core:memory-dreaming-promotion`）→ CLI 改排程可能被 declaration reconciliation 還原，持久修法要落到 memory-core plugin。
+
+### 7) ⚠️ 量測受限（**本輪新遇到的工具閘**）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `sqlite3` 讀 OpenClaw state DB 被新的 exec guard 擋下：`external sqlite3 cannot open databases under the active OpenClaw state directory. Use OpenClaw commands for live state, or inspect a private backup copy outside OPENCLAW_STATE_DIR.`
+- **複製到 `/tmp/ka.sqlite`（含 -wal/-shm）與 `/home/amr/ka-check/dbcopy` 都被擋** → guard 是看內容／身分，不是看路徑。
+- 影響：**本輪無法查 `channel_ingress_events`（inbound 真流量）與 `cron_run_receipts`（run 完成度）** —— 13:07 輪還能用這招。替代證據改用 Discord 層（`channels status` 的 in:/out: 新鮮度 + journal 的 websocket/READY 簽章組）。
+- 量測備忘：`cron runs` 的 `ts` 是**結束時間**（`40e09cd1` 11-18 19:34 UTC + dur 2,065,675ms → 實際 03:00 TPE 起跑）→ 算「起跑時間」要減掉 duration。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 8) 邊界（本次刻意沒動）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 未改 cron 排程 / payload / timeout / fallback / config / provider / model / channel；未重啟 gateway 或 channel；未啟用 `d4cd45bc`；未為了讓紅單轉綠而手動 run 其他 job；未碰 `elle.service`（需 root）；未動憑證；未自行放寬 modelPolicy（跨廠 fallback 屬全域決策，留給 Linder）。
+- 探測全唯讀：`openclaw cron list --all --json`、`openclaw cron runs --id <full-uuid>`、`openclaw channels status`、`openclaw models list`、journalctl --user（唯讀）、`systemctl --user show` / `systemctl show`、curl `/health`、uptime/free/df。
+- 例外：本輪有且只有一次外部寫入 = 貼巡檢摘要到 Discord（見 §10）。
+
+### 9) 給 Linder 的待決事項（第 13 輪，排序後）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **【最急・距 11-20 03:00 約 8 小時】清空 03:00 槽**：`openclaw cron edit 36b493db-deee-471d-a5a9-955d2455d067 --cron "30 4 * * *"`、`openclaw cron edit 40e09cd1-7629-42bb-9275-193879665724 --cron "45 4 * * *" --tz Asia/Taipei`（ dreaming 是 plugin-declared，可能被還原 → 治本在 memory-core plugin）。
+2. **【急・本輪新證據】配額窗會出現在午後（今天 16:00–18:00）→ 不能只避開 09:00–13:00**：`a72cb46b` 每天 10:00 仍在晨窗內（11-20 ce=9、11-21 ce=10 → 被自動停用）；建議把窗內 job 全部搬到 **19:00 之後**（今天 18:00 起 429 = 0），或補一個**非 MiniMax** provider 的 fallback（現在 4 個 fallback 全 MiniMax → 跨廠冗餘 = 0，配額一枯竭就 4 個模型一起死）。
+3. **【急】`d4cd45bc` 啟用決策**：內建 watchdog 已在 04:19:53 做過 channel 層重啟，但它要等 gateway 閒置；self-heal 是它等不到時的唯一後備（`openclaw cron enable d4cd45bc-357d-42d4-9ba1-f7eb39e02f59`）。
+4. **【急】8 支 heartbeat 的 `sessionTarget=main`** → 改成 `isolated`（或照 charizard 加 `target:"none"`），避免 03:00 斷線時集體卡滿 600s 變紅。
+5. **【新】巡檢的 state DB 唯讀查詢被 exec guard 擋** → 若要保留「inbound 真流量」這個量測維度，需要一個放行方式（`openclaw` 內建命令或調整 guard 的私人備份路徑）。
+6. （不急）`elle.service` crash-loop NRestarts 107,375，需 root。
+
+### 10) 本輪對外動作（唯一一次外部寫入）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 因 delivery.mode=none（最終回覆只進 run log），沿用前 12 輪做法用 rowlet 帳號把巡檢摘要貼到 Discord channel `1482363974119854234`（REST outbound 實證活）。
+- 結果：**messageId `1572930885903458457`，deliveryStatus `sent`**（REST outbound 再次實證活）。
