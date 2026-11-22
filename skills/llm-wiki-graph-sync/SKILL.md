@@ -23,15 +23,36 @@ This rewrites `graphify-out/graph.json` deterministically: one `wiki_<sha256[:16
 
 Use the Python tool, not `tools/add-wiki-pages-to-graphify.ps1` — no PowerShell on this host.
 
-## 3. Recluster and regenerate the report
+## 3. Recluster and regenerate the report — only with a verified rollback
+
+`cluster-only` rebuilds the graph from the extraction cache, so it **drops the `wiki_link` edges that step 2 added**. Measured on 2026-11-21: total edges **24,521 → 20,463** and `wiki_link` **16,347 → 12,289** (about 4,000 wiki links gone), the output key changed from `edges` to `links`, and `graph.html` was deleted. The run still reports success, so treat the graph as damaged until you check it.
+
+Back up first, into `/tmp` and not into `graphify-out/`:
 
 ```bash
-cd /home/amr/llm-wiki && PYTHONPATH=/home/amr/llm-wiki/raw/code/graphify:/home/amr/llm-wiki/.venv-graphify/Lib/site-packages python3 -m graphify cluster-only .
+cd /home/amr/llm-wiki
+cp graphify-out/graph.json /tmp/graph.json.bak
+cp graphify-out/GRAPH_REPORT.md /tmp/GRAPH_REPORT.bak.md
 ```
 
-The run ends with `Done — N communities. GRAPH_REPORT.md and graph.json updated.`
+Then run:
 
-The `PYTHONPATH` is required: the `graphify` entry point on PATH and `python3 -m graphify` inside `~/.openclaw/skills/graphify` are the installer wrapper, whose `cluster-only` subcommand does not exist. The real package lives at `/home/amr/llm-wiki/raw/code/graphify`, and the venv's editable install still points at a Windows path, so the local repo copy must be on `PYTHONPATH`. `networkx` is pure Python and importable from the venv's `Lib/site-packages` on Linux.
+```bash
+cd /home/amr/llm-wiki && PYTHONPATH=/home/amr/llm-wiki/raw/code/graphify python3 -m graphify cluster-only . --no-viz
+```
+
+The `PYTHONPATH` is required: the `graphify` entry point on PATH and `python3 -m graphify` inside `~/.openclaw/skills/graphify` are the installer wrapper, whose `cluster-only` subcommand does not exist. The real package lives at `/home/amr/llm-wiki/raw/code/graphify`, and the venv's editable install still points at a Windows path, so the local repo copy must be on `PYTHONPATH`.
+
+`networkx` is not reliably importable from `.venv-graphify/Lib/site-packages` on this host. If the run dies on the import, `python3 -m pip install --user networkx` is enough — it is pure Python and needs no root.
+
+After the run, compare edge counts. If `wiki_link` dropped, restore the backup and skip this step:
+
+```bash
+cp /tmp/graph.json.bak graphify-out/graph.json
+cp /tmp/GRAPH_REPORT.bak.md graphify-out/GRAPH_REPORT.md
+```
+
+**For wiki page sync, step 2 alone is sufficient** — the Python linker already writes the nodes and edges. Run `cluster-only` only when you have a reason to recluster, and repeat step 2 afterwards if you do. A `GRAPH_REPORT.md` that lags `graph.json` is a known, acceptable state; a `graph.json` missing thousands of `wiki_link` edges is not.
 
 ## 4. Verify the new pages are not orphans
 

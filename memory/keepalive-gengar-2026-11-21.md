@@ -267,3 +267,235 @@
 
 ### 9) 本輪外部寫入<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
 - Discord 摘要（rowlet 帳號）→ channel `1482363974119854234`、**messageId `1573564613658935327`、deliveryStatus `sent`**（sentAt 1795237439496）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+---
+
+## 16:02 輪 — Gengar Keep-Alive (cron 9d8b6001) ✅
+<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) 本輪結論
+- 環境健康、本 job 設定健全、自身連續 5 輪（04:02 / 07:02 / 10:02 / 13:02 完成皆 ok + 本輪 16:02 running）零失敗；近 8h 全域 238 筆 receipts = 125 ok / 108 skipped / 4 running / **1 error**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 2) 環境基線（唯讀）
+- gateway：PID 3573532、ActiveEnter 2026-11-21 02:11:49（uptime ~13h50m）、`/health` HTTP 200（2.5ms）、`systemctl --user is-active` = active。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 系統：uptime 40d 21h49m、load 0.90/0.83/0.65、RAM 31Gi（available 20Gi、swap 0B）、`/` 使用 60%（179G 可用）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- DNS：api.minimax.io 可解析（AAAA 2600:1417:e800::17d9:b62 / ::b6b）；`curl https://api.minimax.io/v1/models` → HTTP 401（無 key，預期）、0.43s。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- channels：8 個 Discord 帳號全部 running + connected（greninja 為 disabled/stopped 的既有設定）；近 3h 0 筆 Discord 送出失敗、0 筆 embedded run isError。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 3) 本 job 設定面（唯讀）
+- `schedule=every 10800000ms`（anchorMs 1780452122570 = 2026-06-03 10:02:02）、`sessionTarget=isolated`、`wakeMode=now`、`payload=agentTurn "keep-alive test"`、`model=minimax-portal/MiniMax-M3`、`fallbacks=[minimax/MiniMax-M3, minimax-portal/MiniMax-M2.7, openai/gpt-5.4-mini]`、`timeoutSeconds=1800`、`delivery.mode=none`、`enabled=1`。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- state：`consecutiveErrors=0`、`consecutiveSkipped=0`、`scheduleErrorCount=0`、`lastRunStatus=ok`(13:02)、`nextRunAtMs`=11-21 16:02:03。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 4) 本 job 歷史 receipts
+- 16:02:04 running（本輪）／13:02 ok 130s／10:02 ok／07:02 ok／04:02 ok／**01:02 error「Agent couldn't generate a response」**／11-20 22:02、19:02、16:02 DNS error、13:02 error。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- → 04:02 起連 4 輪完成皆 ok，本輪為第 5 輪；連續失敗已清零。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 5) 新發現：三支 KA 同時發火 → provider plugin runtime 競態（連三輪重現）
+- journal 事件「prepared model runtime plugin generation was superseded」lane task error：**10:03:35**(gengar:main)、**13:02:20**(picturecat:main)、**16:02:27**(picturecat:main)。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 根因：三支 KA 的 anchor 只差 ~72ms（9d8b6001=…122570、880b5c17=…122603、02eb0989=…122531）→ 永遠同時發火、共用同一 provider plugin runtime → 先到者的 prepared runtime 被後到者取代。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 影響範圍：cron 本身仍 ok（三輪 receipts 皆 ok），但會打斷同時段的主 session lane（gengar / picturecat 的 main）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 建議（**本輪未執行**）：把三支 KA 的 anchor 錯開 ≥3 分鐘（例：Gengar :02 / Celesteela :06 / Picturecat :10），並整體挪進 05:00–06:00 低 429 帶 → 同時解掉競態與 provider 尖峰。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 6) dreaming × Discord event loop：仍為唯一高優先未解項
+- 近 12h 共 28 筆 event-loop starvation / liveness warning，**全部落在 04:07–04:55**（dreaming 04:25 視窗）；近 3h **0 筆**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- dreaming（36b493db）下次 **11-22 04:25** → 本輪視窗內沒有新的 dreaming 可驗，待明日再測。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `discord-selfheal-after-dreaming`（d4cd45bc，每 30 分鐘）全 ok，下次 16:13。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 7) websocket churn 連五輪未收斂
+- Discord gateway websocket close（code=1005, reasonBytes=0）近 3h **13 筆**（上輪近 3h 同為 13 → 速率持平）、近 12h 212 筆；最近一筆 16:03:10。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 8) 429 / rate limit：尖峰帶再收斂
+- 24h 內含 rate limit 的 receipts 6 筆：11-20 17:11、23:35；11-21 **00:56**(02eb0989)、**01:02**(9d8b6001)、**03:00**(40e09cd1)、**07:00**(58fe15dc)。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- → 今日尖峰帶 = **00:56–07:00**；上輪所列的 **09:00–14:00 帶今日 0 筆**（該帶未重現）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 12:02:32 曾出現「rate-limit same-model retry 1/3 for minimax-portal/MiniMax-M3 delayMs=10000」→ 同廠同 model 重試，非跨廠 fallback。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 9) 新發現：17 個 skill 被持續跳過（靜默失效）
+- 近 3h 204 筆「Skipping invalid skill」，13:02 與 16:02 視窗各命中同一組 **17 個檔**（非新增，屬既有狀態）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 缺 `description`（12）：card-lookup、meta-analyzer、network-security-defense、prompt-injection-defense、prompt-injection-filter、ptcgp-card-download、ptcgp-card-lookup、rosclaw/extensions/openclaw-plugin/skills/{check-status,navigate-to,pick-object,take-photo}、system-design-six-dimensions-analyzer、web-fetch-troubleshooting。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- frontmatter invalid（5）：excel-image-pipeline、human-behavior-simulation、image-attendant、ocr-confidence-mark。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 影響：這些 skill 在 agent 端不會被載入；**本輪未修**（跨專案檔案，且 skill_workshop 規範不直接改寫他人 skill）→ 回報待點頭。修法：每個 SKILL.md frontmatter 補一行 `description:`（≤160 bytes）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 10) 其他觀察
+- `heartbeat-celesteela`（46242a4c）：**08:12:45 「cron: job execution timed out」＝近 8h 全域唯一 error**；其後每 30 分鐘 `skipped: no-route`（consecutiveSkipped=10），屬無來源可達的正常跳過；該 job 無 fallback、無 timeout 設定。無需處理，僅記錄。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `每日 OpenClaw 備份`（af94aa92）16:00 ok（128s）；三支 KA 於 16:02 同時 running（880b5c17 / 9d8b6001 / 02eb0989），另 heartbeat-mrmime（bcf270b8）16:01:09 running。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 11) 邊界（本輪刻意沒動）
+- 未改任何 cron 排程 / anchor / payload / fallback / timeout / delivery / model；未刪 job；未重啟 gateway；未改 provider / channel / auth；未改任何 skill 檔。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 唯讀來源：`cron_jobs` / `cron_run_receipts`（複製 DB+WAL/SHM 至 /tmp 後以 python sqlite3 唯讀查詢）、`journalctl --user -u openclaw-gateway`、`systemctl --user show openclaw-gateway`、`openclaw channels status`、`curl /health`、uptime/free/df、getent/curl 連通性。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 寫入：本記憶檔、一則 Discord 摘要。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 12) 給 Linder 的待決事項（狀態更新）
+1. **【仍急】dreaming × Discord event loop**：12h 28 筆 starvation 全在 dreaming 視窗、近 3h 乾淨；建議 dreaming 改**序列**（rem→light→deep）或砍掉一條並行。下一個可驗窗口 = 11-22 04:25。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+2. **【新・中】三支 KA 同 anchor 的 plugin runtime 競態**（連三輪 10:03/13:02/16:02）：建議錯開 anchor ≥3 分 + 整體挪到 05:00–06:00 帶。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+3. **【中】429 尖峰**：今日命中 00:56–07:00（4 筆），09:00–14:00 今日 0 筆；建議把 `45ccf4e9` / `b37129c0` / `89e2cfe7` 挪到 05:00–06:00。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+4. **【新・中】17 個 skill 被跳過**（12 缺 description + 5 invalid）→ 修法明確但屬跨專案檔案，等你點頭才動。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+5. **【低】websocket churn** 連五輪（近 3h 13 筆，與上輪持平）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+6. **【低】`tmp-openai-probe`（a94330a9）** 殘留 disabled 探針、**`skill-collection-review-roaringmoon`（c5352a84）** 殘留紅單（下次 11-27 03:56 才自動重試）—— 皆未刪。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 下一輪：**19:02**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 13) 本輪外部寫入
+- Discord 摘要（rowlet 帳號）→ channel `1482363974119854234`、**messageId `1573610164383260704`、deliveryStatus `sent`**（sentAt 1795248299589）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+## 2026-11-21 19:02 — PASS（lane 雙向通）／🔁 plugin runtime 競態**連四輪重現並新增 announce 破口**／📉 websocket churn 首次收斂（3h 13→9）／✅ **dreaming 11-21 04:25 首度乾淨跑完**（可降為觀察項）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Gengar lane：PASS（19:03 完整回覆）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `sessions_send` → `agent:gengar:main` → runId **`ee0c4d53-139c-4ce5-9198-682b91a8e2ed`**、status=**ok**；19:03 收到完整回覆（provider=`minimax-portal/MiniMax-M3` → `minimax/MiniMax-M3` → `minimax-portal/MiniMax-M2.7`）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼自報 6 支自有 cron **全 ok、ce=0**：watchdog `29c2d630` 18:04 ok、heartbeat `c29eca0f` 18:59 ok（8.5–21.2s）、English `ac9e7ada`、BBC `88810bfe` 07:00 ok、skill-collection `7767e03b`、版本檢查 `f5148ff0`。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼自報近 60 分鐘 **429/overloaded = 2**（同一 event 18:04:43，即 watchdog 自己的那一輪，仍記 ok/delivered）、**EAI_AGAIN = 0**、cron/model timeout = 0、clock-change cache flush = 0 → 11-20 那場 DNS/時鐘風暴**未再復發**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼自報「自 10:02 後未動任何設定」；`~/.openclaw/openclaw.json` mtime 仍 = 2026-11-21 01:56:03，與我方量測一致。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 2) 環境基線（唯讀）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- gateway：PID 3573532、ActiveEnter 2026-11-21 02:11:49、**NRestarts=0**、`/health` HTTP **200（7.6ms）**、`systemctl --user is-active` = active。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 系統：uptime **41d 50m**、load 0.64/0.55/0.51、RAM 31Gi（available 20Gi、swap 0）、`/` 使用 60%（179G 可用）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- DNS：`api.minimax.io` 解析 OK（`2600:1417:1b::cb45:8ae1`）；`curl https://api.minimax.io/v1/models` → HTTP **401**（無 key，預期）、0.79s。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- channels：8 個 Discord 帳號全部 running + connected（greninja 為 disabled/stopped 的既有設定）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 3) 本 job 設定面（唯讀）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `schedule=every 10800000ms`（anchorMs 1780452122570 = 2026-06-03 10:02:02）、`sessionTarget=isolated`、`wakeMode=now`、`payload=agentTurn "keep-alive test"`、`model=minimax-portal/MiniMax-M3`、`fallbacks=[minimax/MiniMax-M3, minimax-portal/MiniMax-M2.7, openai/gpt-5.4-mini]`、`timeoutSeconds=1800`、`delivery.mode=none`、`enabled=1`。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- state：`consecutiveErrors=0`、`consecutiveSkipped=0`、`scheduleErrorCount=0`、`lastRunStatus=ok`(16:02，dur 186,931ms)、`nextRunAtMs`=11-21 19:02:04。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 4) 本 job 歷史 receipts<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 19:02:04 running（本輪）／16:02 ok 187s／13:02 ok 130s／10:02 ok 195s／07:02 ok 273s／04:02 ok 252s／**01:02 error「Agent couldn't generate a response」**／11-20 22:02、19:02、16:02 DNS error。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- → 04:02 起連 **5 輪完成皆 ok**，本輪為第 6 輪；近 6h cron 層面非 ok/skipped 的失敗 = **0**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 5) 🔁 plugin runtime 競態：連四輪重現，且**新增 announce 破口**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- journal「prepared model runtime plugin generation was superseded」lane task error：**10:03:35**(gengar:main)、**13:02:20**(picturecat:main)、**16:02:27**(picturecat:main)、**19:02:53**(picturecat:main)、**19:03:53**(gengar:main)。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **新證據**：同一批時點還伴隨 `[agents/sessions-send] sessions_send announce flow failed`，近 24h 共 **13 筆**（每次 KA 發火 1–2 筆）→ 同源競態**不只打斷 lane，也讓 announce 步驟失敗**；惟被呼叫端的回覆本身仍回傳到呼叫端（本次耿鬼回覆完整收到）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- anchor 偏移（DB 實測）比上輪更緊：**Picturecat −39ms／Gengar 0／Celesteela +33ms** → 三支每輪 **19:02:04–19:02:06 同時發火**（上輪記為 ~72ms）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 影響：三支 cron 本身 receipt 皆 ok（19:02:04 gengar running／19:02:04 picturecat running／19:02:06 celesteela **ok**），但同時段 gengar / picturecat 的 **main lane 被打斷**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 建議（**本輪仍未執行**）：把三支 KA 的 anchor 錯開 ≥3 分鐘（Gengar :02／Celesteela :06／Picturecat :10）並整體挪進 05:00–06:00 低 429 帶 → 一次解掉競態與 provider 尖峰。**這是連續四輪未執行的建議，等一句點頭。**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 6) 429：晚間尖峰再現（18:01／18:04）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 近 12h 含 rate limit 的事件 4 筆：10:31:36、12:02:32、**18:01:43**、**18:04:43**（皆 provider=minimax-portal、`overloaded_error`）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 18:01/18:04 兩筆 `elapsedMs=73065`／`164842` → **provider 端高延遲後才回 429**；同 model retry 1/3 delay 10s → 2/3 delay 20s（皆同廠同 model，非跨廠 fallback）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- → 今日尖峰帶由 00:56–07:00 **擴張到 18:00–18:05**；09:00–14:00 帶僅 12:02 一筆。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 7) websocket churn：六輪以來首次收斂<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `discord gateway websocket closed`（code=1005, reasonBytes=0）近 **3h 9 筆**（上輪 13）、6h 22、12h 47 → 3h 速率 **13→9 下降**；最近一筆 18:51:03。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 8) ingress / delivery：乾淨<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `channel_ingress_events` 近 3h **116 筆全部 completed**、0 失敗；Discord 8/8 connected。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `delivery_queue_entries` 近 24h 42 completed；唯一 failed 列是 11-20 22:10 的舊 outbound-prepared 殘留（11-13/14/15 同型），**非本輪**、未處置。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 9) ✅ dreaming × Discord：今晚已驗證成功（耿鬼回報交叉確認）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `36b493db` Memory Dreaming Promotion：11-21 04:25:00 **ok**（DB receipt；上一輪 11-20 為 interrupted）→ **dur 1,918,841ms、未截斷**，為 11-19 以來第一次乾淨跑完。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- fail-closed self-heal 守衛同夜 `:13`／`:43` 時槽各跑 744–789ms、**未誤 arm 重啟** → 修正有效。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `d4cd45bc` discord-selfheal-after-dreaming：18:43 / 18:13 / 17:43 全 ok，每 30 分鐘一次，下次 19:13。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- dreaming 下次 **11-22 04:25** → 本輪無新 dreaming 可驗。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 10) 17 個 skill 被持續跳過（連三輪同一組，仍未修）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 近 3h **238 筆**「Skipping invalid skill」（上輪 204），命中**同一組 17 個檔**（非新增，屬既有狀態）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 缺 `description`（12）：card-lookup、meta-analyzer、network-security-defense、prompt-injection-defense、prompt-injection-filter、ptcgp-card-download、ptcgp-card-lookup、rosclaw/extensions/openclaw-plugin/skills/{check-status,navigate-to,pick-object,take-photo}、system-design-six-dimensions-analyzer、web-fetch-troubleshooting。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- frontmatter invalid（5）：excel-image-pipeline、human-behavior-simulation、image-attendant、ocr-confidence-mark。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 本輪仍未修（跨專案檔案，且 skill_workshop 規範不直接改寫他人 skill）→ 回報待點頭；修法：各 SKILL.md frontmatter 補一行 `description:`（≤160 bytes）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 11) 紅單（2 張，皆非本 job）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `c5352a84` skill-collection-review-roaringmoon **ce=1**（lastErr: LLM request failed: DNS lookup）→ 下次 **11-27 03:56** 才自動重試。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `a94330a9` tmp-openai-probe：已 disabled、ce=2（Codex tool-policy 限制）→ 未刪。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- heartbeat no-route skipped：greninja cs=37／picturecat cs=29／rowlet cs=23／roaringmoon cs=21／celesteela cs=16 → **ce 皆 0**，屬無來源可達的正常跳過。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 12) 邊界（本輪刻意沒動）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 未改任何 cron 排程 / anchor / payload / fallback / timeout / delivery / model；未刪 job；未重啟 gateway；未改 provider / channel / auth；未改任何 skill 檔。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 唯讀來源：`sessions_send`、`cron_jobs` / `cron_run_receipts` / `channel_ingress_events` / `delivery_queue_entries`（複製 DB+WAL/SHM 至 /tmp 後以 python sqlite3 ro 查詢）、`journalctl --user -u openclaw-gateway`、`systemctl --user show openclaw-gateway`、`openclaw channels status`、`curl /health`、uptime/free/df、getent/curl 連通性。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 寫入：本記憶檔、一則 Discord 摘要。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 13) 給 Linder 的待決事項（狀態更新）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **【高・連四輪】三支 KA 同 anchor 的 plugin runtime 競態**：現已證實**連帶打斷 sessions_send announce**（24h 13 筆）。建議錯開 anchor ≥3 分（Gengar :02／Celesteela :06／Picturecat :10）＋整體挪到 05:00–06:00。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+2. **【高・首度驗證成功】dreaming × Discord**：11-21 04:25 ok、1,918,841ms 未截斷、fail-closed 守衛未誤 arm → **建議由「未解」降為「觀察」**，下一個可驗窗口 11-22 04:25。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+3. **【中】17 個 skill 被跳過**（238 筆/3h、同一組 17 檔）→ 修法明確但屬跨專案檔案，等你點頭才動。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+4. **【中】429 晚間尖峰**：18:01 / 18:04 兩筆 provider overloaded（elapsed 73s/165s）→ 建議把 `45ccf4e9` / `b37129c0` / `89e2cfe7` 挪到 05:00–06:00。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+5. **【低】websocket churn 首次收斂**（3h 13→9，連六輪後第一次下降）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+6. **【低】殘留**：`c5352a84` 紅單（11-27 才重試）、`a94330a9` disabled 探針 —— 皆未刪。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 下一輪：**22:02**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 14) 本輪外部寫入<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- Discord 摘要（rowlet 帳號）→ channel `1482363974119854234`、**messageId `1573655861845426247`、deliveryStatus `sent`**（sentAt 1795259194714）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 15) 19:2x 追加：gengar 的 announce 最終補達（交叉驗證 §5 的結論）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 19:03 的 `sessions_send` 呼叫已 inline 收到完整回覆（runId `ee0c4d53-139c-4ce5-9198-682b91a8e2ed`），但 journal 當下記 `sessions_send announce flow failed`（19:03:53）→ **announce 稍後仍補達**（本則 inter-session announce，內容與 inline 回覆一致）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- → 印證 §5 判斷：競態破的是 **announce 路徑**（prepared model runtime 被取代），**不是回覆本體**；被呼叫端無論如何都拿得到完整回覆，只是 announce 可能失敗或延遲。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼自報內容與我方 DB 量測一致（6 支 cron 全 ok、ce=0、429×2 同 event 18:04:43、EAI_AGAIN=0、config mtime 01:56:03、pid 3573532 up 16h51m、Discord 8/8、dreaming 04:25 ok 1,918,841ms）→ **雙向交叉驗證通過**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+---
+
+## 2026-11-21 22:02 — PASS（lane 雙向通）／🔁 plugin runtime 競態**連五輪重現**（announce 又破）／✅ **全艦連 13 小時零真失敗**（09:00→22:02）／📉 ws churn 回到 13／🐢 兩個 heartbeat skip 耗時異常（505s／240s）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Gengar lane：PASS（22:03 inline 回覆）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `sessions_send` → `agent:gengar:main` → runId **`1a353776-be0d-44ea-9192-301800218371`**、status=**ok**；22:03 收到完整回覆（provider=`minimax-portal/MiniMax-M3` → `minimax/MiniMax-M3` → `minimax-portal/MiniMax-M2.7`）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼自報 **未降級**：兩份 MiniMax 憑證皆 HTTP 200，fallback 鏈待命。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼 6 支自有 cron **全 ok、ce=0**：watchdog 22:04 ok／heartbeat c29eca0f 21:59 ok（next 22:29）／English reminder ok（next 11-22 05:00）／BBC ok（next 11-22 07:00）／skill-collection-review ok（next 11-28 07:32）／版本檢查 ok（next 11-22 00:00）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 耿鬼自報近 60 分鐘 429/overloaded=2（18:04:43 watchdog 那次）、EAI_AGAIN=0、timeout=0；Discord **8/8 enabled accounts running+connected**（greninja disabled）、4 次 ws close 全自癒、ingress 63 筆/時。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 2) ⭐ 全艦 **09:00→22:02 連 13 小時零真失敗**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 24h 內全部失敗共 75 筆，分布：11-20 22:00=16／23:00=29／11-21 00:00=9／01:00=2／03:00=1／04:00=11／05:00=2／06:00=1／07:00=2／08:00=1／**22:00=1（就是本 job 自己的 running receipt）**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- → **真失敗最後一次落在 11-21 08:12**（heartbeat-celesteela timeout）；之後 14 小時全綠。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 11-20 22:00–08:12 那 74 筆的組成：heartbeat 群 timeout（celesteela 9、mrmime 8、picturecat 8、charizard 7、rowlet 7、roaringmoon 7、gengar 7、greninja 4）＋ DNS 風暴（`All models failed (3): … EAI_AGAIN api.minimax.io`）＋ 429 rate limit ＋ `ca222989` 系統維護 6 次 network error。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 3) 🔁 plugin runtime 競態**連五輪重現**，且**再破一次 announce**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `22:02:30` lane=`agent:picturecat:main` → `prepared model runtime plugin generation was superseded for /home/amr/.openclaw/agents/picturecat/agent`（nested 5ms／session 5ms）→ **`sessions_send announce flow failed`**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `22:04:12` lane=`agent:gengar:main`（**就是我 22:02 那次探測**）→ 同樣錯誤（nested 6ms／session 7ms）→ **`sessions_send announce flow failed`（22:04:12.490）**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 這次連 **fallback 鏈都被捲進去**：`minimax-portal/MiniMax-M3 candidate_failed` → `minimax/MiniMax-M3 candidate_failed` → 第三個候選 `minimax-portal/MiniMax-M2.7` 才接住 → **實際多花 2 次 fallback hop**，reason 一律是 `prepared model runtime plugin generation was superseded`（不是 provider 掛了）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ✅ **再次證實 19:2x 的判斷**：競態破的是 **announce 路徑**（prepared model runtime 被取代），**回覆本體照樣完整落地**（我這邊 22:03 inline 收到耿鬼全文；Picturecat 端 22:02:04 那輪 dur=127s 最終 ok）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 4) ⚠️ 三支 KA 的 anchor 錯峰**只做成一半**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 本輪 nextRunAtMs：**Picturecat `1795269724143`（22:02:04.143）／Gengar `1795269724129`（22:02:04.129）／Celesteela `1795269726157`（22:02:06.157）**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- → Celesteela 已成功錯開到 :06，但 **Gengar 與 Picturecat 只差 14ms（實質同時）** → 本輪的 plugin runtime 競態（22:02:30 picturecat / 22:04:12 gengar）正落在這個重疊窗。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 修法（仍未執行）：把 Gengar 或 Picturecat 其中一支的 anchor 拉開 ≥3 分鐘。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 5) 429：只有 2 筆真 429（journal 文字回音已排除）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 真實 provider 429：`21:01:44`（minimax-portal, elapsed 98ms）與 `21:03:58`（elapsed 12ms），同屬 embedded runId `47976ad3`（= heartbeat-mrmime `bcf270b8` 21:01:11 那輪，dur 382s）→ **該輪最終 receipt = ok**，連敗被 fallback 吸收。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `EAI_AGAIN` 文字命中 2 筆 → **實為 0**：19:07:08 是我上一輪把「EAI_AGAIN=0」寫進日誌被 echo，22:04:12 是耿鬼回覆裡的「EAI_AGAIN = 0」。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 6) 📉 websocket churn：3h 內 13 次 code=1005（回到上上輪的 13，未延續 9 的下降）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 全部為 `code=1005 reasonBytes=0`，時間點 19:22／19:35／20:01／20:04／20:09／20:12／20:27／20:41／21:03／21:14／21:35／21:49／22:04。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 每次都被接回：`openclaw channels status` → **8 個 enabled 帳號全 running+connected**（greninja disabled），無連線卡死。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 7) 🐢 兩個 heartbeat skip 耗時異常（505s／240s）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `d82f78e3 heartbeat-rowlet` 20:08:22 **skip 耗時 505s**；`46242a4c heartbeat-celesteela` 20:12:47 **skip 耗時 240s**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 兩者最後都落 `skipped`（ce=0，屬「無來源可達」的正常跳過），但**耗時與 §6 的 ws close 密集時段重疊**（20:09／20:12 兩次 close 夾在中間）→ 推測 route 解析被 ws 重連拖慢。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 影響面小（跳過本來就該跳過），但 505s 會佔住 cron slot；列入觀察。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 8) dreaming × Discord：**第二輪驗證成功，可正式降為觀察**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `36b493db` 11-21 04:25:00 **ok / dur=1,919s（31.99 分）**，未截斷；對應的 `d4cd45bc discord-selfheal-after-dreaming` 21:43 ok dur=1s。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- → fail-closed 守衛連兩輪都沒有誤砍 dreaming → **本項由「未解」正式轉為「觀察」**（下一個可驗窗口 11-22 04:25）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 9) 17 個 skill 被持續跳過（221 筆/3h，較上輪 238 略降）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 缺 `description`（12）：card-lookup、meta-analyzer、network-security-defense、prompt-injection-defense、prompt-injection-filter、ptcgp-card-download、ptcgp-card-lookup、rosclaw/extensions/openclaw-plugin/skills/{check-status,navigate-to,pick-object,take-photo}、system-design-six-dimensions-analyzer、web-fetch-troubleshooting（每檔 13 次/3h）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- frontmatter `BAD_INDENT`（5）：excel-image-pipeline、human-behavior-simulation、image-attendant、ocr-confidence-mark、＋ 同一批命中 52 次。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 狀態**與前三輪完全相同**（同一組 17 檔，非新增）→ 仍未修（跨專案檔案，等 Linder 點頭）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 10) 紅單（僅 1 張，且非本 job）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `c5352a84` skill-collection-review-roaringmoon **ce=1**（lastErr: DNS lookup）→ 下次 **11-27 03:56** 才自動重試。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `a94330a9` tmp-openai-probe：disabled、ce=2 → 未刪。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `heartbeat no-route skipped`：greninja cs=43／picturecat cs=35／roaringmoon cs=27／celesteela cs=22／rowlet cs=23 → ce 皆 0，屬正常綠燈閒置。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `6e93c179 heartbeat-flaaffy` st=None → 排程形同停擺（良性長態，沿用未結案）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 11) 姊妹 job（同一輪錨點）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `02eb0989` Picturecat KA **ok / 127s**（22:02:04）、`880b5c17` Celesteela KA **ok / 49s**（22:02:06）、本 job `9d8b6001` 22:02:04 起跑（running）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `29c2d630` Gengar watchdog 22:04:23 ok / 3s、`c29eca0f` heartbeat-gengar 21:59:43 ok / 10s。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `40e09cd1` Jormungand daily all-agent health、`13ac4b5a` 健康回報 20:05 ok、`af94aa92` 備份 16:00 ok、`36b493db` dreaming 04:25 ok。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 12) 邊界（本輪刻意沒動）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 未改任何 cron 排程 / anchor / payload / fallback / timeout / delivery / model；未刪 job；未重啟 gateway；未改 provider / channel / auth；未改任何 skill 檔。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 唯讀來源：`sessions_send`、`openclaw automations list --all --json`、`cron_run_receipts` / `channel_ingress_events` / `delivery_queue_entries` / `cron_jobs`（複製 DB+WAL/SHM 至 /tmp 後以 python sqlite3 ro 查詢）、`journalctl --user -u openclaw-gateway`、`systemctl --user show openclaw-gateway`、`openclaw channels status`、`ss -tlnp`、uptime/free/df。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 寫入：本記憶檔、一則 Discord 摘要。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 13) 給 Linder 的待決事項（狀態更新）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **【高・連五輪】plugin runtime 競態**：本輪**連 fallback 鏈都被掃到**（多 2 hop），announce 又破一次。現已確認「破的是 announce、不是回覆」→ 影響降級為「延遲 + 多燒 token」，但**Gengar 與 Picturecat 的 anchor 只差 14ms**，建議至少把其中一支拉開 ≥3 分。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+2. **【已結案・觀察】dreaming × Discord**：連兩輪乾淨跑完（04:25 / 1,919s）→ 守衛 fail-closed 有效，轉觀察。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+3. **【中】17 個 skill 被跳過**（221 筆/3h、同一組 17 檔，連四輪未修）→ 修法明確（各 SKILL.md frontmatter 補 `description:`）但屬跨專案檔案，等你點頭才動。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+4. **【低】ws churn 回到 13 次/3h**（上輪 9 是第一次收斂，未延續），全部自癒、8/8 connected → 只觀察。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+5. **【低・新】兩個 heartbeat skip 耗時 505s／240s** → 疑似 ws 重連拖慢 route 解析；跳過本身無害，但佔 slot。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+6. **【低】殘留**：`c5352a84` 紅單（11-27 才重試）、`a94330a9` disabled 探針 —— 皆未刪。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 下一輪：**11-22 01:02**（本 job，3h 一次）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 14) 本輪外部寫入<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- Discord 摘要（rowlet 帳號）→ channel `1482363974119854234`、**messageId `1573701364024877151`、deliveryStatus `sent`**（sentAt 1795270043378）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- MEMORY.md 新增 3 條可複用教訓：plugin runtime 競態會掃掉 fallback 鏈（多 2 hop）／KA anchor 錯峰要用 `state.nextRunAtMs` 自驗／`cron_run_receipts.job_id` 必須完整 UUID。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 15) 22:04 追加：**announce 最終仍補達**（第二次實證）＋ 對端自報有過期數字<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 22:04:12 journal 的 `sessions_send announce flow failed` 之後，**該則 inter-session announce 仍送達本 session**（22:0x 收到 `agent:gengar:main` 的完整回覆）→ 與 19:03 那輪**完全同型**，兩輪實證：journal 報 announce 失敗 ≠ 回覆遺失。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- journal 查 22:03:30–22:15 只剩那一行 announce failure、**沒有第二筆 announce 失敗** → announce 是走另一條 relay 路徑補達，不是同一路徑重試。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `delivery_queue_entries` 近 2h 只有 2 筆 `outbound-prepared-v1 / completed`（cron-direct），**沒有 gengar main 的 announce 條目** → announce 不經 delivery queue，別用該表推 announce 狀態。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ **對端自報數字可能過期**：耿鬼 22:03 回覆稱「近 60 分鐘 429/overloaded = 2（event 18:04:43）」——18:04:43 明顯不在 22:03 往前 60 分鐘內，且與上一輪（19:02）引用同一個時間點 → **該欄位疑似沿用舊值**；我方 DB/journal 量測的真 429 是 **21:01:44 與 21:03:58**（minimax-portal、同一 embedded runId `47976ad3`）。其餘欄位（6 支 cron 全 ok/ce=0、8/8 connected、ws close 4 次/時、ingress 63 筆/時、gateway up 19h51m、config mtime 01:56:03）與我方量測**一致**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 記憶更新：MEMORY.md「plugin runtime 競態」條補上 announce 晚到（兩輪實證）＋ 對端 429 自報須以 journal 為準。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
