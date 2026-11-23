@@ -62,6 +62,30 @@ python3 scripts/check_graph_links.py "Page Title" "Another Title"
 
 Every listed title must print `ok` with at least 1 incoming wiki_link. `MISSING` means no node carries that title; `ORPHAN` means the node exists but nothing links to it — go back to step 1, add the backlinks, then repeat from step 2.
 
+Pages that only link *to* each other still have 0 incoming edges, because their edges are outgoing. Give every new page at least one incoming edge by putting a `[[<page-name>]]` wikilink for it in `wiki/index.md` — index wikilinks are `wiki_link` edges and count as incoming. After editing the index, repeat step 2.
+
+When `scripts/check_graph_links.py` is unavailable, count incoming `wiki_link` edges per new page directly from the graph:
+
+```bash
+cd /home/amr/llm-wiki && python3 - <<'PY'
+import json
+paths = ["concepts/foo", "sources/bar"]          # replace with the new pages' wiki paths
+g = json.load(open("graphify-out/graph.json"))
+node_path = {n["id"]: n.get("wiki_path", "") for n in g["nodes"]}
+incoming = {p: 0 for p in paths}
+for e in g.get("edges", []):
+    if e.get("relation") != "wiki_link":
+        continue
+    wp = node_path.get(e.get("target"), "")
+    if wp in incoming:
+        incoming[wp] += 1
+for p, c in incoming.items():
+    print(f"{c:>3} incoming  {p}")
+PY
+```
+
+Count against the graph step 2 wrote — a recluster in step 3 drops `wiki_link` edges entirely, so the count would be zero for every page. A page that still shows 0 incoming edges is an orphan: add its `wiki/index.md` wikilink and repeat step 2.
+
 Also confirm `graphify-out/GRAPH_REPORT.md` shows the current date and the expected node/edge totals.
 
 ## 5. Log the change

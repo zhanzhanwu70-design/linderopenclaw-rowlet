@@ -24,6 +24,25 @@ set -u
 
 LOG="/home/amr/.openclaw/workspace-rowlet/memory/dreaming-schedule-check.log"
 
+# --- dreaming guard (added 2026-11-23 13:15) ----------------------------------
+# Restarting the gateway while 36b493db is in flight truncates the dreaming run
+# (11-19 / 11-20 / 11-23 were all truncated by a restart).  Fail closed: when
+# the state is unknown, postpone and let the caller re-run after the dreaming
+# slot instead of killing the run.  DREAMING_CHECK is overridable only so the
+# guard can be unit-tested.
+DREAMING_CHECK="${DREAMING_CHECK:-${HOME}/.openclaw/workspace-rowlet/scripts/dreaming-running-check.py}"
+dreaming_state="$(python3 "${DREAMING_CHECK}" --prefix 36b493db 2>/dev/null || true)"
+dreaming_state="$(printf '%s' "${dreaming_state}" | tr -d '[:space:]')"
+[ "${dreaming_state}" = "idle" ] || dreaming_state="running"
+if [ "${dreaming_state}" != "idle" ]; then
+  {
+    echo "=== apply-dreaming-schedule postponed $(date -Is) ==="
+    echo "dreaming job is '${dreaming_state}' - a restart would truncate it; nothing changed"
+  } >> "$LOG"
+  echo "postponed: dreaming job is '${dreaming_state}' - no restart, nothing changed"
+  exit 75
+fi
+
 {
   echo "=== apply-dreaming-schedule start $(date -Is) ==="
   echo "restarting openclaw-gateway (user unit, Restart=always RestartSec=5)"

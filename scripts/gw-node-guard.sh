@@ -7,6 +7,24 @@ LOG=/home/amr/.openclaw/logs/gw-upgrade-guard.log
 mkdir -p "$(dirname "$LOG")"
 log(){ printf '%s %s\n' "$(date -Is)" "$*" >>"$LOG"; }
 
+# --- dreaming guard (added 2026-11-23 13:15) ----------------------------------
+# This script restarts the gateway (Node version bump + moving gateway.auth.password
+# into the 600-perm env file).  A gateway restart TRUNCATES the memory-dreaming
+# run (36b493db) if it is in flight -- that is how dreaming was truncated on
+# 11-19, 11-20 and 11-23.  So prove dreaming is IDLE before touching anything.
+# Same fail-closed checker the self-heal uses: any uncertainty => "running".
+# DREAMING_CHECK is overridable only so the guard can be unit-tested.
+DREAMING_CHECK="${DREAMING_CHECK:-${HOME}/.openclaw/workspace-rowlet/scripts/dreaming-running-check.py}"
+dreaming_state="$(python3 "${DREAMING_CHECK}" --prefix 36b493db 2>/dev/null || true)"
+dreaming_state="$(printf '%s' "${dreaming_state}" | tr -d '[:space:]')"
+[ "${dreaming_state}" = "idle" ] || dreaming_state="running"
+if [ "${dreaming_state}" != "idle" ]; then
+  log "postponed: dreaming job is '${dreaming_state}' - a gateway restart would truncate it"
+  echo "postponed: dreaming job is '${dreaming_state}' - no config change, no restart"
+  exit 0
+fi
+log "dreaming guard: idle - proceeding with the gateway restart"
+
 CFG=/home/amr/.openclaw/openclaw.json
 UNIT=/home/amr/.config/systemd/user/openclaw-gateway.service
 ENVF=/home/amr/.openclaw/secrets/site-auth.env

@@ -72,8 +72,13 @@ else pip3 show litellm 2>/dev/null | grep -m1 '^Version' || say "  [OK] 未安�
 # ---------- 5. 對外曝露連接埠 ----------
 say ""; say "[5] 對外曝露連接埠"
 ss -ltn 2>/dev/null | awk 'NR>1 && $4 ~ /^(0\.0\.0\.0|\*|\[::\]):/ {print $4}' | sort -u | head -25 | while read -r p; do
-  case "$p" in
-    :22|:111|:2049|:5900|:7070) flag "!!" "$p  ← 需檢查（ssh/rpcbind/nfs/vnc/unknown-root-svc）";;
+  PORT="${p##*:}"
+  case "$PORT" in
+    22) flag "!!" "$p  ← ssh（需確認密碼驗證已關）";;
+    111|2049) flag "!!" "$p  ← rpcbind/nfs-server（無匯出則應關）";;
+    5900) flag "!!" "$p  ← x11vnc 遠端桌面";;
+    7070) flag "!!" "$p  ← AnyDesk（TLS CN=AnyDesk Client，2026-11-22 已確認）";;
+    1716) flag "i" "$p  ← kdeconnectd";;
     *) flag "i" "$p";;
   esac
 done
@@ -89,7 +94,23 @@ if [ -e /etc/x11vnc.pass ]; then
   esac
 fi
 pgrep -a x11vnc >/dev/null 2>&1 && { say "  [!!] x11vnc 執行中（5900 對外）"; mark; }
-pgrep -a anydesk >/dev/null 2>&1 && say "  [i] anydesk 執行中"
+if pgrep -a anydesk >/dev/null 2>&1; then
+  say "  [!!] anydesk 執行中（7070 對外 + 遠端控制）"
+  say "       /etc/anydesk/system.conf 內含 ad.security.pwd 與 unattended_access profile"
+  # trace 行格式: "Outgoing    2026-07-28, 15:44    Passwd   ..." → 日期與時間分屬 $2($2 含逗號) 與 $3
+  TRACE=/etc/anydesk/connection_trace.txt
+  LAST=$(tail -1 "$TRACE" 2>/dev/null | awk '{gsub(/,/, "", $2); print $2" "$3}')
+  say "       最後一次連線紀錄: ${LAST:-無}"
+  # Incoming = 遠端曾連入本機（= unattended access 真的被用過），比 Outgoing 更關鍵
+  INC_N=$(grep -c "^Incoming" "$TRACE" 2>/dev/null || echo 0)
+  INC_LAST=$(grep "^Incoming" "$TRACE" 2>/dev/null | tail -1 | awk '{gsub(/,/, "", $2); print $2" "$3}')
+  INC_TOK=$(grep "^Incoming" "$TRACE" 2>/dev/null | awk '{print $4}' | grep -c "^Token$")
+  if [ "${INC_N:-0}" -gt 0 ]; then
+    say "       [!!] 遠端曾連入本機 ${INC_N} 次（其中 ${INC_TOK} 次用 Token=unattended access），最後一次: ${INC_LAST:-無}"
+    mark
+  fi
+  mark
+fi
 
 # ---------- 7. SSH 驗證策略 ----------
 say ""; say "[7] SSH"
