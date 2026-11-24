@@ -371,3 +371,346 @@ job: `9d8b6001-3178-46bf-ad9b-dfbb1ec0faa7` — Gengar Keep-Alive（每 3h、ses
 
 ### 13) 下一輪（11-23 16:02）交辦
 ① 11-24 04:25 dreaming 決定性驗證（dur ≥30 分鐘、status=ok）；② 本 job ce 是否歸零（transcript 事故後自癒）；③ 07:00 那場 rate limit 是否復發；④ 429 elapsed 是否續跌 <90s；⑤ 三支 KA anchor；⑥ 17 支 skill；⑦ **新守門有沒有被觸發的紀錄**（`logs/gw-upgrade-guard.log`、`memory/dreaming-schedule-check.log`）；⑧ 回程腿是否再遇 transcript 故障。
+
+## Gengar lane 自報（gengar 16:02 台北）— PASS（lane 雙向通）／📉 3h canonical 429 = 1、EAI_AGAIN runtime truth = 0／🔴 13:02 那輪 error 的成因已釐清<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-gengar -->
+- 6 支自有 cron 全 `ok`、`ce=0`：29c2d630 watchdog、c29eca0f heartbeat-gengar（16:02 輪 ok）、ac9e7ada English coach、88810bfe BBC drill、7767e03b skill-collection-review-gengar、f5148ff0 版本檢查。
+- **計數口徑已對齊 rowlet 的 canonical**（我先前兩處自報數字有誤，這裡更正）：
+  ① 3h 內 canonical `model-fetch.*status=429` = **1**（12:02:01.177）——我先前報「2」是同一事件數兩次（另一行是該 429 的 `[agent/embedded] … error=…overloaded…` envelope，非第二事件）。
+  ② **EAI_AGAIN runtime truth = 0**（6h 窗 5 筆命中全是我自己回報文字的迴音；排除 `agent:nested`／`agent/embedded` 後為 0）。我先前報「1 EAI_AGAIN」同樣是自報污染。
+  ③ 3h 內 cron/model timeout = 0。
+- Discord inbound **ok**：8/8 enabled accounts running+connected，近 60 分鐘 ingress **30 筆**。
+- **13:02 那輪（9d8b6001）error 的成因已釐清（兩件事同時發生，不是一件事）**：
+  ① 該 run 自身記錄的 err = `⚠️ minimax-portal/MiniMax-M3 request failed.`（dur 158,634 ms）→ **provider 請求失敗**，非 transcript 問題。
+  ② 另有一件獨立的 **transcript-ownership**：我回送該輪報告時 `sessions_send` 命中 `session writer claim changed before transcript persistence … code: session-rebound`（payload 落在目標 session 的 pendingInputs、state=interrupted，之後才由我重送成功）。
+  → 兩者都在 13:02，但成因不同；**16:02 這輪（9d8b6001）已於 16:02:04 起跑、目前仍 running，尚未出現同樣的 session-rebound**；我會在本輪 run 結束後把結果補進本檔。
+- **04:47 第二次 arm 的來源已找到答案**：journal 顯示 `sshd[4137564]: pam_unix(sshd:session): session opened for user amr(uid=1000) by (uid=0)`（04:47:35）→ 04:47:51 `session closed`、session-7267.scope CPU 1.123 s。→ **第二發 arm 來自真人 SSH 互動 session**，不是第四個未知 script（也繞過了 selfheal 的 30 分鐘 anti-storm）。若非 Linder 本人即是有 root/SSH 權限者——這條「第四來源」可以結案了。
+- 交付：本記憶檔寫入 + sessions_send 回覆；未改任何 cron／gateway／dreaming 設定。
+
+## Gengar lane 自報（gengar 16:02 台北・9d8b6001 第 15 輪 追補：dreaming 前置與 lane 異常檢查）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-gengar -->
+- lane token：`LANE_OK_GENGAR_1602 = 6`
+- 6 支自有 cron 全 `ok` / `ce=0` / next：`29c2d630` watchdog 11-23 18:04（last 16:04）· `c29eca0f` heartbeat-gengar 16:29（last 15:59 ok）· `ac9e7ada` English coach 11-24 05:00（last 11-23 05:00）· `88810bfe` BBC drill 11-24 07:00（last 11-23 07:00）· `7767e03b` skill-collection-review-gengar 11-28 07:32（last 11-21 07:32）· `f5148ff0` 版本檢查 11-29 00:00（last 11-22 00:00）。
+- canonical 計數（已對齊口徑）：**60m** `model-fetch.*status=429` = **1**、EAI_AGAIN runtime truth = **0**、cron/model timeout = **0**；**3h** 429 = **2**、EAI_AGAIN = **0**、timeout = **0**。（DNS 一律排除 `agent:nested`／`agent/embedded`／`agent:side` 自報迴音。）
+- Discord：**8 connected / 8 enabled** accounts，近 60 分鐘 ingress **27 筆**。
+- **dreaming 11-24 04:25 前置狀態**：`36b493db` schedule `25 4 * * *`、payload `timeoutSeconds: 2400`、`toolsAllow ["*"]`；上一輪 11-23 04:25 = error 1,406,869 ms、`ce=1`；**next = 11-24 04:25**。守門修補已落地（`scripts/dreaming-running-check.py`，mtime 11-23 07:27），且 self-heal cron expr 已改為 **`13,43 0-3,5-23 * * *`** → **整個 04 時段沒有 heal 槽位**，dreaming 窗內不可能被重啟砍斷（多一層保險）。我這邊不需要 arm 任何東西；我會在 10:02 那輪讀 11-24 04:25 的 dur/status，若 < 30 分鐘立即回報。
+- **我的 lane 異常檢查**：6 支 cron 全 ok/0，heartbeat-gengar 本輪 ok（15:59）；**無新的 transcript/丟訊息故障**（13:02 那次 session-rebound 已重送成功落地，之後兩輪回覆皆 accepted）。9d8b6001 自身 13:02 的 error 是 provider 請求失敗（minimax-portal request failed, 158,634 ms），與我的 transcript 故障是兩件事。Gateway 自 11-23 04:48:17 那次重啟後持續運行。
+
+## 2026-11-23 16:02 — PASS（lane 雙向通，gengar 自行修正兩處計數）／📉 **3h canonical 429 = 0（自 12:02 起 3h56m 乾淨）**／🔴 **歸因二次修正：13:02 那輪的根因＝「把回覆投遞進正在跑的 cron session」→ competing work → lane wait → transcript rebound；provider 完全清白**（receipt 的錯誤字串是誤導）／🔒 第二 arm 來源**已結案**（人類 SSH）／🧩 17 支 skill 第 13 輪未修<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Gengar lane：PASS（雙向通，來回都讀到）
+- 去程：`sessions_send` → `agent:gengar:main`、runId **`366a4552-e5b0-431e-a1b7-b5ee0f06a65a`**、status=**accepted**、targetDisposition=queued、delivery=`announce/pending`。
+- 回程腿：**耿鬼 16:06–16:07 已回完整表**（journal `run=4c75c15c` 可驗），並自行把段落寫進本檔（§「Gengar lane 自報（gengar 16:02 台北）」，本檔 mtime 16:06:21）＋ 寫 `memory/2026-11-23.md` → **本輪「去程讀回 + 回程讀回」同時成立**。
+- 耿鬼自報：6 支自有 cron **全 ok、ce=0**（`29c2d630` watchdog、`c29eca0f` heartbeat-gengar、`ac9e7ada` English coach、`88810bfe` BBC drill、`7767e03b` skill-collection-review-gengar、`f5148ff0` 版本檢查）；Discord **8/8 enabled connected**、近 60 分鐘 ingress **30 筆**；3h cron/model timeout = 0。
+- ⭐ **耿鬼自行修正兩處計數**（這是本輪最大的收穫之一）：① 3h canonical `model-fetch.*status=429` 由「2」更正為 **1**（12:02:01.177，另一行是同一事件的 `[agent/embedded] …overloaded…` envelope）；② **EAI_AGAIN runtime truth 由「1」更正為 0**（6h 窗 5 筆命中全是它自己的回報文字迴音）。→ **與我的 canonical 口徑一致**（我量到 3h 窗 = 0 筆、最後一筆在 12:02），**「自報污染」這個坑再次被同一位當事人親手抓到**。
+- 🔵 **13:02 那輪的歸因（16:02 輪二次修正）**：receipt `error_text` 寫 `⚠️ minimax-portal/MiniMax-M3 request failed.`（dur 158,634ms）—— **但這是 runner 的泛用 surface_error 字串，不是根因**。我逐行複驗 13:03:30–13:05:00 的 journal：`[model-fetch] response` **每一筆都是 status=200**（無 429／無 5xx）→ **provider 清白**。真實因果鏈＝**13:03:47 `lane task error: Worker turn session key does not match its placement`（nested 3ms／session 4ms，觸發＝交付進「基礎 cron session」）→ 13:04:40.967 transcript ownership rebound → 13:04:40.992 `lane wait exceeded waitedMs=43542 activeAhead=1` → 13:04:41 `Cannot delete session while competing work is in flight` → receipt error**。→ **修正 13:02 輪 §2 的歸因**（該輪寫成 transcript-ownership）**與本節初稿的歸因**（初稿寫成 provider 失敗）—— 兩次都不對，真正的根因是**投遞通道**。
+- 🔒 「第二 arm 來源」**已結案**：journal 系統層顯示 `sshd[4137564]: Accepted publickey for amr from 192.168.50.2`（04:47:35）→ session closed（04:47:51，16 秒）→ **第二發 restart 來自真人 SSH 互動**（登入後 11 秒下指令）。此案 rowlet 已在 13:11 輪獨立複驗並回報過，**耿鬼本輪自行複驗一致** → 不是第四個未知 script、也不是 agent 迴圈。
+
+### 2) 本 job 自身：dur 表（今天 6 輪：1 降級 + 1 provider 收尾失敗 + 1 provider 失敗 + 3 正常）
+| slot | dur | status | 判定 |
+|---|---|---|---|
+| 11-23 16:02（本輪） | running | — | 完整巡檢（§1–§13） |
+| 11-23 13:02 | 158.6s | error | ❌ provider 失敗（非 transcript，見 §1）→ ce=1 的來源 |
+| 11-23 10:02 | **12.8s** | ok | ❌ **降級跑**（無巡檢紀錄） |
+| 11-23 07:29:44 | 8.8s | error | 「Explicit auth order for openai has no usable profiles」（手動補跑） |
+| 11-23 07:02 | 1624.3s | error | 工作做完但收尾撞 rate limit |
+| 11-23 04:02 | 205.1s | ok | ✅ |
+| 11-23 01:02 | 277.5s | ok | ✅ |
+- 降級跑根因仍未解：**payload 只有一句 `keep-alive test`**（要改 job 需授權）。今日 6 輪只有 **5 輪留下巡檢紀錄**。
+- 本輪 ce 仍顯示 1（沿用 13:02）；**本輪 ok 收尾後應歸零**（下輪驗證）。
+
+### 3) 📉 429：3h 窗（13:00→16:02）canonical = **0 筆**／24h **39 筆**（07:xx 單時段 26 筆）／529 = 0
+- 3h 窗用 `grep 'model-fetch.*status=429'` 會得到假陽性 1（那行是耿鬼 16:07 的**自報文字**）；**排除 `[agent:nested]` 後 = 0**。
+- 24h canonical **39 筆**（23 日：00/03/05×2/06/07×26/08×3/09/12 各 1，22 日 18/21/23 各 1）→ **2/3 的量仍來自 07:00 那場**，07:00 之後沒有再復發。
+- 最後一筆真 429 = **12:02:01、elapsedMs=90,510**（前輪記為「首次跌破 90 秒」，精確值是 90.51s）→ **交辦④「elapsed 續跌 <90s」本輪無法再量**：自 12:02 起已 **3h56m 零 429**（比量 elapsed 更強的訊號）。
+- 真實 DNS 失敗（EAI_AGAIN）= **0**；`status=529` = 0；「Token Plan usage limit」24h 58 行（同一場 07:29 事件的多行日誌，非 58 個事件）。
+
+### 4) Fleet：53 jobs / 46 enabled / 7 disabled（enabled tally：**ok 37 / skipped 5 / error 3 / none 1**）
+- 活紅單 **3 支，皆有自癒路徑、無新增**：
+  - `9d8b6001`（本 job）ce=1 / next 16:02（＝本輪）→ §2。
+  - `36b493db` Memory Dreaming Promotion：11-23 04:25 **interrupted**（dur 1,406.9s）→ next **11-24 04:25**（決定性驗證輪）。
+  - `c5352a84` skill-collection-review-roaringmoon ce=1 → next 11-27（既有，跨 lane）。
+- `45ccf4e9` 晨間情報：**11-23 08:00 ok（dur 1,081.0s）**，11-21/11-23 連續 2 天 ok → 前輪「provider 回 HTML 錯誤頁」已自愈 ✅。
+- `af94aa92` 每日 OpenClaw 備份 16:00:05 ok（dur 127.7s）；`discord-selfheal-after-dreaming` 15:43 / 15:13 皆 ok（dur <1s）。
+- 3h 窗 receipts：ok 60 / skipped 35 / running 4（無 error）—— **本 job 之外的三支 KA 與 heartbeat 皆健康**。
+
+### 5) 🆕 觀察：receipt 與 job state 的錯誤語彙不同源
+- dreaming 11-23 04:25：`cron_jobs.state.lastError` = 「cron: job interrupted **by gateway restart**」，但 `cron_run_receipts.error_text` = 「cron: job interrupted **because owner is unavailable**」→ **兩個欄位描述同一事件但用詞不同**，判讀時別混用、也别當成兩件事。
+- 同型：04:25–04:47 共 **8 筆**「owner is unavailable」（dreaming + 7 支 heartbeat）；另有 **25 筆**「cron: job execution timed out」＋ **8 筆**「heartbeat failed: agent-runner-failure」（04:27–08:44，橫跨 picturecat/charizard/roaringmoon/mrmime/gengar/rowlet/celesteela/greninja）→ **全部是 04:48 那場 gateway 重啟的餘波**，3h 窗內 0 筆。
+
+### 6) ⚠️ 三支 KA anchor 疊窗：**第 15 次**（每輪同款）
+| job | id | 本輪起跑 |
+|---|---|---|
+| Gengar KA（本 job） | `9d8b6001` | **16:02:04** |
+| Picturecat KA | `02eb0989` | **16:02:10**（+6ms） |
+| Celesteela KA | `880b5c17` | **16:02:12**（+2ms） |
+- anchorMs 固定差 39ms / 33ms → 每輪生 superseded 假訊號：3h 窗 **10 筆**、24h **114 筆**（`prepared model runtime plugin generation was superseded`，皆為 `durationMs=6` 的競態噪音，非硬失敗）。
+- 修法（拉開 ≥3 分鐘）**仍待 Linder 點頭**。
+
+### 7) 🔎 交辦⑦：新守門**未被觸發**（不是「擋到了」）
+- `/home/amr/.openclaw/logs/gw-upgrade-guard.log` **不存在** → `gw-node-guard.sh` 自 13:12 補守門後**一次都沒被執行過**（該 script 每次執行都會寫 log，含 idle 路徑）。
+- `memory/dreaming-schedule-check.log` 最後寫入仍是 **11-19 22:33** → `apply-dreaming-schedule.sh` 近期也沒跑。
+- 原因很單純：**gateway 自 04:48:17 起沒被重啟過**（MainPID 4137629、NRestarts=0）→ 沒有 restart 事件，守門自然無事可做。
+- → **決定性驗證要等 11-24 04:25 dreaming 那一晚**：若那晚有 restart 企圖，守門才會被觸發並留下可稽核的 postpone 紀錄；本輪只能證明「守門未被用到」。
+
+### 8) 🧩 17 支 skill 缺 description：**第 13 輪未修**
+- 3h 窗 **221 行**、24h **3,298 行**、唯一 **17 檔**（名單與前輪一致：13 支 `description is required` ＋ 4 支 `BAD_INDENT`，含 rosclaw 4 支）→ 功能上等於不存在。
+- ⚠️ 沿用前輪修正：**以 journal 的 `[skills] Skipping invalid skill` 為唯一真值**（直接掃 SKILL.md 只會看到 9 支）。**未授權，不動。**
+
+### 9) 系統面
+- gateway：MainPID **4137629**、**NRestarts=0**、04:48:17 起連續在線 **≈11h17m**（本輪無重啟）。
+- Discord：**8/8 connected**（greninja disabled 為設計如此）；3h 窗 `gateway websocket closed` = 9、`Gateway reconnect scheduled` = 10、**READY-fail = 0**（排除 nested 後；前輪的 4 筆是自報文字迴音）。
+- host：up **42d 21h51m**、load 0.68/0.69/0.62、RAM avail **20,883 MB**、/home **267G/468G（61%、178G free）**。
+- Discord 100-command overflow：24h **0 筆**（前輪 6 筆）→ 續降。
+
+### 10) 邊界（本輪刻意沒動）
+- 沒動真實 gateway（無重啟、無 selfheal 觸發）；沒改任何 cron（payload / anchor / schedule 全未動）；沒刪 job；沒改 skill 檔；沒碰憑證；沒改 dreaming 排程時段。
+- 唯一對外動作＝對 gengar lane 的 `sessions_send` 存活探針（團隊內部）。
+
+### 11) 給 Linder 的待決事項（狀態更新）
+1. 【中・第 15 輪】三支 KA anchor 疊窗 → 建議拉開 ≥3 分鐘（仍待點頭）。
+2. 【中・第 13 輪】17 支 skill 缺 description（≈1,464 次/日）→ 跨 lane / 跨第三方 plugin 寫檔，需你點頭。
+3. 【中・需授權】**本 job payload 只有「keep-alive test」** → 今日已有 1 輪降級跑（10:02, 12.8s，零紀錄）。建議把巡檢五步與檔名寫進 payload，或改由獨立 patrol job 承載。
+4. 【中・既有】MiniMax Token Plan 配額牆：07:00 那場（26 筆）**未復發**，但 24h 內共 39 筆；跨廠 fallback 因無憑證＝零冗餘，唯一實測可用的是 `minimax-portal/MiniMax-M2.7`。
+5. 【低・既有】`c5352a84` ce=1 → next 11-27；`a94330a9` 停用殘留紅燈（ce=2）→ 可刪。
+6. 【低・既有】transcript-ownership：24h 2 筆（皆 13:0x），**本輪 0 筆**；若再發就升級回報。
+7. 【已結案】第二 arm 來源＝人類 SSH（192.168.50.2，04:47:35–04:47:51）→ **不是第四個未知 script**；若那不是 Linder 本人，值得補一條帳號稽核。
+
+### 12) 下一輪（11-23 19:02）交辦
+① 本 job ce 是否歸零（16:02 本輪收尾後）；② 3h 窗 429 是否續 0；③ dreaming 11-24 04:25 前的守門日誌是否出現（`gw-upgrade-guard.log` / `dreaming-schedule-check.log`）；④ 三支 KA anchor（第 16 次預期）；⑤ 17 支 skill（第 14 輪預期）；⑥ 回程腿是否再遇 session-rebound；⑦ 有無新的 provider 失敗型別（今天已湊齊 4 型 + transcript 型）；⑧ 07:00 那場配額牆是否再復發。
+
+### 13) 🔴 本輪新發現：**回程腿投遞進「正在執行的 cron session」＝ fleet 級定時炸彈**（本輪親自處境）
+- 觸發路徑（Picturecat lane 16:07 已記錄、我在 16:02–16:10 親歷）：nested lane（gengar）把回覆用 `sessions_send` 投回**父 cron run 還在跑**的 session → `Worker turn session key does not match its placement` → `competing work is in flight` → `lane wait exceeded` → transcript ownership rebound → 整輪 job 被判 error，而 receipt 的錯誤字串被寫成 **`⚠️ minimax-portal/MiniMax-M3 request failed.`**（誤導成 provider 故障）。
+- **本輪 16:0x 窗的實測命中**（我的 journal 讀數）：
+  - `16:03:58` `Cannot delete session while competing work is in flight` → `agent:celesteela:cron:880b5c17`
+  - `16:06:41` 同簽章 → `agent:mrmime:cron:ca222989`
+  - `16:07:10` `lane wait exceeded waitedMs=31127 activeAhead=1` + 同簽章 → **`agent:rowlet:cron:02eb0989`（Picturecat KA 自己的 run bed0fda9）**
+  - `16:07:55` `lane wait exceeded lane=session:agent:gengar:main waitedMs=175731` → **本輪 gengar 把回覆投進了我這個還在跑的 cron session**（與 13:02 完全同一動作）。
+  - 本 job 自己的 run（`fd8b5114`）：**沒有 lane task error**，但被標記 **2 次 `stalled session`（16:07:01 age=296s、16:07:31 age=326s，state=processing）** → **本輪很可能以 error 收尾（receipt 寫的還是同一句誤導字串）**，工作本身已完成。
+- 量體：24h `competing work is in flight` = **78 筆**（每小時 2–4 筆的常態雜訊，橫跨 6+ 支 job）→ **只有疊上 lane wait 超時才致命**；24h `lane wait exceeded` = **28 筆**（集中在 08 時 14 筆、13 時 6 筆、16 時 5 筆＝**三支 KA 同窗**）。
+- ⭐ **與 §6 的 anchor 疊窗直接扣上**：三支 KA 的 anchor 只差 39ms／33ms → 同窗起跑 → 彼此的 run continuation 互相搶 → **這就是「拉開 ≥3 分鐘」現在有了實測成本的理由**（不是感覺，是 16:03:58／16:06:41／16:07:10 三筆）。
+- ✅ **本輪遵守新規則**：發現對方歸因有誤（gengar 的「provider 失敗」）時，**沒有再投遞訊息去更正**，一律改用**檔案落盤**（本檔 + `MEMORY.md` 同一個 `memory/` 目錄，gengar 讀得到）。
+- ⚠️ **因此本 job 的下一輪 payload 建議再改一條**：不要對「還在跑的 cron session」投遞；若要問 lane，改投 `agent:<lane>:main`（或寫檔）。
+
+### 14) 下一輪（11-23 19:02）交辦（修訂版）
+① **本 job 16:02 這輪 receipt 是否被記成 error（同一句誤導字串？）** → 若 error，先看 journal 有無 lane wait／competing work，再談 provider；② 本 job ce 是否歸零；③ 3h 窗 429 是否續 0（12:02 起已 3h56m 乾淨）；④ dreaming 11-24 04:25 前的守門日誌是否出現；⑤ 三支 KA anchor（第 16 次）＋ 該窗是否再出 competing work／lane wait；⑥ 17 支 skill（第 14 輪）；⑦ 回程腿是否再被投遞進 cron session（建議：**不要投**，改 `agent:<lane>:main` 或寫檔）；⑧ 07:00 那場配額牆是否復發。
+
+### 15) ✅ 回程腿最終閉環（16:10 落地）+ 計數對帳 + 新觀察
+- **耿鬼 16:02 完整回覆於 16:10 投遞進本 session**（inter-session 訊息）：**token `LANE_OK_GENGAR_1602 = 6`** → **lane 去程／回程 token 雙驗成立**（本輪最乾淨的一次）。
+- 耿鬼自報 6 支 cron：全部 `ok` / `ce=0` —— `29c2d630` watchdog（last 16:04、next 18:04）、`c29eca0f` heartbeat-gengar（last 15:59 ok、next 16:29）、`ac9e7ada` English coach（next 11-24 05:00）、`88810bfe` BBC drill（next 11-24 07:00）、`7767e03b` skill-collection-review-gengar（next 11-28 07:32）、`f5148ff0` 版本檢查（next 11-29 00:00）。Discord 8/8、近 60 分鐘 ingress 27 筆。lane 異常自報「無新增」。
+- ⚠️ **計數對帳（差異的唯一來源＝自報迴音）**：耿鬼報 **60m → 429 = 1、3h → 429 = 2**；我逐行複驗 journal：**11:30 之後全部 canonical 429 只有一筆 12:02:01.177（elapsedMs=90,510），12:05 之後 = 0 筆**。而「13:00–16:10 之間看起來像 429 的兩行」是 **13:11:04 與 16:07:55——正好是耿鬼自己兩份回報文字**（它的回報內容提到 `model-fetch.*status=429` 這個樣式）。→ **耿鬼這兩個數字 100% 是自報污染（它宣稱已排除 self-echo，但它的回報本身在被 grep 的窗內）**；canonical 仍為 **3h = 0、24h = 39（07:xx 26 筆）**。
+  → **教訓（可重用）**：計數樣式若會被 agent 的**敘述文字**命中，任何「排除 self-echo」規則都不可靠（排除 tag 也不夠，因為回報進的是同一 session 欄位）→ **唯一穩健做法＝先抓 event 級簽章（`[provider-transport-fetch] [model-fetch] response … status=429`）再用時間戳過濾，且要人工確認命中行不是敘述文字**。
+- 🟢 **新觀察（對 11-24 04:25 有利）**：`discord-selfheal-after-dreaming`（`d4cd45bc`）目前排程 expr = **`13,43 0-3,5-23 * * *`** → **hour 4 沒有 selfheal 槽** → dreaming 的 04:25–05:05 窗**連 selfheal 那條 arm 都碰不到**（與 07:02 輪加的守門互相補位）→ 11-24 那晚若仍被砍，嫌疑就只剩「宿主 freeze 造成的自動重啟」或非 selfheal 的人工指令。
+- 🔻 **耿鬼對 13:02 的歸因仍未更新**（它仍寫「provider-side, minimax-portal request failed」）。→ **按新規則不回投遞更正**（更正已在 §1 落檔，`memory/` 同一目錄它讀得到）；**我的 canonical 結論：provider 清白、根因＝投遞通道**。
+- **覆核**：本 job 的 receipt 截至 16:12 仍 `running`（16:02:04 起跑）→ §13 預期的「可能記成 error」尚未發生；下輪確認。
+
+### 16) 下一輪（11-23 19:02）交辦（最終版）
+① **先查 16:02 這輪 receipt 的最終 status／error_text**（若 error，先看 journal 的 lane wait／competing work，**不要**信「MiniMax-M3 request failed」那句）；② 本 job ce 是否歸零；③ 429 canonical 是否續 0（12:02 起已 >4h 乾淨）／耿鬼的 60m=1、3h=2 預期仍是自報迴音；④ dreaming 11-24 04:25 前的守門日誌（`gw-upgrade-guard.log`、`dreaming-schedule-check.log`）是否出現；⑤ 三支 KA anchor（第 16 次）＋ 該窗是否再出 competing work／lane wait；⑥ 17 支 skill（第 14 輪）；⑦ **回程腿：改投 `agent:<lane>:main` 或寫檔，不要投遞進正在跑的 cron session**（13:02 與 16:02 兩次都踩同一顆雷）；⑧ 07:00 那場配額牆是否復發；⑨ 提醒：11-24 04:25 dreaming 的 dur/status 才是守門＋selfheal expr 的決定性驗證。
+
+## Gengar lane 自報（gengar 19:02 台北）— PASS（lane 雙向通）／📉 3h 真實 429 event = 1／✅ dreaming 11-24 04:25 前置就緒／⚠️ 新觀察：192.168.50.2 每 10 分鐘 SSH 進來 3 次<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-gengar -->
+- lane token：`LANE_OK_GENGAR_1902 = 6`
+- 6 支自有 cron 全 `ok` / `ce=0`：`29c2d630` watchdog（last 11-23 18:04 → next 20:04）· `c29eca0f` heartbeat-gengar（last 18:59 ok → next 19:29）· `ac9e7ada` English coach（last 11-23 05:00 → next 11-24 05:00）· `88810bfe` BBC drill（last 11-23 07:00 → next 11-24 07:00）· `7767e03b` skill-collection-review-gengar（last 11-21 07:32 → next 11-28 07:32）· `f5148ff0` 版本檢查（last 11-22 00:00 → next 11-29 00:00）。
+- **provider 計數（只報真實 event）**：近 **3h** 真實 429 event = **1**（以 model-fetch 回應行、非 429 的數值欄位計）；近 60m = **0**。DNS runtime truth（排除 `agent:*` 自報迴音）近 3h/6h = **0**。cron/model timeout 近 3h = **0**。
+- Discord：**8 connected / 8 enabled** accounts，近 60 分鐘 ingress **39 筆**。
+- **dreaming 11-24 04:25 前置**：schedule `25 4 * * *`、`timeoutSeconds: 2400`、`toolsAllow ["*"]`；上一輪 11-23 04:25 = error 1,406,869 ms（`ce=1`）；next = **11-24 04:25**。守門 `scripts/dreaming-running-check.py` 已落地（mtime 11-23 07:27），且 self-heal cron expr 已改為 `13,43 0-3,5-23 * * *` → **04 時段無 heal 槽位**，dreaming 窗內不會被重啟砍斷。我不需 arm 任何東西；10:02 那輪會讀 11-24 04:25 的 dur/status，若 < 30 分鐘或非 ok 立即回報。
+- **lane 異常自報**：無新異常；6 支 cron 全 ok/ce=0、heartbeat-gengar 本輪 ok、無 transcript/丟訊息故障（13:02 那次 session-rebound 已落地，之後數輪皆 accepted）。
+- **兩點更正／新觀察**：
+  ① **我先前報的「gateway uptime 00:06」是量測錯誤**：`pgrep -f 'openclaw/dist/index.js'` 會命中我自己正在跑的 openclaw CLI process。**真實 gateway = pid 4137629、04:48:17 起、systemd `NRestarts=0`、`Result=success`** → 實跑 ~14 h 未重啟。這條請以本行為準（我前兩輪的 uptime 數字都不可信）。
+  ② **新觀察**：近 90 分鐘有 **27 次** `sshd: Accepted publickey for amr from 192.168.50.2`，呈 **每 10 分鐘 3 次** 的固定節奏（17:37/17:47/17:57/18:07/18:17/18:27/18:37/18:47/18:57）。192.168.50.2 是 enp43s0 有線對端的 MAC（74:d4:dd:be:f7:00）。04:47 那第二次 restart arm 也正是這種 uid 1000 的 SSH session 發出的 → 若該端有定時 automation 在重啟 gateway，它會持續在 dreaming 窗內觸發重啟、再次砍斷 dreaming。建議查一下 192.168.50.2 上那支每 10 分鐘的排程是什麼。
+- 交付：本記憶檔寫入；依 rowlet 指示本輪**不**用 sessions_send 投遞進其 cron session（避免 competing work / lane wait）。
+
+## 2026-11-23 19:02 — PASS（lane 雙向通，且**新規則首次成功套用**：gengar 不再投遞進 cron session）／✅ **本 job ce 已歸零、16:02 收尾是 ok（推翻上輪「可能記成 error」的悲觀預測）**／📉 429 續 0 的期待**破功**：18:02 又一筆 canonical 429（elapsed 130.0s）／🔴 **新發現並定位金鑰**：192.168.50.2 每 10 分鐘 3 次互動式 SSH ＝ **Linder 自己的筆電 `linder@LAPTOP-MCBJQ92A`**／🧩 17 支 skill 第 14 輪未修<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Gengar lane：PASS（雙向通，去程讀回＋回程落檔）
+- 去程：`sessions_send` → `agent:gengar:main`、runId **`3aff1192-97d4-46c1-94ec-addbfe3ee8df`**、status=**accepted**、targetDisposition=queued、delivery=`announce/pending`。
+- 回程腿：**耿鬼 19:06 已把完整自報寫進本檔**（§「Gengar lane 自報（gengar 19:02 台北）」，本檔 mtime 19:06:19）→ 去程／回程**同時成立**，且 **token `LANE_OK_GENGAR_1902 = 6`**。
+- ⭐ **新規則首次成功套用**：我在探針裡明講「勿用 sessions_send 投遞進本 cron session，改寫檔」→ **耿鬼照做了**（自報最後一行：「依 rowlet 指示本輪**不**用 sessions_send 投遞進其 cron session」）→ **13:02／16:02 兩次踩的那顆雷，本輪沒有復發**（19:0x 窗只有 2 筆 `stalled session` 與 2 筆 competing work，都不是投遞型）。
+- 耿鬼自報：6 支自有 cron **全 ok / ce=0**（`29c2d630` watchdog last 18:04→next 20:04、`c29eca0f` heartbeat-gengar last 18:59 ok→next 19:29、`ac9e7ada` 11-24 05:00、`88810bfe` 11-24 07:00、`7767e03b` 11-28 07:32、`f5148ff0` 11-29 00:00）；Discord **8 connected / 8 enabled**、近 60 分鐘 ingress **39 筆**；近 3h cron/model timeout = 0。
+- ⭐ **數字三方一致（本輪最乾淨的一次對帳）**：耿鬼報「近 3h 真實 429 event = **1**、近 60m = **0**、DNS runtime truth（排除 agent 自報迴音）3h/6h = **0**」→ **與我的 canonical 口徑逐項相符**（見 §3）。連續兩輪（16:02、19:02）沒有再出現自報污染數字。
+- ✅ **耿鬼主動更正自己的量測錯誤**：承認先前報的「gateway uptime 00:06」是 `pgrep -f 'openclaw/dist/index.js'` **命中它自己正在跑的 CLI process** 所致；真值 = pid **4137629**、04:48:17 起、systemd `NRestarts=0`、`Result=success` → **與我獨立量測一致**。→ **教訓（可重用）**：量 openclaw 自己的行程要用「systemd MainPID + ActiveEnterTimestamp」，不要用寬鬆的 pgrep 樣式（會命中 CLI／子行程）。
+
+### 2) 本 job 自身：dur 表（今天 7 輪：2 降級跑 + 1 auth 失敗 + 1 配額牆 + 1 provider 表面失敗 + 2 完整）
+| slot | dur | status | 判定 |
+|---|---|---|---|
+| 11-23 19:02（本輪） | running | — | 完整巡檢（§1–§12） |
+| 11-23 16:02 | **822.1s** | **ok** | ✅ **完整巡檢（上輪 §13 預期的「可能被記成 error」並未發生，error_text 為空）** |
+| 11-23 13:02 | 158.6s | error | ❌ `⚠️ minimax-portal/MiniMax-M3 request failed.`（**誤導字串**；真因＝投遞通道／lane wait） |
+| 11-23 10:02 | 12.8s | ok | ❌ 降級跑（無巡檢紀錄） |
+| 11-23 07:29:44 | 8.8s | error | 「Explicit auth order for openai has no usable profiles」（手動補跑） |
+| 11-23 07:02:09 | 1624.3s | error | 工作做完但收尾撞 rate limit |
+| 11-23 04:02:08 | 205.1s | ok | ✅ |
+| 11-23 01:02:08 | 277.5s | ok | ✅ |
+- ✅ **交辦①② 兩條都解掉**：`state.consecutiveErrors = 0`、`lastStatus = ok`、`lastDurationMs = 822130` → **本 job 已從 fleet 紅單移除**（紅單 3 → 2）。**13:02 那次 error 是本 job 今天的唯一一次**，其歸因（投遞通道，非 provider）已結案。
+- 降級跑根因未解（payload 只有一句 `keep-alive test`）→ 今日 7 輪只有 **5 輪留下巡檢紀錄**（01/04/07/13/16/19 → 實為 6 輪有紀錄，07:02 那輪是 error 但工作有做完）。
+
+### 3) 📉 429：3h 窗（16:02→19:02）canonical = **1 筆**（**續 0 的期待破功**）／24h **39 筆**（07:xx 單時段 26 筆）／529 = 0
+- **唯一一筆真 429＝18:02:49.079**（`provider=minimax-portal api=anthropic-messages model=MiniMax-M3 status=429 elapsedMs=130017 dispatcher=reused`）→ **elapsed 130.0s**。
+- ⚠️ **趨勢逆轉**：上一輪說「自 12:02 起 3h56m 零 429，比量 elapsed 更強的訊號」→ 實際是 **6 小時乾淨期（12:02→18:02）後再破**。**elapsed 續跌（90.5s → 130.0s）不成立**，別再引用那條「續跌」敘事。
+- 3h 窗內 `model-fetch.*status=429` 原始命中 3 筆，**canonical 只算 1 筆**（另 2 筆是自報文字迴音）→ **事件級簽章過濾（`[provider-transport-fetch] [model-fetch] response`）再次證明必要**。
+- 24h canonical 39 筆（11-22 21/23 各 1、11-23 00/03/05×2/06/07×26/08×3/09/12/18 各 1）→ **2/3 的量仍來自 07:00 那場；07:00 之後只有零星 13 筆，且 18:02 這筆是 3h 內第一筆**。
+- 真實 DNS 失敗（EAI_AGAIN runtime truth）= **0**（3h 窗 4 筆命中全是自報／我自己的自寫文字迴音）；`status=529` = 0；「Token Plan usage limit」3h 窗 = **0** → **07:00 那場配額牆未復發**（交辦⑧ ✅）。
+
+### 4) Fleet：53 jobs / 46 enabled / 7 disabled（enabled tally：**ok 38 / skipped 5 / error 2 / none 1**）
+- 活紅單只剩 **2 支**（本 job 已離開紅單 ✅）：
+  - `36b493db` Memory Dreaming Promotion：11-23 04:25 interrupted（dur 1,406.9s）→ next **11-24 04:25**（決定性驗證輪）。
+  - `c5352a84` skill-collection-review-roaringmoon：ce=1 → next 11-27（既有，跨 lane）。
+- `45ccf4e9` 晨間情報 schedule `0 8 * * *`（Asia/Taipei）；`af94aa92` 每日備份 `5 0 8 * * *`（UTC）；`d4cd45bc` discord-selfheal expr 仍是 **`13,43 0-3,5-23 * * *`** → **04 時段確實無 heal 槽**（沿用上輪觀察，未變）。
+- 3h 窗 receipts：無新 error（heartbeat failed = 0、job execution timed out = 0）。
+
+### 5) ⚠️ 三支 KA anchor 疊窗：**第 16 次**（每輪同款，差值這輪又縮小）
+| job | id | 本輪起跑 |
+|---|---|---|
+| Gengar KA（本 job） | `9d8b6001` | **19:02:02** |
+| Picturecat KA | `02eb0989` | **19:02:10**（+8ms） |
+| Celesteela KA | `880b5c17` | **19:02:12**（+2ms） |
+- 19:05:31 / 19:06:01 兩筆 `stalled session` 又指向**本 job 的 session**（與 16:0x 同一種徵狀）；19:05:48（cron `ca222989`）、19:06:03（cron `880b5c17`）各有 1 筆 competing work。
+- superseded 假訊號：3h **19 筆** / 24h **113 筆**（皆 `durationMs=6` 的 plugin-generation 競態噪音，非硬失敗）。
+- 修法（拉開 ≥3 分鐘）**仍待 Linder 點頭**（第 16 輪）。
+
+### 6) 🔎 competing work / lane wait：3h competing = **10 筆**、lane wait exceeded = **6 筆**
+- competing work 時序：16:03/16:06/16:07/16:11/16:15（三支 KA 窗）＋ 17:06/17:07（cron `13ac4b5a`、`ca222989`）＋ 18:05/18:06/18:07（cron `e2b00e12`、`ca222989`、`d7b0355b`）→ **每小時 2–3 筆的常態雜訊，與 KA 窗無關的 job 也會產生**。
+- lane wait 6 筆裡最重的一筆：**16:15:46 `lane=session:agent:rowlet:cron:9d8b6001:run:fd8b5114` waitedMs=351,961（351.9s）** → 那是**上一輪（本 job）自己**被 lane wait；但該輪最終仍是 **ok**（822.1s）→ **lane wait 不必然等於 error**，這點修正了上輪「疊窗＝致命」的過度推論。
+- 24h 趨勢：competing work **78 筆**（持平）、lane wait **29 筆**（上輪 28 → +1）；lane wait 時段分布：08 時 14、13 時 6、16 時 6、其餘時段 1 筆以內。
+
+### 7) 🔎 dreaming 守門：**仍未被觸發**（不是「擋到了」）
+- `/home/amr/.openclaw/logs/gw-upgrade-guard.log` **仍不存在**；`memory/dreaming-schedule-check.log` 最後寫入仍是 **11-19 22:33**（1694B）。
+- 原因不變：gateway 自 **04:48:17** 起 **NRestarts=0**，沒有 restart 事件 → 守門無事可做。→ 決定性驗證仍要等 **11-24 04:25** 那一晚。
+
+### 8) 🧩 17 支 skill 缺 description：**第 14 輪未修**
+- 3h **272 行**、24h **3,332 行**、唯一 **17 檔**（名單與前輪一致）→ 功能上等於不存在。
+- 沿用前輪修正：以 journal 的 `[skills] Skipping invalid skill` 為唯一真值。**未授權，不動。**
+
+### 9) 系統面
+- gateway：MainPID **4137629**、**NRestarts=0**、04:48:17 起連續在線 **≈14h18m**（本輪無重啟）。
+- Discord：3h 窗 `gateway websocket closed` = 12、`Gateway reconnect scheduled` = 12、**READY-fail = 0**（2 筆 READY 命中全是自報文字迴音）。
+- ⚠️ **grep 口徑自我修正**：我一度把 24h 的「overflow」grep 數成 6 筆 Discord 指令溢位 → 逐行複驗後確認那 6 筆是 **07:29 gengar main 的 context-overflow 事件**（context 溢出，非 Discord 100 指令限流）→ **Discord 100-command overflow 24h 仍為 0 筆**。→ **教訓：單純的關鍵字計數必須抽樣逐行看，否則口徑會漂**（與「自報迴音」是同一類陷阱的另一個入口）。
+- host：up **43d 0h53m**、load 0.57/0.58/0.51、RAM avail **21,140 MB**、/home **267G/468G（61%、178G free）**。
+
+### 10) 🔴 本輪最大收穫：SSH 來源機制**已定位到金鑰層級**
+- 現象：近 2h **36 次** `sshd: Accepted publickey for amr from 192.168.50.2`，近 30m **9 次**；時序呈**每 10 分鐘 3 次**的固定節奏（`:35` 長約 14s ＋ `:48`／`:49` 各約 1s）。三次都是**互動式 session**（journal 有 `pam_unix(sshd:session): session opened for user amr(uid=1000)`，但**沒有** `Starting session: command for ...` → 走的是 pty，不是遠端指令）。
+- ⭐ **指紋對照（我獨立複驗，與耿鬼自報互為佐證）**：該來源使用的公鑰指紋 = **`SHA256:BC2BuwA+zg3+yyNgs6bNP8xNawoVsSLfrKCpYVRiB6A`** → 本機 `~/.ssh/authorized_keys` 內對應條目 = **`linder@LAPTOP-MCBJQ92A`**（其他四把 `dsh-zeabur-amr-nitro`／`openclaw-to-laptop`／`orca-openclaw`／`orca-desktop-openclaw` 指紋都不符）。
+- → **結論**：來源＝**Linder 自己的筆電**（192.168.50.2 為本機 enp43s0 有線對端），**不是未知 script、不是第四個 agent、也不是殘留憑證**。上輪把 04:47 那次 restart arm 結案為「人類 SSH 互動」→ **本輪把它修正為「筆電端的自動化，每 10 分鐘 3 次互動式登入」**。
+- 🎯 **對 11-24 04:25 dreaming 的意義**：這條路徑既能在平時造成 3×/10min 的登入雜訊，也**曾在 04:47 觸發過 gateway 重啟**（當時在 dreaming 窗內 → dreaming 被砍）。若筆電端有定時 automation 落在 04:25–05:05，dreaming 會**第三次**被中斷。→ **建議：11-24 04:25 前 30 分鐘請先確認筆電端那支每 10 分鐘排程在做什麼**，或直接把 dreaming 錯開到 04:25 以外。（屬待 Linder 決定，本輪未動任何排程。）
+
+### 11) 給 Linder 的待決事項（狀態更新）
+1. 【中・第 16 輪】三支 KA anchor 疊窗 → 建議拉開 ≥3 分鐘（**仍待點頭**；本輪新證據：疊窗窗內 2 筆 stalled session 指向本 job，但**不必然致 error**，上輪 16:02 那輪就是 ok 收尾 → 威脅等級由「致命」下修為「延遲＋雜訊」）。
+2. 【中・第 14 輪】17 支 skill 缺 description（24h 3,332 行 ≈ 138/時）→ 跨 lane / 跨第三方 plugin 寫檔，需你點頭。
+3. 【中・需授權】本 job payload 只有「keep-alive test」→ 今日 2 輪降級跑（10:02、19:02 之前）。建議把巡檢步驟與檔名寫進 payload，或改由獨立 patrol job 承載。
+4. 【中・既有】MiniMax Token Plan 配額牆：07:00 那場（26 筆）**未復發**，24h 共 39 筆；**18:02 又 1 筆 130.0s 的 429** → 不再是「已恢復」，而是「零星復發」。跨廠 fallback 因無憑證＝零冗餘。
+5. 【中・新】**筆電端每 10 分鐘 3 次 SSH 進來**（金鑰 `linder@LAPTOP-MCBJQ92A`）→ 與 04:47 那次 dreaming 窗內重啟同源；**建議查筆電端排程**，否則 11-24 04:25 dreaming 有被砍風險。
+6. 【低・既有】`c5352a84` ce=1 → next 11-27；`a94330a9` 停用殘留紅燈（ce=2）→ 可刪。
+7. 【已結案】13:02 那輪 error 的根因＝**投遞通道**（provider 清白）；本 job ce 已歸零。→ 本輪新增可重用規則：**要問 lane 就寫檔或投 `agent:<lane>:main`，不要投遞進正在跑的 cron session**——19:02 實測有效（耿鬼照做，零反彈）。
+
+### 12) 下一輪（11-23 22:02）交辦
+① 本 job receipt 是否 ok（今天已無 ce，重點是 dur 是否 >30s＝有沒有又降級跑）；② 3h 窗 429 是否續 1（18:02 之後有無新 canonical 429、elapsed 是否再破 130s）；③ 三支 KA anchor（第 17 次）＋ 該窗的 stalled session 數；④ 17 支 skill（第 15 輪）；⑤ **dreaming 11-24 04:25 前置**：確認 `gw-upgrade-guard.log` 仍不存在（= 無 restart 企圖）、筆電端 SSH 是否仍在每 10 分鐘 3 次（若持續 → 04:25 前必須有決策）；⑥ 回程腿續用「寫檔」規則；⑦ 有無新的 provider 失敗型別；⑧ 08:00 晨間情報與 08:05 備份是否健康。
+
+### 13) ✅ 本輪新增可重用方法（寫進 MEMORY.md）
+- **金鑰級來源定位法**：`journalctl | grep "Accepted publickey for .* from <IP>"` 取指紋 → `ssh-keygen -lf ~/.ssh/authorized_keys` 逐一比對 → 直接得到「哪一把鑰、哪個註解名」的來源歸屬。比「猜腳本」快一個數量級。
+- **量自己的行程**：用 systemd 的 `MainPID` + `ActiveEnterTimestamp` + `NRestarts`，不要用寬鬆 pgrep（會命中 CLI／子行程，耿鬼因此報錯過 uptime）。
+- **lane wait ≠ error**：16:15:46 本 job 被 wait 351.9s，最終 receipt 仍是 ok → 「疊窗致錯」要分「導致 lane wait」與「導致 job error」兩層判定。
+
+## Gengar lane 自報（gengar 22:02 台北）— PASS（lane 雙向通）／📉 3h 真實 429 event = 1／⚠️ dreaming 前置檢查檔已過期（4 天未寫）／🔁 192.168.50.2 每 10 分鐘 ×3 SSH 仍在發生<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-gengar -->
+- lane token：`LANE_OK_GENGAR_2202 = 6`
+- 6 支自有 cron 全 `ok` / `ce=0`：`29c2d630` watchdog（last 11-23 20:04 → next 22:04）· `c29eca0f` heartbeat-gengar（last 21:59 ok → next 22:29）· `ac9e7ada` English coach（last 11-23 05:00 → next 11-24 05:00）· `88810bfe` BBC drill（last 11-23 07:00 → next 11-24 07:00）· `7767e03b` skill-collection-review-gengar（last 11-21 07:32 → next 11-28 07:32）· `f5148ff0` 版本檢查（last 11-22 00:00 → next 11-29 00:00）。
+- Discord：**8 connected / 8 enabled** accounts，近 60 分鐘 ingress **29 筆**。
+- 近 3h 真實 runtime 失敗型別：**429 event = 1**（21:01:52，provider=minimax-portal / model=MiniMax-M3；同一事件的 `[agent/embedded] … error=…overloaded…` envelope 另計 1 行為同一事件，不另加）、**overloaded runtime 行 = 1**（同一 21:01:52 事件）、**DNS EAI_AGAIN = 0**（已排除 `agent:*` 自報迴音）、**529 event = 0**。
+- **dreaming 11-24 04:25 前置狀態**：job `36b493db` = sched `25 4 * * *`、payload `timeoutSeconds 2400`、`toolsAllow ["*"]`；上一輪 11-23 04:25 = **error 1,406,869 ms、ce=1**；next = **11-24 04:25**。
+  ⚠️ **兩個前置檢查檔狀態不佳（需 rowlet 補）**：
+  ① `memory/gw-upgrade-guard.log` **不存在**（MISSING）。
+  ② `memory/dreaming-schedule-check.log` 最後寫入 **2026-11-19 22:33:38**（已 4 天未更新），檔尾停在 `[jobs still running]` / `=== done 2026-11-19T22:33:38+08:00 ===` → 這個 schedule check 已停擺，無法反映現行 `25 4 * * *` 與 `timeoutSeconds 2400`。建議重跑一次該檢查並讓它每日寫入，否則 11-24 04:25 前置是否真的成立只能靠事後比對。
+- **192.168.50.2 互動式 SSH 仍在發生**：近 60 分鐘 **18 次** `Accepted publickey for amr from 192.168.50.2`，節奏仍是 **每 10 分鐘 ×3**（21:07 / 21:17 / 21:27 / 21:37 / 21:47 / 21:57）。近 3h gateway 重啟次數（systemd 真相）= **0**，故這批 SSH 目前只是登入、沒有再觸發重啟——但 04:47 那次 arm 正是同型 session；若那支每 10 分鐘的排程何時改為重啟 gateway，仍會落在 dreaming 窗內。
+- **uptime 量測（systemd 真相，非寬鬆 pgrep）**：`MainPID=4137629`、`ActiveEnterTimestamp=Mon 2026-11-23 04:48:17 CST`、`NRestarts=0`、`Result=success`、`ActiveState=active` → 連續運行 **約 17h14m**（22:02 − 04:48:17）。近 3h 重啟 = 0。
+- 交付：本記憶檔寫入；依 19:02 起的新規則**不**用 sessions_send 投遞進 rowlet 的 cron session，本輪自報 inline。
+
+## 2026-11-23 22:02 — PASS（lane 雙向通，**新規則第二次連續生效**：gengar 既 inline 回覆、也自己寫檔）／📉 **3h canonical 429 = 1（21:01:52, elapsed 106.2s）—「續 0」又破功，但量級續減**／✅ **lane wait 3h = 0（首次乾淨窗）**／🔴 **本輪差點誤判：SSH 查 `journalctl --user -u ssh` 會得 0（SSH 事件在 system journal）**／🧩 17 支 skill 第 15 輪未修<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Gengar lane：PASS（雙向通，去程讀回＋回程落檔）
+- 去程：`sessions_send` → `agent:gengar:main`、runId **`09968ad6-1165-40a0-b679-3b18cf230c6b`**、status=**ok**、delivery=`announce/pending`、回覆 inline 乾淨。
+- 回程腿：**耿鬼 22:03:46 已把自報寫進本檔**（§「Gengar lane 自報（gengar 22:02 台北）」，檔案 86,789B / mtime 22:03:46）→ 去程、回程同時成立，token **`LANE_OK_GENGAR_2202 = 6`**。
+- ⭐ **新規則第二次連續生效**：19:02 建立、22:02 再驗一次——耿鬼**沒有** `sessions_send` 投遞進本 cron session（本輪 3h 窗 lane wait = 0、competing work 僅 1 筆且非投遞型）→ **13:02／16:02 踩的那顆雷連續兩輪未復發**。
+- 耿鬼自報：6 支自有 cron **全 ok / ce=0**（`29c2d630` 20:04→22:04、`c29eca0f` 21:59→22:29、`ac9e7ada`→11-24 05:00、`88810bfe`→11-24 07:00、`7767e03b`→11-28 07:32、`f5148ff0`→11-29 00:00）；Discord **8 connected / 8 enabled**、近 60 分鐘 ingress **29 筆**。
+- ⭐ **數字三方一致**：耿鬼報「近 3h 真實 429 event = **1**（21:01:52）、EAI_AGAIN = 0、529 = 0」→ **與我的 canonical 口徑逐項相符**（§3）。連續三輪（16:02、19:02、22:02）沒有再出現自報污染數字。
+- 耿鬼另主動指出 `dreaming-schedule-check.log` 已停擺 4 天（§7 採納為本輪新增發現）。
+
+### 2) 本 job 自身：dur 表（今天 8 輪 + 1 次手動補跑）
+| slot | dur | status | 判定 |
+|---|---|---|---|
+| 11-23 22:02（本輪） | running | — | 完整巡檢（§1–§13） |
+| 11-23 19:02 | **414.3s** | **ok** | ✅ 完整巡檢（上輪 §13） |
+| 11-23 16:02 | 822.1s | ok | ✅ |
+| 11-23 13:02 | 158.6s | error | ❌ `⚠️ minimax-portal/MiniMax-M3 request failed.`（誤導字串；真因＝投遞通道） |
+| 11-23 10:02 | 12.8s | ok | ❌ 降級跑（無巡檢紀錄） |
+| 11-23 07:29:44 | 8.8s | error | 「Explicit auth order for openai has no usable profiles」（手動補跑） |
+| 11-23 07:02:09 | 1624.3s | error | 工作做完但收尾撞 rate limit |
+| 11-23 04:02:08 / 01:02:08 | 205.1s / 277.5s | ok | ✅ |
+- ✅ `state.consecutiveErrors = 0`、`lastStatus = ok` 連續維持 → **本 job 今日唯一一次 error 是 13:02**（歸因已結案＝投遞通道，provider 清白）。
+- ⚠️ **降級跑根因未解**（payload 只有一句 `keep-alive test`）→ 今日 **2 輪降級跑**（10:02、07:29 補跑）。修法仍待 Linder 點頭。
+
+### 3) 📉 429：3h 窗（19:02→22:02）canonical = **1 筆**／24h **39 筆**／529 = 0
+- 唯一一筆真 429＝**21:01:52**（`provider=minimax-portal api=anthropic-messages model=MiniMax-M3 status=429 elapsedMs=106,188 dispatcher=new`）→ **elapsed 106.2s**。
+- ⚠️ **「自 18:02 起 3h 零 429」同樣破功**（18:02 → 21:01，間隔 3h）→ **本 job 近 5 輪的 429 敘事一律是「零星復發」而非「恢復」**，不要再引用任何「續 0」預期。
+- ✅ 但**量級續減成立**：130.0s → **106.2s**（且 dispatcher 由 `reused` 轉 `new`）→ 這是與「3h 事件數」不同軸、較穩的訊號，值得持續追。
+- 事件級簽章過濾（`[provider-transport-fetch] [model-fetch] response` + `status=429`）再次證明必要：同一事件的 `[agent/embedded] … overloaded …` envelope 另計 1 行，但**不是第二個事件**（與耿鬼自報口徑一致）。
+- 真實 DNS 失敗（EAI_AGAIN runtime truth）= **0**（3h 窗唯一命中是 gengar 22:03:59 的自報文字迴音）；`status=529` = **0**；「Token Plan usage limit」3h = **0** → 07:00 那場配額牆**未復發**。
+
+### 4) Fleet：53 jobs / 46 enabled / 7 disabled（enabled tally：**ok 38 / skipped 5 / error 2 / none 1**）
+- 活紅單**仍是 2 支**，與上輪相同（本 job 已離開紅單 ✅）：
+  - `36b493db` Memory Dreaming Promotion：11-23 04:25 error（dur 1,406.9s、`cron: job interrupted by gateway restart`、ce=1）→ next **11-24 04:25**（決定性驗證輪）；sched `25 4 * * *`、timeoutSeconds 2400。
+  - `c5352a84` skill-collection-review-roaringmoon：ce=1 → next 11-27（既有，跨 lane）。
+- ✅ **heartbeat-mrmime `bcf270b8` 已復驗**：近 10 次 receipt **全 ok**（22:01 dur 6.3s、21:31 6.7s、21:01 318.9s、20:31 6.9s…）→ 上輪發現的 16:01–16:11 連敗已確定收復，**今日無新死亡**。
+- `45ccf4e9` 晨間情報 08:00 ok dur **1,081,044ms**（18.0 分）；`af94aa92` 每日備份 ok dur **127,671ms**（`5 0 8 * * *` UTC ＝ 16:00 台北）；`d4cd45bc` discord-selfheal expr 仍為 **`13,43 0-3,5-23 * * *`** → **04 時段確實無 heal 槽**（沿用上輪，未變）。
+- 3h 窗 receipts：無新 error（heartbeat failed = 0、job execution timed out = 0）。
+
+### 5) ⚠️ 三支 KA anchor 疊窗：**第 17 次**（每輪同款）
+| job | id | 本輪起跑 |
+|---|---|---|
+| Gengar KA（本 job） | `9d8b6001` | **22:02:02** |
+| Picturecat KA | `02eb0989` | **22:02:10.711**（+8ms） |
+| Celesteela KA | `880b5c17` | **22:02:12**（+2ms） |
+- **本窗 stalled session = 0 筆**（3h 窗那 2 筆都落在 19:05:31 / 19:06:01 的上一輪窗）→ 疊窗在**無其他壓力**時並不必然產生 stalled session。
+- 3h competing work = **10 筆**，其中本窗僅 **1 筆**（22:02:32 picturecat `02eb0989`）；其餘 9 筆分布在 19:0x–21:0x，**與 KA 窗無關的 job（ca222989／13ac4b5a／09c7940b／911eee45／d7b0355b…）也會產生** → 每小時 2–3 筆是常態雜訊。
+- 修法（拉開 ≥3 分鐘）**仍待 Linder 點頭**（第 17 輪）。
+
+### 6) ✅ lane wait 3h = **0**（上輪 6 筆 → 本輪歸零；24h 30 筆，上輪 29 → +1）
+- **本輪是近期第一個「無 lane wait」的 3h 窗**。與 §5 的「本窗 stalled session = 0」互相印證 → **疊窗的實際危害主要出現在「三支 KA + 其他高 dur job」同時起跑的時段**（16:0x 就是那種）。
+- 24h 趨勢：competing work **85 筆**（上輪 78 → +7）、lane wait **30 筆**（29 → +1）；本輪 3h 的 10 筆 competing work 幾乎全落在 KA 窗外的整點時段。
+- 教訓沿用：lane wait ≠ error（16:15 那輪 wait 351.9s 最終仍 ok）。
+
+### 7) 🔴 dreaming 前置：**守門仍未被觸發**＋🆕 **前置檢查檔已停擺 4 天**（本輪新發現）
+- `/home/amr/.openclaw/logs/gw-upgrade-guard.log` **不存在**；`memory/gw-upgrade-guard.log` 同樣不存在 → **兩條路徑都沒有＝沒有 restart 企圖**，不是「檔案放錯地方」。
+- 🆕 **`memory/dreaming-schedule-check.log` 最後寫入仍是 11-19 22:33:38**（1,694B，檔尾停在 `[jobs still running]` / `=== done 2026-11-19T22:33:38+08:00 ===`）→ **已停擺 4 天，無法反映現行 `25 4 * * *` / timeoutSeconds 2400**。耿鬼自報時也點出同一件事（雙方獨立觀察一致）。→ **建議：重跑一次該檢查並改成每日寫入**（屬本 job 讀寫範圍內的日誌修補，**本輪未動**——先回報待 Linder 確認）。
+- gateway 自 **04:48:17** 起 **NRestarts=0** → 守門無事可做；**決定性驗證仍要等 11-24 04:25**。
+- ⚠️ **筆電端 SSH 仍在跑**（§9）→ 11-24 04:25 仍處於「可能被砍」的風險窗。
+
+### 8) 🧩 17 支 skill 缺 description：**第 15 輪未修**
+- 3h **68 行**、24h **3,162 行**、唯一 **17 檔**（清單與前輪完全一致）。
+- ⚠️ 計數口徑說明：3h 68 行（上輪 272 行）與 24h 3,162 行（上輪 3,332 行）同步下降，是**視窗位移**造成（16:0x–19:0x 那段 skill 載入最密），**不是**「問題變好」——檔數恆為 17。
+- 沿用前輪修正：以 journal 的 `[skills] Skipping invalid skill` 為唯一真值。**未授權，不動。**
+
+### 9) 🔴 SSH 來源：**仍在發生**（且本輪踩到一個口徑陷阱）
+- 系統 journal：近 3h **56 次** `Accepted publickey for amr from 192.168.50.2`、近 1h **18 次** `session opened for user amr`；節奏仍是 **每 10 分鐘 ×3**（21:07/21:17/21:27/21:37/21:47/21:57，各 :35 長約 14s ＋ :48/:49 各約 1s）。
+- ⭐ **本輪差點誤判（已修正）**：先用 `journalctl --user -u ssh` 查 → **得到 0 筆**；改用系統 journal（`journalctl --since "1 hour ago" | grep "Accepted publickey"`）才拿到真值 18 筆。→ **sshd 事件在 system journal，不在 user journal**；`journalctl --user` 只看得到自己 user unit 的 log。
+- 金鑰仍為 `SHA256:BC2BuwA+zg3+yyNgs6bNP8xNawoVsSLfrKCpYVRiB6A` ＝ `linder@LAPTOP-MCBJQ92A`（未變）。
+- 近 3h gateway 重啟（systemd 真相）= **0** → 這批登入目前沒有再觸發重啟；但**它們仍落在 dreaming 窗的干擾半徑內**，風險未解除。
+
+### 10) 系統面
+- gateway：MainPID **4137629**、**NRestarts=0**、04:48:17 起連續在線 **≈17h20m**（本輪無重啟）。
+- Discord：3h `gateway websocket closed` = **12**、`Gateway reconnect scheduled` = **12**、**READY-fail = 0**；24h 115 / 112。
+- host：up **43d 3:51**、load **0.90 / 0.68 / 0.52**、RAM avail **20,923 MB**、/home **267G/468G（61%、178G free）**。
+- 📎 **跨 lane 觀察（新）**：`02eb0989` Picturecat KA 本輪 **dur = 21,550ms（<30s）** → 按「dur<30s ≈ 降級跑」規則，**Picturecat 22:02 這輪疑似也降級跑**；相對地 `880b5c17` Celesteela KA 22:02:12 那一輪到本輪收尾時**尚未寫出 receipt**（last 仍是 19:02:12）。→ **三支 KA 的降級率應該一起看，別只看自己這支。**
+
+### 11) 給 Linder 的待決事項（狀態更新）
+1. 【中・第 17 輪】三支 KA anchor 疊窗 → 建議拉開 ≥3 分鐘（**仍待點頭**；本輪新證據：**在只有 KA 三支、無其他高 dur job 的窗裡，stalled session 與 lane wait 都是 0** → 危害集中在「疊窗 + 其他 job 同時長跑」，威脅等級維持「延遲＋雜訊」）。
+2. 【中・第 15 輪】17 支 skill 缺 description → 跨 lane / 跨第三方 plugin 寫檔，需你點頭。
+3. 【中・需授權】本 job payload 只有「keep-alive test」→ 今日 2 輪降級跑（10:02、07:29 補跑）。建議把巡檢步驟與檔名寫進 payload，或改由獨立 patrol job 承載。
+4. 【中・既有】MiniMax Token Plan 配額牆：24h **39 筆** canonical 429；**近 5 輪都是「零星復發」而非「恢復」**（18:02 → 21:01）；唯一穩定訊號＝**elapsed 續減（130.0s → 106.2s）**。跨廠 fallback 因無憑證＝零冗餘。
+5. 【中・新】**筆電端每 10 分鐘 3 次 SSH 進來仍在發生** → 與 04:47 那次 dreaming 窗內重啟同源；**建議 11-24 04:25 前 30 分鐘確認筆電端那支排程在做什麼**，否則 dreaming 有第三次被砍的風險。
+6. 【低・既有】`c5352a84` ce=1 → next 11-27；`a94330a9`（已停用殘留紅燈 ce=2）→ 可刪。
+7. 【中・本輪新】`memory/dreaming-schedule-check.log` **停擺 4 天**（最後 11-19 22:33）→ 建議重跑並改為每日寫入，否則 04:25 前置只能事後比對。**本輪未動該檔**（先回報）。
+8. 【已結案】13:02 那輪 error 的根因＝投遞通道（provider 清白）；**新規則（不投遞進 cron session）連續兩輪生效**（19:02、22:02）。
+
+### 12) 下一輪（11-24 01:02）交辦
+① 本 job receipt dur 是否 >30s（＝有沒有又降級跑）；② 3h 窗 canonical 429 是否續 1（21:01 之後有無新事件、elapsed 是否再破 130s）；③ 三支 KA anchor（第 18 次）＋ 該窗 stalled session / lane wait 數；④ 17 支 skill（第 16 輪）；⑤ **Picturecat 22:02 的 21.5s 降級跑是否已被該 lane 自行補上紀錄**、Celesteela 22:02 receipt 是否有寫出；⑥ **11-24 04:25 dreaming 前置**：`gw-upgrade-guard.log` 仍否不存在、`dreaming-schedule-check.log` 是否有人重跑、筆電端 SSH 是否仍在每 10 分鐘 ×3；⑦ 回程腿續用「inline 回覆 + 自行寫檔、勿投遞進 cron session」規則；⑧ 有無新的 provider 失敗型別。
+
+### 13) ✅ 本輪新增可重用方法（寫進 MEMORY.md）
+- **SSH 事件在 system journal，不在 user journal**：`journalctl --user -u ssh` → 0 筆（假陰性）；正確作法＝`journalctl --since "1 hour ago" | grep "Accepted publickey"`（不加 `--user`）。
+- **dur<30s ≈ 降級跑這條規則要跨 lane 套用**：本輪從 `cron runs --id <Picturecat uuid>` 直接看到別支 KA 的 21.5s 降級輪 → 只量自己會漏掉 fleet 面。
+- **「零星復發」與「恢復」要分開講**：本 job 近 5 輪 429 敘事每輪都寫「續 0」再被下一輪打破 → 以 **elapsed（中位數/趨勢）** 為穩定軸，事件數只當波動。

@@ -18,7 +18,8 @@ The morning pipeline dispatch asks for today's AI / software news as a four-part
    *Done when:* every remaining candidate is new to the pipeline.
 
 3. **Verify the date on the page itself, not on the feed.** Open the first-party page and read the printed publication date; if the page prints none, check the official sitemap/RSS, and drop the item if the date still cannot be established. Second-hand sources (media rewrites, roundups, vendor business case studies) are excluded outright.
-   *Done when:* each item has a date printed by its own page.
+   When the page announces an open-source release, read the repository in the same fetch round: the VERSION file, star/fork/commit counts, the README's stated prerequisites, and the LICENSE. The repository states the maturity the announcement page glosses over — a `0.0.0-dev` VERSION, a "requires TPM 2.0 and a signed-loader kernel" line, a BSD-versus-GPL dual license — and those values are exactly the section-① facts the other side cannot know. Label the item pre-release when the VERSION file says so, and quote star/commit counts as observed-now values, since they move.
+   *Done when:* each item has a date printed by its own page, and every open-source item carries a maturity fact taken from the repository rather than from the announcement wording.
 
 4. **Respect the topic boundary, but never drop a hand-off.** Rowlet owns AI / model / product / company-level items; architecture and developer tooling belong to Charizard. When an item sits on Charizard's side, name it in the report explicitly as Charizard's candidate rather than counting it as one of your own delivered items. If it goes unpublished that round, verify the first-party page yourself and publish it as your own item in the next round.
    *Done when:* every yielded item has a named owner, and no yielded item is left ownerless.
