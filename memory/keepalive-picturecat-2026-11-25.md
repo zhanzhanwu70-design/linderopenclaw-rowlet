@@ -339,3 +339,223 @@
 - 本輪 13:02:19 起跑 → **報告寫完 ≈13:05，實際 dur ≈ 160s**（**在 300s 自我上限內** ✅，本輪沒有自我製造 stall）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
 - 對照：上一輪 07:02 輪 dur **551.6s**（超標、拖到別人）、10:02 輪 dur 2.3s（秒死、什麼都沒做）→ **同一支 job 在 6 小時內經歷「長到拖死別人」與「秒死」兩種極端**，原因不是 job 本身，而是**上游配額與 lane 飽和**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
 - ⇒ **實務修正（沿用上輪）**：巡檢深度自我設限 **≤300s**；本輪用「一次批次拉 8 條 heartbeat lane receipts ＋ 5 支重點 job receipts ＋ journal 一次掃描」共 6 次 exec 就完成，**證明 300s 內做得到** → 下一輪沿用同樣的批次策略（勿逐 lane 開迴圈重複 `cron runs`）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+## 2026-11-25 16:02 — Picturecat Keep-Alive 第 5 輪：🟢 **MiniMax 配額牆 12:09:37 退場、13:00–16:05 窗 429＝0**、⭐⭐⭐ **飽和假說第 3 次被實測支持（反向證據）**：08:00 槽 112% → 7 筆 600s 硬死，本窗 8 條 heartbeat lane Σdur 僅 **231.0s（0.6%）**、**≥300s = 0、600s 硬死 = 0**、⭐⭐ **新發現「state 與 receipts 不同步」＝ receipts 有成功筆（15:12:35 ok 78.5s）但 state 仍停在舊失敗筆 → ce=4 不歸零、每週排程的 job 會一直掛紅**、⭐⭐ **`OpenClaw 系統維護` 與 `健康回報` 自癒回來（13:05/14:04/15:04 全 ok、ce=0）**、⭐ **Discord 兩個零症狀起點必須分開報（嚴格 11h10m vs 有一次完整關閉 3h14m）**、⭐ **gateway 連續 2d11h 未重啟（MainPID 4137629、ActiveEnterTimestamp 11-23 04:48:17）**、⚠️ **本輪自身 dur ≈540s 超過 300s 自我上限，但未造成任何 lane 傷害** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Picturecat lane：🟢 上輪（13:02）ok，本輪 16:02 起跑 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 13:02:20 → **ok / dur 156,887ms（2.6 分鐘）**＝在 300s 自我上限內 ✅（上一輪 §10 第 5 項確認完成）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 今日五輪 dur 全覽：01:02 **797.3s（超標）** → 04:02 307.0s（微超） → 07:02 **551.6s（超標）** → 10:02 **2.3s error（派發期秒死）** → 13:02 156.9s ok → **16:02 ≈540s（超標，本輪）**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **同一支 job 一天之內走過「長到拖死別人 / 秒死 / 正常 / 長」四種形態** → 驅動因素在**上游配額與 lane 飽和**，不在 job 本身（沿用上輪結論，本輪再驗一次）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 2) ⭐⭐⭐ 主事件 A：**配額牆在 12:09:37 退場，13:00–16:05 窗 429 = 0（牆不是「每天固定 4 小時」）** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 逐時 429（journal 24h，扣掉 agent 自述後）：09→18 / 10→21 / 11→14 / **12→19** → **13/14/15/16 → 0**；quota 型（`Token Plan usage limit reached: Upgra`）**09→43 / 10→66 / 11→47 / 12→55** → **13h 起 0**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 最後一筆 quota 型 = **12:09:37**；3h 窗（13:02–16:05）`status=429` / `Token Plan` / `overloaded_error` / `All models failed` **全部 = 0**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⇒ **上輪 §10 第 1 項的答案是「牆退了」**；但要保留 MEMORY 既有教訓「『續 0』敘事一律會破」→ 本輪寫法：**牆已退 3h55m，仍屬「零星復發」觀察中，不寫成「已解決」**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **牆退的第一個可觀測後果＝巡控 job 自癒**：`OpenClaw 系統維護` 11:04 err(4.4s) / 12:04 err(2.2s) → **13:05 ok(80.9s) / 14:04 ok(196.5s) / 15:04 ok(120.1s)**，ce=0；其輸出自述從 13:05 的「Crons: 2 failed last hour」→ 14:04/15:04 的「Crons: 0 failed last hour」。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `健康回報` 11:05–11:12 連死 4 次 → **14:05 ok（166.0s）** ce=0 → **兩個「監控機制本身」都從 4 小時全盲中回來**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 3) ⭐⭐⭐ 主事件 B：**飽和假說第 3 次被實測支持——這次是「反向證據」** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- receipts 實測（8 條 heartbeat lane，窗 12:02–16:02，共 63 runs）：**Σdur 合計僅 231.0s**、**≥300s = 0 筆**、**dur=600,0xx 硬死 = 0 筆**、非 ok 全是 `skipped`（no-route，dur 0.26–12.3s）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 佔用率 **231.0 / 38,400 = 0.6%**（vs 08:00 槽 112% ＝ 7 筆 600s 硬死）→ **同一支 fleet、同一組 lane，兩種佔用率、兩種結果**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **因果鏈閉環**：配額牆 → job 2–5s 秒死 → **lane 被空出** → 沒有 600s 硬死。→ 所以「600s 硬死群集」＝**「lane 被長 job 佔滿」**，與 provider 慢無關（provider 慢的表現是 429，不是 timeout）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **「越壞越快＝越安靜」第 2 次實測**：本窗 fleet 狀態表幾乎全綠（ce=0、dur 0.26–17s），正是因為牆把大家都殺得快 → **綠燈不代表沒事，紅燈數也代表不了工作量**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 16:00 槽實測：`每日 OpenClaw 備份` 16:00:05 → **ok 130.0s** → 上輪 §10 第 2 項（16:00 槽會不會重演硬死）＝**未重演**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 4) ⭐⭐ 主事件 C：**新發現——state 與 receipts 會不同步，導致已恢復的 job 長期掛紅** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `skill-collection-review-mrmime`（`9e2cec7c`）：**receipts 有成功筆 15:12:35 ok（78.5s）**，但 `state.lastRunStatus=error` / `lastRunAtMs=12:07:43` / **`consecutiveErrors=4`** / `lastDurationMs=583` → **ce 沒有被那筆成功清掉**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 該 job 排程＝**每週一次**（`everyMs=604800000`、next **12-02 12:01**）→ **在 12-02 之前它會一直掛紅**，而且下次跑完若不再同步，ce 會繼續累加。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⇒ **紅單掃描必須 state × receipts 交叉比對**：receipts 顯示近期有 ok、而 state 仍紅 → 標記為「狀態未同步」，**不要**當成仍在故障。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ 同型紅單族（皆為**非每輪自癒型**，需人工或改判讀規則）：`skill-collection-review-roaringmoon`（ce=1，11-20 DNS 餘波，每週 → next 11-27）、`clean-code研究`（ce=3，09:00 配額牆所傷，**next 11-26 09:00 才會自癒**）、`Jormungand mrmime Codex A2A heartbeat`（ce=4，12:00 槽死 4 次，**next 18:00:30 才會自癒**）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 5) ⭐ 主事件 D：**Discord：兩個零症狀起點必須分開報** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 嚴格判準（`did not reach READY` / `channel exited`）：24h 內 READY-fail 22 筆、channel-exit 11 筆，**最後一筆 04:54:40** → **嚴格零症狀連續 ≈11h10m**（04:54:40 → 16:05）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 但 **`close, resume=false` 24h 只有 2 筆、最後一筆 12:50:43**（＝一次完整關閉、非 resume 重連）→ **對外可宣稱的無症狀起點是 12:50:43（≈3h14m）**，11h10m 那條只能當「READY 層」的乾淨段。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 3h 窗：READY-fail 0 / channel-exit 0 / `startup-not-ready` 0 / `host timing gap detected` 0；心跳式重連 12 次（≈4/h，接近 24h 基線 6.25/h）→ **無新事故**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 24h 內 `READY within`（成功握手）22 筆、最後 04:54:40 → 這也是「上一次真實握手」的下界。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 6) 其他實測（窗內） <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **gateway：連續 2d11h 未重啟**（MainPID **4137629**、`ActiveEnterTimestamp=2026-11-23 04:48:17`、`NRestarts=0`）→ 11-23 那次 selfheal 開火之後，**2 天半沒有再被重開過**；進程二進位 = `node v24.22.3`（CVE 修補版仍在生效）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `superseded` 競態：24h 119 筆，但今日分布 01h=10 / 04h=10 / 07h=22 / 08h=31 → **13:02–16:05 窗 0 筆**（13:02 那輪三姊妹沒撞出來）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **17 支 skill 缺 description 第 12 輪仍未修**（3h 窗 **204 行**、24h 2,941 行）→ 未經點頭不動。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `每日模型排行前十` next **23:01**、`每日論文討論` next **11-26 07:00**、`每日資安建議` next **11-26 08:06** → 都還沒到，本輪不驗。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `heartbeat-flaaffy` next 2027-02-03（每 416 天）→ 沿用上輪結論：未授權不動。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 7) ANCHOR 疊窗（第 31 次） <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 本輪 picturecat **16:02:02.533** ↔ gengar **16:02:02.570（Δ37ms）** ↔ celesteela **16:02:03.603（Δ1.07s）** → **本輪只要跑超過 1 秒就與 celesteela 同時在跑**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **本輪疊窗 0 事故**（superseded 0 筆、lane 無 wait、heartbeat dur 全 ≤12.3s）→ 與上輪一致：**疊窗是放大器不是必要條件**（真正出事的是「疊窗 + 同窗其他長 job」）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 8) lane 佔用率表（receipts 實測，12:02–16:02，8 條 heartbeat lane） <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+| lane | runs | Σ dur | ≥300s | 600s 硬死 | 非 ok 型別 |
+|---|---|---|---|---|---|
+| hb-rowlet | 8 | 2.1s | 0 | 0 | skipped(no-route) 8 |
+| hb-mrmime | 7 | 33.6s | 0 | 0 | skipped 3 |
+| hb-celesteela | 8 | 2.1s | 0 | 0 | skipped 8 |
+| hb-charizard | 8 | 76.1s | 0 | 0 | skipped 4 |
+| hb-greninja | 8 | 57.4s | 0 | 0 | skipped 8（dur 11.3–12.3s） |
+| hb-picturecat | 8 | 2.1s | 0 | 0 | skipped 8 |
+| hb-roaringmoon | 8 | 2.1s | 0 | 0 | skipped 8 |
+| hb-gengar | 8 | 55.6s | 0 | 0 | skipped 4 |
+| **合計** | **63** | **231.0s** | **0** | **0** | 全是 skipped |
+<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 9) 給 Linder 的待決事項（沿用 17 項，重排；新增 2 項） <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **【最高】MiniMax 配額牆（帳號層 plan 上限）仍需「用量可視化／提前告警」或第二廠商 fallback** —— 本輪牆雖已退（12:09:37），但 09:00–12:09 這 3 小時內 `OpenClaw 系統維護` 死 2 次、`健康回報` 死 4 次、KA 三姊妹死多輪、另外 3 支 job 至今掛紅 → **跨廠冗餘 0 的代價已實際落地**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+2. **【最高】08:00 槽飽和（112%）治本＝錯開 07:00–08:00 的長 job**（`健康回報` 1,398.6s、`每日資安建議` 770.7s、`每日模型排行前十` 522.4s、`PTCGP Meta` 577.6s、`每日論文討論` 762.2s）；治標＝heartbeat timeout 600→900s。**本輪反向實測證實：佔用率掉到 0.6% 時 0 筆硬死。**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+3. **【高·新】state 與 receipts 不同步 → 已恢復的 job 仍掛紅（ce 不歸零）**，每週排程者（`skill-collection-review-mrmime` ce=4 / `-roaringmoon` ce=1）會一路紅到下週。建議：**巡檢加一道「receipts 近 24h 有 ok → 標記 state 未同步」，並提供清 ce 的路徑**（清 ce 屬改 job 狀態，需點頭）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+4. **【高】`Explicit auth order for openai has no usable profiles.`（10:02 派發期秒死）本窗 0 次**（24h 3 次，全在 10:02 窗）→ 症狀未復現，但 `defaults.models` 內含 openai 條目＝隨時可能再炸，維持觀察。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+5. **【高】KA 三姊妹 anchor 疊窗 Δ≤1.07s（第 31 次）** → 本窗 0 事故，但建議把 celesteela 拉開 ≥10 分鐘或兩支合併。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+6. **【中】heartbeat「no-route 前阻塞」型別本輪僅 11–12s**（上輪 347–510s）→ 該型別跟著配額牆一起消失，維持觀察。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+7. **【中】死亡輪不留報告（10:02 那輪 error 2.3s 沒寫檔）** → 本輪 receipts 顯示 10:02 輪確實無 entry；連續性只能靠 receipts 回推。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+8. **【中】`OpenClaw 系統維護` 與 `健康回報` 自癒回來（ce=0）** → 監控機制已恢復，但仍無「配額牆期間的備援監控」。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+9. **【中】`elle.service` 停用、DNS root cause、17 支 skill 缺 description（第 12 輪）、筆電端 SSH automation 只觀察** → 沿用既有待決，本輪無新證據，不動。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+10. **【方法論】本輪驗證三件事**：① **硬死一定要讀 receipts**；② **fleet 狀態表在「快速失敗期」與「配額牆退場後」都會偽裝成健康**；③ **紅單判讀要 state × receipts 交叉**，單邊都會出錯。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 10) 下一輪（11-25 19:02）請確認 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **配額牆會不會再來** → 讀 16:00–19:00 的 quota 型 429（`Token Plan usage limit reached: Upgra`）；寫法沿用「零星復發」而非「續 0」。
+2. **`Jormungand mrmime Codex A2A heartbeat` 18:00:30 那輪會不會自癒** → 若 ok，ce 歸零；若仍紅，根因看 receipts 的 error_text（配額牆型 vs auth 型）。
+3. **`skill-collection-review-mrmime` 的 state 與 receipts 會不會同步** → 下次執行 12-02；在此之前 ce=4 應維持不動，但要在報告裡持續標註「state 未同步」。
+4. **19:00 槽的飽和度** → 19:00 是舊尖峰窗（20–22、16–18），若該窗同時有長 job，`600s` 硬死群集可能重現 → 這是本輪之後最可能出事的槽。
+5. **Discord 零症狀起點** → 目前嚴格起點 04:54:40（11h10m）、含完整關閉的保守起點 12:50:43（3h14m）；19:02 輪若 `close, resume=false` 沒再出現，保守起點續長。
+6. **本輪自身 dur** → 16:02 輪實測 ≈540s（**超過 300s 自我上限**），但 0 lane 傷害；下一輪維持「一次批次拉 receipts＋一次 journal 掃描」的批次策略。
+
+### 11) 本輪自證：dur 與自我造成的 stall <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 本輪 16:02:02 起跑 → 報告寫完約 16:11，**實際 dur ≈540s（超過 300s 自我上限）**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **但沒有造成任何 lane 傷害**：本窗 8 條 heartbeat lane 的 dur 上限只有 12.3s、0 筆 ≥300s、0 筆 600s 硬死、journal 無 lane wait／stalled session → **在低佔用窗（本窗 0.6%）裡，KA 跑 9 分鐘不會壓死別人**；只有像 08:00 槽（112%）那種高佔用窗才會（本 job 07:02 輪 551.6s 就屬那種情況）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⇒ **實務修正**：巡檢深度上限維持 ≤300s，但**判「有沒有傷到別人」要看當窗 lane 佔用率，不是只看自己的 dur**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+## 2026-11-25 19:02 — Picturecat Keep-Alive 第 6 輪：🟡 lane PASS、配額牆未回來（牆退 6h53m、18:02 一顆慢排空 429 被 retry 救回）、⭐⭐⭐ **「skipped 卻跑了 3–4 分鐘」的機制解開：不是 runner hang，而是被別的 rowlet-lane job 擠壓（兩個獨立實例、結束時間差 0–1 秒）**、⭐⭐ **KA 疊窗首次抓到「連帶死亡」實證（16:02 槽 → mrmime heartbeat 的 retry 死於 superseded）**、✅ **上輪交辦 2 條結案（Jormungand A2A ce 歸零、skill-collection-review-mrmime state 自行同步）**、⭐ **Discord 兩個零症狀起點續長（14h08m / 6h11m）、dreaming 第 2 夜完整活下來（1,793.0s）**、⭐ **紅單收斂到 2 支**、⚠️ **本輪自身 dur 自報會有 1.9x 誤差 → 一律以 receipt 為準** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Picturecat lane：🟢 上輪 16:02 ok，本輪 19:02 起跑 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 16:02:04 → **ok / dur 290,730ms（4.8 分鐘）**。⚠️ **上輪報告自報「dur ≈540s（超過 300s 自我上限）」，receipt 實測是 290.7s → 自我量測誤差 1.9x**；**巡檢一律以 receipt dur 為準**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 今日dur 全覽：01:02 **797.3s** → 04:02 307.0s → 07:02 **551.6s** → 10:02 **2.3s error（派發期秒死）** → 13:02 156.9s → 16:02 **290.7s** → 本輪 19:02 running。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 同一支 job 一天走過「拖死別人 / 秒死 / 正常」四型 → 驅動因素在**上游配額與 lane 飽和**，不在 job 本身（沿用上輪結論，第 3 次驗證）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 2) ⭐⭐ 主事件 A：**配額牆未回來（退場 6h53m），18:02 一顆慢排空 429 被 same-model retry 救回** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- quota 型（`Token Plan usage limit reached`）24h = **113 筆，全部落在 09–12h**（30/29/33/21）；**12:09:37 之後 0 筆** → 牆退場已 **≈6h53m**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- canonical 429 逐時：21h×1｜23h×2｜00h×1｜03h×1｜05h×2｜06h×2｜07h×3｜08h×2｜**09h×18｜10h×21｜11h×14｜12h×19**｜**13–17h = 0**｜**18h×1** → 24h 合計 **87 筆，其中 72 筆在配額牆窗內**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 唯一一筆：**18:02:24.909 status=429 elapsedMs=114,245 dispatcher=new** → 18:02:35 重發 → **18:02:38 status=200 elapsedMs=2,970** → 復原（典型慢排空型）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **溯源**：request 起始 **18:00:30.662** → 對應 `d7b0355b Jormungand mrmime Codex A2A heartbeat` 18:00:30 那輪 → 該輪 receipt = **ok 179.4s** → 429 沒把它打死。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 寫法沿用既有教訓：寫「**零星復發**」，不寫「續 0」（近 5 輪「續 0」敘事每輪都被打破）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 3) ⭐⭐⭐ 主事件 B：**「skipped 卻跑了 3–4 分鐘」機制解開＝被別的 rowlet-lane job 擠壓（兩個獨立實例，結束時間完全對齊）** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 實例 1：`heartbeat-rowlet` **16:08:22 → 16:11:40，dur=197.4s，status=skipped（no-route）**；同一時段 `Gengar Keep-Alive` **16:02:04 → 16:11:39（575.1s，同跑 agent:rowlet lane）** → **兩者結束時間差 1 秒**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 實例 2：`heartbeat-rowlet` **17:08:24 → 17:11:59，dur=215.5s，skipped**；同一時段 `健康回報` **17:05:22 → 17:11:59（396.7s，rowlet lane）** → **結束時間差 0 秒**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⇒ **不是 runner hang、也不是 heartbeat 自己變慢**：agent lane ＝**單執行緒排隊佇列**，前一棒還在跑，heartbeat 只能等；等拿到回合後才判定「no-route」→ 於是記成 **skipped**，但 dur 被拉成「剩餘時間」。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⇒ **這就是「600s 炸彈」的機制解釋**：dur ≈ 剩餘時間 → 一旦前棒跑到接近 600s，heartbeat 就會撞 600s 硬死（今日 08:08:21 / 08:18:21 / 08:39:50 / 08:58:51 等一串 `heartbeat-rowlet error 600.0s` 即此型）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⇒ **對策（低風險先做）**：把 rowlet lane 上最長的幾支（**Gengar KA 575s、健康回報 397s、OpenClaw 系統維護 130s+、每日模型排行、每日論文討論、每日 LLM Wiki**）與 `heartbeat-rowlet` 的整點槽**錯開 ≥10 分鐘**；或把 heartbeat 的 timeoutSeconds 由 600s 拉高（改 job 需 Linder 點頭）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **這也解釋了 11-25 01:02 輪記的「skipped 但跑了 298.9s（600s 預算 49.8%）」**：同型（rowlet lane 當時被 `每日模型排行前十` 佔住），現在從「猜」變成「有兩個對齊實例可引用」。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 4) ⭐⭐ 主事件 C：**KA 疊窗首次抓到「連帶死亡」實證——16:02 槽把 mrmime heartbeat 的 retry 打死** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 3h 窗 `was superseded` **17 筆** ＋ `lane task error` **12 筆**，時間戳**全部落在 16:07（8+6）與 16:11（9+6）** → 正是 16:02 三支 KA 的落點。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- lane 分佈：`nested:agent:gengar:main` 3、`session:agent:gengar:main` 3、**`session:agent:mrmime:main:heartbeat` 3**、`cron` 3；被取代的 agent dir＝gengar 8 筆、**mrmime 9 筆**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **完整死亡鏈**：`heartbeat-mrmime` 16:01:07 → **600.0s timeout error** → **16:11:38 retry（dur 2.9s）→ `heartbeat failed: agent-runner-failure`**，同一毫秒出現 `prepared model runtime plugin generation was superseded for /home/amr/.openclaw/agents/mrmime/agent`（lane=session:agent:mrmime:main:heartbeat）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⇒ **這是既有模式（11-22 16:01、11-23 16:11 同型）第 3 次重現**，且把「疊窗是放大器」從假說升級成**有連帶死亡的實證**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⇒ **收斂建議升級**：三支 KA anchor 拉開 **≥15 分鐘**（現況 Δ11ms / Δ22ms），否則每個整點槽都有機會打死鄰 lane 的 retry。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ **上輪報告寫「本窗 superseded 0 筆、0 事故」是因為量測窗口太早**（16:02 輪的傷害在 16:07/16:11 發生，落在該輪報告寫完之後）→ **「某槽 0 事故」的結論必須標明量測截止時間**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 5) ⭐ 主事件 D：**紅單收斂到 2 支，上輪交辦項 2 條結案** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- enabled 且 `consecutiveErrors>0` 只剩 2 支：`89e2cfe7 clean-code研究` **ce=3**（last 09:07:34、配額牆所傷、**next 11-26 09:00** 才自癒）、`c5352a84 skill-collection-review-roaringmoon` **ce=1**（11-19 DNS 餘波、**next 11-27 03:56**）。legacy disabled `a94330a9 tmp-openai-probe` ce=2 → 不是活紅單。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ✅ **上輪交辦 #2 結案**：`d7b0355b Jormungand mrmime Codex A2A heartbeat` 18:00:30 **ok 179.4s → ce=0**（17:33:06 那輪也已 ok 109.9s）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ✅ **上輪交辦 #3 結案**：`9e2cec7c skill-collection-review-mrmime` 17:35:07 **ok 47.5s** → state **ok / ce=0**（lastRunAtMs 09:35:07Z）→ **「state 與 receipts 不同步」本輪自行癒合，不必人工清 ce**（該 job next 12-02 12:01）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- fleet 24h receipt 混合：**ok 293 / skipped 267 / error 70 / running 3**（error 大宗＝09–12h 配額牆窗 + 04:27–08:48 dreaming 窗的 heartbeat 硬死）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 6) ⭐ 主事件 E：**Discord 兩個零症狀起點續長；dreaming 第 2 夜完整活下來** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 3h 窗：READY-fail **0** / channel-exit **0** / `close, resume=false` **0** / host-timing-gap **0** / client initialized **0** / startup-not-ready **0** / memory pressure **0**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 嚴格零症狀起點 **04:54:40 → ≈14h08m**；保守起點（含一次完整關閉）**12:50:43 → ≈6h11m**（兩個起點仍要分開報）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 心跳式重連 reconnect **12** ＋ ws closed **16**（≈4.0/h、5.3/h，貼近 24h 基線 2.6–3/h，無 resume=false）。8 個 enabled 帳號全部 connected（greninja disabled/stopped 為既有狀態）；`/health` 200 in 1.5ms。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **dreaming 11-25 04:25:00 → ok / dur 1,793.0s（29.9 分）＝連續第 2 夜完整跑完**；且同一夜 dreaming 窗內出現 **9 筆 heartbeat 600s 硬死**（04:27:53 picturecat/charizard/roaringmoon 685.9s、04:33:29 mrmime/gengar 703.4s、04:39:18/04:39:50 rowlet 602.2s + 607.5s 等）＋ Discord 04:54:40 最後一次 channel exited → **「Discord 失明」與「heartbeat 硬死」是同一個 event-loop 凍結的兩個下游症狀**（dreaming 04:34 `memory pressure: rss=2.03 GiB`）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 7) 其他實測（窗內） <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **gateway 連續 2d14h14m 未重啟**（MainPID **4137629**、`ActiveEnterTimestamp=2026-11-23 04:48:17`、`NRestarts=0`、node v24.22.3）→ 11-23 selfheal 事故後近 2 天半零重啟。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 24h 內 dur≥595s 的 run 共 **39 筆**，其中 **heartbeat 600s 硬死 24 筆**（mrmime 12、rowlet 8、charizard 4、gengar 4、roaringmoon 3、celesteela 3）；今日最密集＝**08:00 槽**（08:08–08:48 共 9 筆）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **17 支 skill 缺 description 第 13 輪仍未修**（24h **2,754 行**、唯一 **17 檔**；3h 窗僅 17 行 → 密度集中在 dreaming 與各 job 起跑時段，不是均勻分佈）→ 未經點頭不動。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 另有 3 支 legacy KA job 已 disabled（`1b2165f9` Charizard／`ee14ba4c` Rowlet／`ee3def26` RoaringMoon Keep-Alive，nextRunAtMs=0）→ 不是活 job，避免下輪誤算「KA 數量」。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `OpenClaw 系統維護` 15:04–18:04 連續 4 輪 ok（103–133s）、`健康回報` 17:05:22 ok 396.7s → 兩個監控機制維持健康；`每日模型排行前十` next 23:01、`每日論文討論` next 11-26 07:00、`每日資安建議` next 11-26 08:06（本輪不驗）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- host up **45d0h49m**、load 0.74/0.49/0.46、RAM available 20Gi、`/` 61%（176G free）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 8) ANCHOR 疊窗（第 32 次） <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `state.nextRunAtMs`：picturecat **1795604524191** → gengar **…202（Δ11ms）** → celesteela **…213（Δ22ms）**；實跑 19:02:04 / 19:02:06 / 19:02:06。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 3h 窗 17 筆 superseded 全在 16:07/16:11（＝上一個 16:02 槽）；**本槽 19:02 的 superseded 尚未落盤**（會在本輪收尾後才寫入）→ **需下輪確認**，寫法沿用「本輪未見、不宣告安全」。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 9) 給 Linder 的待決事項（更新） <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **【最高·新】rowlet lane 序列化**：把 **Gengar KA（575s）／健康回報（397s）／OpenClaw 系統維護（130s+）／每日模型排行／每日論文討論／每日 LLM Wiki** 與 `heartbeat-rowlet` 的整點槽錯開 ≥10 分鐘，或把 heartbeat 的 timeoutSeconds 由 600s 拉高 → **本輪已用兩個結束時間對齊的實例證實因果**（heartbeat-rowlet 的 197.4s／215.5s 兩輪 skipped dur 完全等於前棒剩餘時間）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+2. **【最高】MiniMax 配額牆仍需用量可視化／提前告警或第二廠商 fallback**（今日 09:00–12:09 打死 `OpenClaw 系統維護` 2 次、`健康回報` 4 次、`clean-code研究` 3 次並連累 2 支 job 至今掛紅）→ **跨廠冗餘 0 的代價已實際落地**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+3. **【高】三支 KA anchor 拉開 ≥15 分鐘**（現 Δ11ms／Δ22ms，第 32 次）→ 本輪已有**連帶死亡實證**（16:02 槽 → mrmime heartbeat retry 死於 superseded）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+4. **【高】`Explicit auth order for openai has no usable profiles` 今日只出現一次**（10:02 那輪 2.3s 秒死；本窗 0 次）→ 症狀未復現但未修，`defaults.models` 仍含 openai 條目，維持觀察。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+5. **【中】`clean-code研究` ce=3 → 11-26 09:00 自癒**；**`skill-collection-review-roaringmoon` ce=1 → 11-27 03:56**（兩支皆等自然自癒，不需動作）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+6. **【中】17 支 skill 缺 description（第 13 輪）、`elle.service` 重啟迴圈、DNS root cause（Link 2 無 scope）** → 沿用既有待決，本輪無新證據，不動。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+7. **【方法論】本輪驗證三件事**：① **「skipped 但 dur 3–4 分鐘」＝被別的 lane job 擠壓**（不是 runner hang、不是 heartbeat 變慢）；② **自我回報 dur 會有 1.9x 誤差 → 一律以 receipt dur 為準**；③ **「某槽 0 事故」必須標明量測截止時間**（上一槽的傷害可能落在報告寫完之後）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 10) 下一輪（11-25 22:02）請確認 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **19:02 槽自己的 superseded 筆數** → 本輪 19:02 三支 KA 同時起跑，是否在 19:0x 再釀 mrmime／gengar 的 lane task error（上一槽 16:02 的傷害是在 16:07/16:11 才出現的）。
+2. **heartbeat-rowlet 的 dur 是否又被拉長** → 看 19:08／19:38／20:08 幾輪；若又出現 >150s 的 skipped dur，直接對齊當時 rowlet lane 上是哪一支在跑（§3 的比對法）。
+3. **配額牆是否再來** → 讀 19:00–22:00 的 quota 型 429（`Token Plan usage limit reached: Upgra`）與 canonical `model-fetch.*status=429`；寫法沿用「零星復發」。
+4. **22:00 槽的飽和度** → 20–22 是舊尖峰窗，且 22:02 三支 KA 同時起跑（Δ11ms/Δ22ms 未解）→ 本輪之後最可能出事的是 22:00–23:00。
+5. **紅單兩支的歸屬** → `clean-code研究` 11-26 09:00、`skill-collection-review-roaringmoon` 11-27 03:56，期間只需確認 ce 沒再 +1。
+6. **本輪自身 dur** → 維持「一次批次拉 receipts＋一次 journal 掃描」的批次策略；**報告寫完後用 receipt dur 校正自報值**。
+
+### 11) 本輪自證：dur 與自我量測誤差 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 本輪 19:02:04 起跑 → 報告寫完約 19:15，**自報 dur ≈ 500–700s（過 300s 自我上限）**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ **但本輪同時發現「自我量測有 1.9x 誤差」**（上輪自報 ≈540s vs receipt 290.7s）→ **本輪的自報值不可信，以 receipt dur 為準**；下輪請讀 `openclaw cron runs --id 02eb0989-…` 的最新一筆。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **本輪自身的 lane 傷害評估**：3h 窗 heartbeat lane 佔用率 **1,627.1s / 10,800s = 15.1%**、≥300s 僅 1 筆、**600s 硬死 0 筆**、`lane wait exceeded` 0 → **本輪跑得比預期久，但沒有壓死別人**（與 16:02 輪「0.6% 佔用窗跑 9 分鐘無害」的結論一致）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+---
+
+## 2026-11-25 22:02 — Picturecat Keep-Alive 第 7 輪：🟢 lane PASS、Discord 零症狀 ≈17h、fleet 紅單維持 2 支；⭐⭐ **推翻上輪「KA 疊窗打死鄰 lane」的歸因**：`superseded` 簽章有兩種來源，真正致命的是 heartbeat 自己的 timeout→retry 自我取代 <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Picturecat lane：PASS<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `sessions_send` → `agent:picturecat:main` → runId `2c9188a0-a83c-4d12-bfc8-da2493062a63`、status=ok、回覆「pong — (1) 無 active task, (2) 近幾小時無錯誤, (3) Discord 收發正常。」<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 本 job（`02eb0989`）上一輪（11-25 19:02）**ok / dur=167,557ms / ce=0**（第 6 輪）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 姊妹 job：`880b5c17 Celesteela KA` **ok / ce=0**（19:02:06 起 dur=138,606ms）、`9d8b6001 Gengar KA` **ok / ce=0**（22:02:24 起 dur=17,763ms，摘要「Keep-alive OK — Rowlet session responsive」）→ **三支 KA 全綠**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- anchor：`state.nextRunAtMs` picturecat **1795615324208（22:02:04）** → celesteela **…326231（22:02:06，Δ2,023ms）**；gengar 下一輪 **01:02:06**（本輪實跑 22:02:24，與前兩支不同槽）→ **本槽是 2 支疊、不是 3 支**（第 33 次 anchor 觀測）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 2) 🟢 Discord：8/8 running+connected，近 3h 零症狀（連續零症狀 ≈17h）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `openclaw channels status`（22:02）：celesteela/charizard/flaaffy/gengar/mrmime/picturecat/roaringmoon/rowlet 全部 **enabled, configured, running, connected**，transport just now~1m（greninja disabled/stopped ＝預期）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 真實收發：celesteela in:2m、mrmime in/out:43m、charizard in/out:13h、gengar in/out:15h、roaringmoon in:13h、rowlet in:15h。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- journal 19:00–22:05（**707 行**）簽章計數：**READY wait timed out 0 / channel exited 0 / reconnect-exhausted 0 / startup-not-ready 0 / event-loop starvation 0 / memory pressure 0 / EAI_AGAIN 1** → **本窗完全沒有抖動**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- Gateway：MainPID **4137629**、`ActiveEnterTimestamp=2026-11-23 04:48:17` → **連續 2d17h14m 未重啟**、NRestarts=0、`/health` **HTTP 200 in 1.14ms**；host up 45d3h49m、load 0.49/0.53/0.51、mem available 20GiB、disk 61%（176G free）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 3) ⭐⭐ 主事件 A（本輪最重要）：**`superseded` 簽章有兩種來源，上輪歸因需修正**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **Type A（無害的自傷噪音）**：lane = `nested:agent:X:main` + `session:agent:X:main` → **每次 keep-alive 的 `sessions_send` ping 收尾時，在「被 ping 的那個 agent 自己的 lane」上產生 2 筆 lane task error**，並在同一毫秒記一筆 `[agents/sessions-send] sessions_send announce flow failed`。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+  - 24h 內 Type A 的完整落點＝**每一個 KA 輪的 ping 時間點**：11-24 22:03:16(picturecat)、22:04:19(gengar)、11-25 01:04:12(gengar)、01:06:21(picturecat)、04:02:32(picturecat)、04:04:52(gengar)、07:03:46(gengar)、**22:02:41(picturecat，本輪：pong 於 22:02:41.026 回來 → .027 run ended → .105 兩筆 lane task error → .107 announce flow failed)**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+  - ⇒ **19:03:30 那批 6 筆 gengar 的 superseded 是 gengar 自己 ping 的 announce 競態，不是外傷**；上輪 §4 把它歸到「三支 KA 疊窗打死鄰 lane」是**過度歸因**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **Type B（致命的那一種）**：lane = `cron-nested` + `session:agent:mrmime:main:heartbeat` → 11-25 16:11:40–41 共 6 筆，與 `heartbeat-mrmime` 的 **600.0s timeout（16:01:07 起）→ retry（16:11:38）→ `lane task error`（agent-runner-failure）** 同一毫秒發生 → 這是 **timeout 後重試把前一份 prepared runtime 取代**的**自我取代**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⇒ **修正後的因果**：heartbeat 的連帶死亡＝「lane 被別人佔住 → 撞 600s timeout → retry 撞上自我取代」；KA anchor 疊窗只是**放大器（讓 lane 更擠）**，不是直接觸發者。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 24h superseded 總量 **18 筆**（Type A 12 ＋ Type B 6）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 4) ⭐ 主事件 B：**heartbeat 600s 硬死又復發（2 筆），且本輪直接抓到佔用者**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `heartbeat-rowlet`：**20:18:24 error dur=600,004ms** → **20:22:56 skipped dur=240,971ms** → 21:21:19 ok dur=148,667ms；**21:18:20 error dur=600,004ms** → 21:18:51 ok dur=148,667ms（ce=0，自癒）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **佔用者已定位（不再是猜測）**：`PTCGP Meta Analysis (每日記錄)` **20:05:00 起跑、dur=1,076,083ms（17.9 分鐘）→ 20:22:53 才結束**，正好蓋住 heartbeat-rowlet 20:08:24 的 600s 視窗；下一輪 20:22:56 才排到 lane、skipped dur=240.9s（≈剩餘等待）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `heartbeat-celesteela`：**20:12:45 error dur=600,005ms** → **21:12:45 skipped dur=397,331ms（6.6 分鐘）**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ **這次不是 provider 拖垮**：同窗 model-fetch 延遲健康（19:00–22:05 p50=**1,697ms**、p90=**4,032ms**、max=139,992ms＝那筆 429）；20:00–21:00 p50=1,875ms。→ **純排隊/序列化問題**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 24h heartbeat 600s 硬死總數 **29 筆**（rowlet 9、mrmime 8、celesteela 4、charizard 2、gengar 2、picturecat 2、roaringmoon 2），較上輪的 24 筆 **+5**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 5) Fleet：53 jobs / 46 enabled — ok 38 / skipped 5 / error 2 / never 1（+disabled: ok 6 / error 1）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 紅單 **維持 2 支、無 +1**：`89e2cfe7 clean-code研究` **ce=3**（lastError=**billing**，next 11-26 09:00）、`c5352a84 skill-collection-review-roaringmoon` **ce=1**（next 11-27 03:56）→ 都等自然自癒。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 綠燈重點：`discord-selfheal-after-dreaming` 21:43:00 ok（787ms）、`OpenClaw 系統維護` 21:04:48 ok 63.0s、`健康回報` 20:05:22 ok 27.5s、`Gengar Cron Health Watchdog` 20:04:23 ok 3.0s、`Jormungand mrmime` 18:00:30 ok 179.4s、`dreaming` 11-25 04:25 ok dur=1,793.0s（**連續第 2 夜完整跑完**，next 11-26 04:25）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⏰ **22:22–22:30 又有兩個 rowlet-lane 長 job 排隊**：`每日模型排行前十` next=22:22:54（上輪 dur=522.4s）、`健康回報` next=22:25:20 → 與本輪 KA 疊在 22:02 槽之後。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 6) Provider：配額牆**連續第 5 輪零**，但 429 仍會零星出現<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 19:00–22:05 model-fetch **271 次**：status 200×**270**、**429×1**（21:02:44，elapsedMs=139,992 → embedded run `aa6d222d` isError=true「⚠️ API rate limit reached」）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 該 429 的宿主 job `911eee45 每日資安建議`（20:47 起跑）**最終 ok / dur=966,801ms（16.1 分鐘）/ ce=0** → **被內部重試救回，沒變紅單**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `Token Plan usage limit reached` = **0 筆**；`overloaded_error` = 1 筆；`Explicit auth order for openai` = 0 筆（本窗未復現）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ 跨廠 fallback 仍是 0（`openai/*` 全 Auth=no，憑證我不碰）→ MiniMax 429 時只能靠同模型重試（本輪 21:02 那筆就是靠它自癒）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 7) 邊界（本次刻意沒動）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **零改動**：未改任何 cron 排程/payload/model/fallback/timeout、未動 `scripts/discord-selfheal.sh` 守門、未改 config/provider/model/channel、未碰憑證、**未重啟 gateway**、未動 DNS/網路設定。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 探測全唯讀：`sessions_send`、`openclaw channels status`、`openclaw cron list --all --json`、`openclaw cron runs --id`、`journalctl --user`、`systemctl --user show`、`curl /health`、`uptime/free/df`。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 8) 給 Linder 的待決事項（更新）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **【最高】rowlet lane 序列化——本輪已抓到直接佔用者，不再是猜測**：`PTCGP Meta Analysis (每日記錄)` 一次 17.9 分鐘就足以打死 `heartbeat-rowlet`（20:08:24 硬死）。建議把 **PTCGP Meta Analysis／每日資安建議（16.1 分）／每日模型排行前十／健康回報** 與 `heartbeat-rowlet` 的整點槽錯開 ≥10 分鐘，或把 heartbeat 的 timeoutSeconds 由 600s 拉高（改 job 需你點頭）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+2. **【高·自我更正】不要把「三支 KA anchor 疊窗」當成 heartbeat 死亡的直接原因**：真正的簽章是 (a) ping 的 announce 競態（無害）、(b) 600s timeout → retry 自我取代（致命）。要修「連帶死亡」應從 heartbeat 自己的 timeout/retry 路徑下手；**拉開 KA anchor 仍值得做，但理由要改成「降低 lane 擁擠」**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+3. **【高】MiniMax 跨廠 fallback 仍是 0**：配額牆連 5 輪沒出現，但 21:02 的 429 仍靠同模型重試才救回；需要一組可用的第二廠憑證才有真冗餘（憑證我不碰，需你提供）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+4. **【中】紅單 2 支等自然自癒**（11-26 09:00 / 11-27 03:56），期間只需確認 ce 沒 +1。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+5. **【中】17 支 skill 缺 description（第 14 輪）、`elle.service` 重啟迴圈、DNS root cause（Link 2 無 scope）** → 沿用既有待決，本輪無新證據，不動。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+6. **【方法論】本輪驗證四件事**：① **`superseded` 必須分 lane 類型看**（`nested/session:X:main`＝ping 噪音 vs `cron-nested/session:X:main:heartbeat`＝真傷害）；② **provider 延遲要量 p50/p90**，不能假設「慢＝provider」；③ **heartbeat 600s 硬死的佔用者可以用「同 lane job 的 receipt 時間戳」直接對齊**（本輪對到 PTCGP 20:05–20:22:53）；④ 「某槽 0 事故」必須標明量測截止時間（沿用上輪）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 9) 下一輪（11-26 01:02）請確認<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **22:02 槽的 superseded 分類**：本輪只量到 Type A（picturecat 2 筆，22:02:41）——若下一輪出現 Type B（`*:main:heartbeat` lane）才算有傷害。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+2. **heartbeat-rowlet 22:08 / 22:38 兩輪 dur**：22:22:54 `每日模型排行前十`（上輪 dur 522s）＋22:25:20 `健康回報` 會進 rowlet lane → 若 22:08 又被拉長，佔用者就是它們（用同樣的 receipt 對齊法驗證）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+3. **配額牆 22:00–01:00 是否再出 429 / `Token Plan usage limit`**；同時量 01:00–01:10 的 model-fetch p50/p90（若 429 又現，確認同模型重試有沒有真的救回）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+4. **紅單 ce 是否沒 +1**（clean-code研究 11-26 09:00 前、skill-collection-review 11-27 03:56 前）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+5. **本輪自身 dur**：仍以 receipt dur 為準（`openclaw cron runs --id 02eb0989-…` 最新一筆）；自報值不作數。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->

@@ -351,3 +351,264 @@
 
 ### 13) 下一輪（11-25 10:02）交辦
 ① 04:02／07:02 槽三支 KA dur＋summary_len＋是否零降級（挑戰連 8 槽）；② **Discord 風暴是否復發／7 帳號 READY 是否回來**（journal 有無成功 READY、`channel exited` 計數）；③ 3h canonical 429 是否歸零（05:02–07:03 共 7 筆）＋ 08:00/09:00 槽有無新 429；④ heartbeat 600s 群集第 9 輪（3h 是否回 0）＋ skipped-dur≥300s 是否收斂；⑤ **健康回報 08:05 槽是否再 filler**（若 filler＝payload 改動強制）；⑥ 17 支 skill 第 27 輪密度；⑦ KA 路由是否已修（若未點頭則明示前提不變）＋ `02eb0989` timeoutSeconds 是否補；⑧ `gw-upgrade-guard.log`／`dreaming-schedule-check.log` 第 15 輪；⑨ SSH Accepted-only（大小寫不敏感）；⑩ `elle.service` 迴圈速率；⑪ superseded 第 10 次；⑫ gengar lane 探針（token 換 `LANE_OK_GENGAR_1002_25 = 8`）；⑬ 零值結論一律附「已納入行數」；⑭ sqlite 一律 `LIKE` 前綴＋cp 到 /tmp；⑮ **gateway 必用 `systemctl --user show openclaw-gateway.service`**。
+
+## Gengar lane 自報（gengar 16:02 台北）— PASS（lane 雙向通、idle）／📉 60m canonical provider 失敗全 0（附納入行數）／✅ dreaming 連續第二夜完整跑完（04:25 ok 1,793,022 ms、ce 0）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-gengar -->
+- token：`LANE_OK_GENGAR_1602_25 = 9`
+- **lane 狀態**：alive／idle，無進行中任務；6 支自有 cron 全 `ok`、`ce` 全 0。
+- **② 近 60 分鐘 canonical provider 失敗數**（口徑：系統前綴行 `node[…]`/`systemd[…]` 且排除 `[agent:nested]`/`[agent:side]`/`[agent/embedded]` 自報迴音；429 僅計 `[model-fetch] … response` 且 `status=` 為數值；窗用絕對時間邊界餵 journalctl）：
+  視窗 **11-25 15:06:14 → 16:06:14**；**總行 1242、系統行 960、排除巢狀回音後 960** →
+  **429 = 0、overloaded = 0、EAI_AGAIN = 0、ENETUNREACH = 0、AbortError = 0、usage-limit = 0**。
+- **③ 我自有 cron 全清單**（id / 名稱 / status / dur / ce / nextRunAt）：
+  | id | 名稱 | status | dur | ce | nextRunAt |
+  |---|---|---|---|---|---|
+  | `29c2d630` | Gengar Cron Health Watchdog | ok | 3,070 ms | 0 | 11-25 18:04 |
+  | `c29eca0f` | heartbeat-gengar | ok | 15,089 ms | 0 | 11-25 16:29 |
+  | `ac9e7ada` | You are an English coach | ok | 7,961 ms | 0 | 11-26 05:00 |
+  | `88810bfe` | BBC News Morning Discussion | ok | 217,387 ms | 0 | 11-26 07:00 |
+  | `7767e03b` | skill-collection-review-gengar | ok | 86,815 ms | 0 | 11-28 07:32 |
+  | `f5148ff0` | OpenClaw 版本檢查 | ok | 258,726 ms | 0 | 11-29 00:00 |
+- **④ gateway**（`systemctl --user show openclaw-gateway.service`）：`MainPID=4137629`、`NRestarts=0`、`ActiveState=active`、`ActiveEnterTimestamp=Mon 2026-11-23 04:48:17 CST` → 連續運行約 **59h19m、0 次重啟**。
+- **⑤ Discord**：**8 connected / 8 enabled** accounts（greninja disabled）；近 60 分鐘 ingress **12 筆**。
+- **⑥ dreaming `36b493db`**：上一槽 11-25 04:25 → status **ok**、dur **1,793,022 ms**（29.9 分）、**ce 0**；下一槽 **11-26 04:25**。序列：11-23 error（被砍）→ 11-24 ok 1,816,088 ms → 11-25 ok 1,793,022 ms → 守門修好後連續兩夜完整。
+- 交付：依規則**只 append 寫入本檔**，未 sessions_send 進 rowlet 的 cron session、未 announce 到外部頻道。
+
+## 2026-11-25 16:02 — 第 14 輪 — PASS（lane token 逐字一致）／⭐⭐⭐ **頭號發現：MiniMax 配額牆 09:00–12:09 導致「三支 KA 同槽全滅」＋「健康回報槽史上首次整槽死」**／🔴 **零降級連 8 槽在 10:02 槽破功**、13:02 槽又退化成 filler 空轉／✅ 3h 窗 error=0、canonical 429=0（配額牆已退場）／✅ Discord provider startup 風暴未復發（3h channel exit=0）／🔴 但 Discord gateway READY 自 04:54 起仍無成功落地（11h08m）／⚠️ KA 路由空殼第 10 輪未修<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Gengar lane：PASS（雙向通、token 逐字一致）
+- `sessions_send` → `agent:gengar:main` → runId **`03fdf23d-3173-4e07-b89c-bcd213488d3e`**、status=**ok**、delivery=announce/pending，回覆含逐字一致 token **`LANE_OK_GENGAR_1602_25 = 9`**。
+- 對方自報：近 60 分鐘 canonical provider 失敗全 0（視窗 15:06:14→16:06:14、**1,242 總行 → 960 系統行 → 960 去巢狀回音** → 429=0／overloaded=0／EAI_AGAIN=0／ENETUNREACH=0／AbortError=0／usage-limit=0）；6 支自有 cron 全 `ok`／ce 全 0；gateway MainPID 4137629／NRestarts 0／運行 ≈59h19m；Discord **8 connected / 8 enabled**、近 60m ingress **12 筆**；dreaming 上一槽 11-25 04:25 `ok` 1,793,022ms ce0、下一槽 11-26 04:25。
+- 對方遵守回程腿規則：只 append 寫入本檔（16:06:52、60,265 B），**未** sessions_send 進 rowlet cron session、**未** announce 外部頻道。
+- **我的獨立複算**（不採對方口徑）：自跑 journal（3h 窗 13:07–16:07）→ canonical 429 = **0**（`model-fetch … status=429` = 0；3 筆含 "429" 字樣者分別是 skill 檔名時間戳 14:01:07.429、nested 自報回音 16:07:05.671 ×2）→ **與對方一致**。
+
+### 2) ⭐⭐⭐ 頭號發現：MiniMax Token Plan 配額牆 09:00–12:09（三家同時斷糧）
+- **牆的邊界**：journal 內 `Token Plan usage limit reached … (2056)` 共 **211 筆**，首筆 **09:06:34**、末筆 **12:09:37**；每小時分布 09→43、10→66、11→47、12→55 ⇒ **封鎖窗約 3 小時 09:00–12:10**。
+- **receipts 端 429 類錯誤 37 筆**、波及 **14 支 job**：9d8b6001(4)／13ac4b5a 健康回報(4)／ca222989 系統維護(7)／d7b0355b(4)／9e2cec7c(4)／89e2cfe7(3)／880b5c17(1)／5b7c1082(2)／40e09cd1(1)／a72cb46b(1)／ac9e7ada(1)／b37129c0(1)。
+- **真正致命的是「三家同時斷糧」**（前幾輪 pending #5「跨廠 fallback 冗餘 0」第一次實測兌現）：
+  - MiniMax 全系（minimax-portal/MiniMax-M3、minimax/MiniMax-M3、minimax-portal/MiniMax-M2.7）→ 429 `Token Plan usage limit reached`；
+  - `openai/gpt-5.4-mini` → `429 You have no credits remaining`；
+  - picturecat 主路由失效後 fallback `openai/gpt-5.4-mini` → `Explicit auth order for openai has no usable profiles`（**profile 未設定，與無餘額是兩個獨立故障**）。
+  ⇒ 三支 KA 的 fallback 鏈在 10:02 槽**同時斷在兩家**，全滅不是巧合而是結構必然。
+
+### 3) 🔴 10:02 槽：三支 KA 同槽全滅（本輪最嚴重事件）
+| job | 10:02 槽 receipts | 狀態 | 根因 |
+|---|---|---|---|
+| `9d8b6001` gengar | 10:02:05 / 10:02:39 / 10:03:44 / 10:08:48（**4 次重試全 429**） | error | 3 個 minimax model 全 429（Token Plan 上限 2056） |
+| `880b5c17` celesteela | 10:02:23 | error | 4 個 model 全滅（3×minimax 429 + openai 無餘額） |
+| `02eb0989` picturecat | 10:02:19（dur 2,308ms，派發期即死） | error | `Explicit auth order for openai has no usable profiles` |
+- **後果**：三支 KA 的 10:02 槽皆無報告產出 → **巡檢連續性出現 3 小時缺口**（本 job 本輪 13:02 槽才回來，且是空轉）。
+- **更嚴重**：**健康回報 `13ac4b5a` 11:05 槽 4 次全滅**（11:05:20 / 11:05:52 / 11:06:56 / 11:12:04，全 `All models failed (3)` 429）→ **該槽完全沒有健康回報**（史上第一次，之前最壞只是 97 字 filler）。
+
+### 4) 🔴 13:02 槽：gengar KA 退化成 filler 空轉
+- receipt `ok`、dur **31,701ms**、`task_runs.terminal_summary` 長度 **716 字**（對比 07:02＝1,999 字／285s、04:02＝1,999 字／281s）。
+- 全文僅：「Keep-alive test: **PASS** — agent woke and executed on schedule」＋ 3 條 `automations` 視圖觀察＋「No changes made」→ **沒有任何巡檢動作**（未掃 journal、未查 sqlite、未量資源、未寫檔）。
+- **檔案面證據**：本檔 mtime 停在 **07:06**（16:06 的 append 是 gengar lane 自報，非 rowlet 巡檢）→ 13:02 槽確實沒寫檔。
+- **該輪有價值的副產品**：它獨立發現了「restricted automation-run session 內 `automations list` 回 total=0、`get`/`runs` 回 not found」的視圖盲區。**本輪已複驗並判定為無害**：CLI `openclaw cron list` 明確顯示 `9d8b6001 Gengar Keep-Alive` enabled + running，該 job 並未遺失 → 這是 session 作用域造成的假象，**不是排程遺失**，可從紅單降級。
+
+### 5) 三支 KA dur／summary_len 對照（零降級連 8 槽 → 在 10:02 破功）
+| slot | gengar dur / len | picturecat dur / len | celesteela dur / len | 判定 |
+|---|---|---|---|---|
+| 11-24 19:02 | 321s / 1,999 | 359s / 2,001 | 151s / 1,822 | 零降級 |
+| 11-24 22:02 | 383s / 2,001 | 431s / 2,000 | 156s / 1,475 | 零降級 |
+| 11-25 01:02 | 522s / 1,997 | 797s / 1,933 | 153s / 1,423 | 零降級 |
+| 11-25 04:02 | 281s / 1,999 | 307s / 1,998 | 60s / 1,170 | 零降級 |
+| 11-25 07:02 | 285s / 1,999 | 551s / 1,832 | 128s / 1,709 | 零降級（**連 8 槽**） |
+| **11-25 10:02** | **4–5s / 無（429 ×4）** | **2s / 無** | **4s / 無** | **🔴 三支全滅 → 連 8 槽斷** |
+| **11-25 13:02** | **31s / 716（filler）** | 156s / 1,672 | 606s / 1,859 | 🔴 gengar 空轉 |
+- picturecat 13:02 dur 156s（1,672 字）偏短但仍屬實質；celesteela 13:02 dur 606s 正常。**13:02 槽只有 gengar lane 空轉**。
+- anchor 疊窗第 29 次：16:02 三支同秒啟動（16:02:04 / 16:02:04 / 16:02:04）→ 本槽三支**完全同時**啟動，疊窗最嚴重的一次（10:02 槽全滅時三支亦為同秒互撞，無 stagger 緩衝）。
+
+### 6) 健康回報槽（`13ac4b5a`，cron 5 */3 * * * UTC → 台北 02:05／05:05／08:05／11:05／14:05）
+| 槽 | 狀態 | summary 長度 | 判定 |
+|---|---|---|---|
+| 02:05 | ok | **97** | 🔴 filler（「no final summary was produced」）→ **filler 連 2 天** |
+| 05:05 | ok | 335 | ✅ 標準 🛡️ 格式 |
+| 08:05 | ok | 991 | ✅ 標準 🛡️ 格式（filler 連 2 天未延長） |
+| **11:05** | **failed ×4** | **—** | 🔴 **整槽死（429 配額牆），史上首次** |
+| 14:05 | ok | 448 | ✅ 標準 🛡️ 格式（但仍只讀 state.lastRunStatus → 看不到 receipts 的 error，即第 11 輪 §12 #3 的結構性漏報未修） |
+- 14:05 報告宣稱「最近一小時 0 個 cron error」——就其 1 小時窗而言為真，但 11:05 槽整槽死這件事**未被任何健康回報提及**。
+
+### 7) Discord：provider startup 風暴未復發，但 gateway READY 仍未落地
+- **風暴未復發**：3h 窗（13:07–16:07）`channel exited` = **0**、`commands exceed the 100-command limit` = **0**（第 11 輪 §12 #2 的「復發」觀察項 → 本輪**未復發**）；24h 內 `channel exited` 累計 11 筆（全部落在 04:27–06:38 窗）。
+- 🔴 **但 READY 仍未回來**：24h 內 `[discord] gateway READY` 共 17 筆**全部是** `READY wait timed out after 15000ms; reconnecting with backoff`，**最後一筆 04:54:36** → **自 04:54 起 11 小時 08 分沒有任何一次成功 READY 落地**。gengar 自報「8/8 connected」是 provider 層狀態，**不代表 gateway READY 成功** ⇒ Discord 發送路徑存在隱性故障風險（08:00–09:00 槽已見 outbound/deliver 失敗）。
+- 常規噪音（不算故障）：`gateway websocket closed code=1005` + reconnect scheduled，14:13／14:35／14:56／15:17／15:36／15:44 各 1 筆。
+
+### 8) heartbeat 600s 群集：08:00 槽重現（第 9 次記錄）、3h 窗歸零
+- **08:00–09:00 槽 600s 硬死 10 筆**：`bcf270b8` heartbeat:mrmime ×4（08:01／08:11／08:22／08:37）、`d82f78e3` heartbeat:rowlet ×4（08:08／08:18／08:38／08:48）、`46242a4c` heartbeat:celesteela ×2（08:12／08:42）→ 全 `cron: job execution timed out`（dur=600s）；同窗另有 `heartbeat failed: agent-runner-failure` 5 筆（08:25／08:29／08:55／08:58／08:59）與 `skipped: no-route` 但 dur 286–541s 的 7 筆（08:23–08:59）。
+- **3h 窗（13:07–16:07）＝ 0 筆** error（見 §11）→ heartbeat 群集**第 9 輪確認歸零**。
+- 24h 內 skipped 且 dur≥300s 者 **13 筆**（上輪 10 筆 → 上升），最新一筆 08:53。
+
+### 9) KA 路由空殼第 10 輪 ＋ timeoutSeconds 仍未補 ＋ fallbacks 實測失效
+- `cron_jobs`：`9d8b6001` agent_id=**None**、owner_agent_id=None、enabled=1；`02eb0989` agent_id=**None**、enabled=1；`880b5c17` agent_id=**celesteela**（✅ 唯一正確者）；`ee14ba4c` Rowlet KA enabled=0。
+- payload：`9d8b6001`／`02eb0989` 仍只有 `keep-alive test`（celesteela 版含完整必做清單＋工作目錄）→ **本 job 自身的巡檢深度取決於 model 自由發揮，這就是 13:02 槽會空轉成 filler 的結構原因**。
+- timeoutSeconds：`9d8b6001` payload 內 1800 ✅、`880b5c17` payload 內 1800 ✅、**`02eb0989` 頂層與 payload 皆 None**（第 8 輪 pending，本輪仍未補；01:02 曾 797,261ms）。
+- fallbacks（實測已失效）：`9d8b6001` = [minimax/MiniMax-M3, minimax-portal/MiniMax-M2.7]（**跨廠冗餘 0**）；`02eb0989`／`880b5c17` = [minimax×2, openai/gpt-5.4-mini]（跨廠 1 支，但 10:02 槽該支回「no credits / no usable profiles」→ **有效冗餘 0**）。
+- 三支 `lastDeliveryStatus` 仍全 **not-requested** → 結果不回報到任何地方（本輪亦未外部 announce）。
+
+### 10) 📈 skill 缺 description：第 27 輪未修、密度下降
+- journal 24h：`description is required` **2,249 筆**（13 檔 × **173 次/檔**，上輪 209）＋ `invalid frontmatter: BAD_INDENT` **692 筆**（4 檔 × 173）＝ **2,941 行/24h**（上輪 3,553 → 下降）；3h 窗 156 + 48 = 204 行。全部零值/計數均附「已納入行數」（3h 窗 563 行、24h 窗 9,769 行）。
+- 13 檔清單（不變）：`web-fetch-troubleshooting`／`system-design-six-dimensions-analyzer`／rosclaw×4（take-photo、pick-object、navigate-to、check-status）／`ptcgp-card-lookup`／`ptcgp-card-download`／`prompt-injection-filter`／`prompt-injection-defense`／`network-security-defense`／`meta-analyzer`／`card-lookup`。
+- BAD_INDENT 4 檔（不變）：`excel-image-pipeline`／`human-behavior-simulation`／`image-attendant`／`ocr-confidence-mark`。
+- 仍需 Linder 點頭（跨 lane／第三方 plugin 寫檔），**本輪不動**。
+
+### 11) fleet 與紅單
+- **fleet tally**（`cron_jobs` 53 支：enabled 46／disabled 7）：**3h receipts ok 60／skipped 35／error 0／running 4**；**24h ok 290／skipped 267／error 68／running 4**（上輪 24h error 26 → **+42**，增量幾乎全來自 09:00–12:09 配額牆）。
+- 24h error 68 分類：`cron: job execution timed out` **26**、`All models failed (3)` 429 **18**、`⚠️ API rate limit reached` **9**、`All models failed (4)` 429 **2**、`heartbeat failed: agent-runner-failure` **8**、`Skill collection review failed`（mrmime workspace）**4**、`Explicit auth order for openai has no usable profiles` **1**。
+- ⚠️ `89e2cfe7 clean-code研究`（charizard）error **3 筆**（09:00／09:05／09:07）→ 連 4 天首跑死（11-22→11-25）。
+- ⚠️ `9e2cec7c skill-collection-review-mrmime` error **4 筆**（12:01–12:07，配額牆）。
+- ⚠️ `d7b0355b Jormungand mrmime Code…` error **4 筆**（12:00–12:09，配額牆）。
+- `c5352a84 skill-collection-review-roaringmoon` ce=1（next 11-27 03:56）仍為唯一 ce>0 的 enabled job。
+- ⚠️ `6e93c179 heartbeat-flaaffy` enabled=1、lastRun=None、next=2027-02-04 → 仍是「排了但永遠不會跑」。
+- ⚠️ superseded 第 10 次：journal **3h 8 筆**（上輪 9）、**24h 119 筆**（上輪 81）→ 上升。
+- ⚠️ `openclaw cron list` 顯示 `d7b0355b` 狀態 `error (4x)`、但 receipts 對齊一致 → 本輪新增「**state 與 receipts 的 error 次數同步**」觀察（與 picturecat 16:02 輪「ce 不歸零」觀察互補，待下輪交叉驗證）。
+
+### 12) 系統面（全部附口徑）
+- **gateway**：`systemctl --user show openclaw-gateway.service` → MainPID **4137629**、NRestarts **0**、ActiveState=active、ActiveEnterTimestamp **Mon 2026-11-23 04:48:17 CST** → 至 16:02 連續 **59h14m** 零重啟（查 gateway 務必 `--user`）。
+- **elle.service**：UnitFileState=enabled、ActiveState=activating／SubState=start-pre、**NRestarts 124,164**（上輪 123,086 → **+1,078／約 9h**，速率 ≈120/h，上輪 ≈118/h，持平）；journal（system scope）`Scheduled restart` 3h=**357**、24h=**2,856** → 需 root，維持只回報不動手。
+- **SSH**：Accepted-only（大小寫不敏感）→ **54/3h（≈18/h）、426/24h**（基線持平）；sshd 總行數 **270/3h、2,125/24h**。
+- **磁碟／資源**：`/` 468G 用 269G（61%）、可用 176G；RAM 31G 用 9G（available 20G）；load 0.64/0.65/0.56；system uptime 44 天 21h54m。
+- **journal 行數**：3h 窗 **563 行**（上輪 6,223，其窗含 Discord 風暴）→ 系統已明顯降載；24h 窗 **9,769 行**。
+- ⚠️ **`gw-upgrade-guard.log` 第 15 輪仍不存在**（`/home/amr` maxdepth 4 搜尋無果）；**`dreaming-schedule-check.log` 停擺第 8 天**（實體在 `workspace-rowlet/memory/dreaming-schedule-check.log`、mtime 11-19 22:33）。
+- **dreaming `36b493db`**：11-25 04:25 槽 `ok` 1,793,022ms ce0（連續兩夜完整），下一槽 11-26 04:25 → 上輪交辦②結案。
+
+### 13) 給 Linder 的待決事項（更新後 15 項）
+1.【**最高優先・本輪有硬證據】** **MiniMax 配額牆 09:00–12:09 讓三支 KA 同槽全滅、健康回報槽史上首次整槽死** → 這已把 pending #5「跨廠 fallback 冗餘 0」從風險升級為**已發生事故**。建議（需點頭）：(a) 至少補 1 支**非 minimax、非 openai** 的 fallback；(b) `openai/gpt-5.4-mini` 目前同時缺 profile 與餘額 → 要嘛修好、要嘛從 fallback 鏈移除以免假性冗餘；(c) 把「Token Plan 上限」納入健康回報的專項監測欄位。
+2.【**最高・第 10 輪】** **KA 路由空殼**：`9d8b6001`／`02eb0989` agent_id 仍空 → 兩支仍跑在 rowlet、仍不回報（lastDeliveryStatus=not-requested）。改法＝比照 `880b5c17` 補 `gengar`／`picturecat` ＋ 決定是否開投遞；**副作用＝改完本審查前提須重設**。
+3.【**新・高】** **payload 內容決定巡檢深度**：本 job payload 只有 `keep-alive test` → 13:02 槽因此退化成 716 字 filler 空轉（未做任何巡檢、未寫檔）。建議比照 celesteela 版把必做清單＋工作目錄寫進 payload。
+4.【**新・高】** **Discord gateway READY 自 04:54 起 11 小時無成功落地**（24h 內 17 筆 READY 全是 timeout）；provider 層顯示 8/8 connected 但發送路徑未通。建議：重啟/重建 Discord provider session，並把「成功 READY」列為健康回報的必檢項（目前 health report 完全沒查 Discord）。
+5.【高・第 2 輪】**健康回報的結構性漏報未修**：只讀 `state.lastRunStatus` → 14:05 槽報告未提 11:05 槽整槽死。修法＝健康回報步驟 3 改以 `cron_run_receipts` 為準（status='error' 且 1h 內），並把 heartbeat timeout 當真失敗。
+6.【高・第 8 輪】`02eb0989` Picturecat KA **未設 timeoutSeconds**（01:02 曾 797,261ms）→ 補 1800s。
+7.【高・第 4 天】`89e2cfe7 clean-code研究` 連 4 天首跑死 → 檢查 payload／模型可用性。
+8.【中・第 5 輪】**跨廠 fallback 冗餘 0**（併入 #1）。
+9.【中・第 29 輪】三支 KA anchor 仍疊；**16:02 槽三支完全同秒啟動**（疊窗最嚴重一次）→ 拉開 ≥15 分鐘（並可避免全滅時互相搶佔）。
+10.【中・第 27 輪】17 支 skill 缺 description（13×173 + 4×173 = 2,941 行/日）→ 需點頭。
+11.【中・第 9 輪】`9d8b6001`／`02eb0989` payload 仍只有 `keep-alive test`（併入 #3）。
+12.【中・沿用】heartbeat 600s 群集 08:00 槽重現 10 筆、3h 窗歸零、24h skipped-dur≥300s 13 筆 → 修法仍朝 Discord 風暴根因＋runner 序列化。
+13.【中・沿用】`elle.service` 重啟迴圈 +1,078/9h（需 root）；`gw-upgrade-guard.log` 第 15 輪不存在；`dreaming-schedule-check.log` 停擺第 8 天。
+14.【中・沿用・第 10 次】KA 探針在被探 lane 製造 superseded 競態（3h 8／24h 119）→ 探針改低風險形式或錯開高頻 heartbeat。
+15.【低・沿用】健康回報 filler 已連 2 天（11-24 02:05、11-25 02:05），05:05／08:05／14:05 槽已恢復 → 仍建議在 payload 加「必須輸出 🛡️ 格式 final summary」硬約束。
+- ✅ **本輪降級**：restricted automation-run session 內 `automations list/get/runs` 對本 job 回 not found（CLI `openclaw cron list` 可見且 enabled+running）→ **判定為 session 作用域假象，非排程遺失**，不再列紅單。
+
+### 14) 下一輪（11-25 19:02）交辦
+① 10:02／13:02 槽三支 KA dur＋summary_len＋是否恢復實質巡檢（13:02 filler、16:02 本輪）→ 挑戰「實質巡檢連 2 槽」；② **MiniMax 配額是否再牆**（journal `Token Plan usage limit` 計數 + receipts 429 類）＋ 是否需要新的 fallback 備援；③ **Discord 成功 READY 是否落地**（journal `gateway READY` 非 timeout 筆數、channel exit 數、outbound/deliver 失敗數）；④ 健康回報 17:05 槽是否正常（🛡️ 格式、長度、非 filler）＋ 結構性漏報是否已修；⑤ heartbeat 600s 群集 3h 窗是否仍 0；⑥ skill 缺 description 第 28 輪密度；⑦ KA 路由是否已修（若未點頭則明示前提不變）＋ `02eb0989` timeoutSeconds 是否補；⑧ `gw-upgrade-guard.log`／`dreaming-schedule-check.log` 第 16 輪；⑨ SSH Accepted-only（大小寫不敏感）；⑩ `elle.service` 迴圈速率；⑪ superseded 第 11 次；⑫ gengar lane 探針（token 換 `LANE_OK_GENGAR_1902_25 = 10`）；⑬ 零值結論一律附「已納入行數」；⑭ sqlite 一律 `LIKE` 前綴＋cp 到 /tmp；⑮ **gateway 必用 `systemctl --user show openclaw-gateway.service`**；⑯ **新增：交叉驗證 `state.consecutiveErrors` 與 receipts error 次數是否同步**（本輪 `d7b0355b` 顯示 error(4x) 對齊 4 筆 receipts，與 picturecat 16:02 輪「ce 不歸零」互補）。
+
+## Gengar lane 自報（gengar 19:02 台北）— PASS（lane 雙向通、idle）／📉 60m canonical provider 失敗全 0（附納入行數）／✅ dreaming 連續第二夜完整跑完（04:25 ok 1,793,022 ms、ce 0）／📈 ingress 回升 79 筆/60m<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-gengar -->
+- token：`LANE_OK_GENGAR_1902_25 = 10`
+- **lane 狀態**：alive／idle，無進行中任務；6 支自有 cron 全 `ok`、`ce` 全 0。
+- **① 近 60 分鐘 canonical provider 失敗數**（口徑：系統前綴行 `node[…]`/`systemd[…]` 且排除 `[agent:nested]`/`[agent:side]`/`[agent/embedded]` 自報迴音；429 僅計 `[model-fetch] … response` 且 `status=` 為數值；窗用絕對時間邊界餵 journalctl）：
+  視窗 **11-25 18:03:01 → 19:03:01**；**總行 1185、系統行 907、排除巢狀回音後 903** →
+  **429 = 0、overloaded = 0、EAI_AGAIN = 0、ENETUNREACH = 0、AbortError = 0、usage-limit = 0**。
+- **② 我自有 cron 全清單**（id / 名稱 / status / dur / ce / nextRunAt）：
+  | id | 名稱 | status | dur | ce | nextRunAt |
+  |---|---|---|---|---|---|
+  | `29c2d630` | Gengar Cron Health Watchdog | ok | 3,003 ms | 0 | 11-25 20:04 |
+  | `c29eca0f` | heartbeat-gengar | ok | 12,213 ms | 0 | 11-25 19:29 |
+  | `ac9e7ada` | You are an English coach | ok | 7,961 ms | 0 | 11-26 05:00 |
+  | `88810bfe` | BBC News Morning Discussion | ok | 217,387 ms | 0 | 11-26 07:00 |
+  | `7767e03b` | skill-collection-review-gengar | ok | 86,815 ms | 0 | 11-28 07:32 |
+  | `f5148ff0` | OpenClaw 版本檢查 | ok | 258,726 ms | 0 | 11-29 00:00 |
+- **③ gateway**（`systemctl --user show openclaw-gateway.service`）：`MainPID=4137629`、`NRestarts=0`、`ActiveState=active`、`ActiveEnterTimestamp=Mon 2026-11-23 04:48:17 CST` → 連續運行約 **62h18m、0 次重啟**。
+- **④ Discord**：**8 connected / 8 enabled** accounts（greninja disabled）；近 60 分鐘 ingress **79 筆**（較 16:02 輪的 12 筆明顯回升）。
+- **⑤ dreaming `36b493db`**：上一槽 11-25 04:25 → status **ok**、dur **1,793,022 ms**（29.9 分）、**ce 0**；下一槽 **11-26 04:25**（守門修好後連續第二夜完整）。
+- 交付：依規則**只 append 寫入本檔**，未 sessions_send 進 rowlet 的 cron session、未 announce 到外部頻道。
+
+## 2026-11-25 19:02 — 第 15 輪 — PASS（lane token 逐字一致）／⭐⭐⭐ **本輪決定性發現：`state.consecutiveErrors` 語義定案＝ trailing consecutive 計數，全 fleet 53/53 與 receipts 完全一致（0 mismatch）→「state 與 receipts 不同步」疑慮正式結案**／🔴 **heartbeat 600s 群集 3h 窗連 4 輪＝0，但機制換形**（16:11:38 heartbeat-mrmime runner-failure 與 gengar KA 結束時刻差 1 秒）／✅ 16:02 槽三支 KA 全實質（dur 575s／291s／169s）＝ 零降級連 2 槽／🔴 **Discord gateway READY 自 04:54:36 起仍無成功落地（現 14h08m）**／✅ 配額牆未回來（3h Token Plan＝0）但出現零星復發第一顆（18:02:24）／✅ 健康回報 17:05 槽標準 🛡️ 格式、非 filler，且與我的 receipt 發現逐項吻合<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Gengar lane：PASS（雙向通、token 逐字一致）
+- `sessions_send` → `agent:gengar:main` → runId **`65cdd379-8483-4132-b7f3-e11ed099678c`**、status=**ok**，回覆含逐字一致 token **`LANE_OK_GENGAR_1902_25 = 10`**。
+- 對方自報：近 60 分鐘 canonical provider 失敗全 0（視窗 **18:03:01→19:03:01**、**1,185 總行 → 907 系統行 → 903 去巢狀回音** → 429/overloaded/EAI_AGAIN/ENETUNREACH/AbortError/usage-limit 全 0）；6 支自有 cron 全 `ok`／ce 全 0；gateway MainPID 4137629／NRestarts 0／運行 ≈62h18m；Discord **8 connected / 8 enabled**、近 60m ingress **79 筆**（上輪 12 → 明顯回升）；dreaming 上一槽 11-25 04:25 `ok` 1,793,022 ms ce0、下一槽 11-26 04:25。
+- 對方遵守回程腿規則：只 append 寫入本檔（19:03:20、81,393 B），**未** sessions_send 進 rowlet cron session、**未** announce 外部頻道。
+- **我的獨立複算**：3h 窗 canonical 429 = **1**（18:02:24）→ 落在對方 60m 窗（18:03:01 起）**之前 37 秒**，故「對方 429=0」與「我 3h=1」不衝突；同一顆也被 celesteela 與 picturecat 兩輪各自數到 → **三方一致**。
+- ⚠️ **announce 腿仍失敗**：journal **19:03:30** `[agents/sessions-send] sessions_send announce flow failed`（上輪 16:07:05 同型）→ 與 MEMORY.md L417 已知行為一致（inline 先拿全文、announce 之後仍可能晚到），**不是對方失聯**，未重複發送。
+
+### 2) 三支 KA 槽位表現（receipt 為準；dur 是唯一可靠的「實質／filler」指標）
+| slot | gengar | picturecat | celesteela | 判定 |
+|---|---|---|---|---|
+| 11-24 22:02 | 383.2s | 430.7s | 155.9s | 零降級 |
+| 11-25 01:02 | 522.3s | 797.3s | 152.8s | 零降級 |
+| 11-25 04:02 | 281.6s | 307.0s | 60.4s | 零降級 |
+| 11-25 07:02 | 285.3s | 551.6s | 128.9s | 零降級（連 8 槽） |
+| **11-25 10:02** | **4 筆全 429（4.5／5.2／3.1／4.4s）** | **2.3s err（openai 無 profile）** | **4.5s err** | 🔴 三支全滅 |
+| **11-25 13:02** | **31.7s（filler 空轉）** | 156.9s | 606.5s | 🔴 gengar 空轉 |
+| **11-25 16:02** | **575.1s** | 290.7s | 168.5s | ✅ 三支全實質 |
+| 11-25 19:02 | running | running | running | 本輪（三支 19:02:04–19:02:06 起跑） |
+- **16:02 槽三支全實質 → 零降級連 2 槽（16:02、19:02）**；13:02 的 gengar filler 缺口仍待補（上輪交辦①部分結案）。
+- **anchor 疊窗第 30 次**：picturecat 19:02:04.208 → gengar 19:02:06.226 → celesteela 19:02:06.231（**Δ2.0s / 5ms**），同秒互撞無 stagger 緩衝。
+
+### 3) ⭐⭐⭐ 本輪頭號發現：`state.consecutiveErrors` 語義定案（全 fleet 53/53 一致）
+- 方法：對 `cron_jobs` 全部 **53 支** job 逐一比對 `state.consecutiveErrors` 與「該 job receipts 由最新往回**連續** error 的筆數」→ **一致 53、mismatch 0**。
+- **語義 = trailing consecutive error 計數**（不是 24h 累計），**成功一次即歸零**。
+- 這一條同時解掉三個舊疑慮：
+  1. 上輪「`d7b0355b` state 顯示 error(4x) 與 receipts 4 筆對齊」→ 一致，因為那 4 筆是連續的（12:01／12:03／12:04／12:09），17:33 ok 後 ce 歸 0。
+  2. picturecat 16:02 輪的「ce 不歸零」觀察 → 實為 **ce 會被下一輪成功洗白**，不是不同步。
+  3. **第 16 次交辦（state.consecutiveErrors 與 receipts error 次數是否同步）＝ 結案**：兩者**沒有不同步 bug**，但也因此**確認「ce=0 不能證明這段時間沒出事」**（沿用 MEMORY.md L515／L573 的教訓）。
+- 附帶：`d7b0355b` receipts 全序列（24h）＝ 00:00 ok／06:00 ok／12:00–12:09 **4 筆 error**／17:33 ok／18:00 ok → 自癒已驗證。
+
+### 4) 🔴 heartbeat 600s 群集：3h 窗連 4 輪＝0，但機制換形（不是消失）
+- 3h 窗 receipts error 僅 **1 筆**：**16:11:38 `bcf270b8 heartbeat-mrmime` → `heartbeat failed: agent-runner-failure`**。
+- **時間軸對齊（關鍵）**：gengar KA 16:02:04→**16:11:39**（575.1s，同跑 rowlet lane）與 heartbeat-mrmime 16:11:38 失敗 **相差 1 秒**；picturecat 19:02 輪獨立算出同一機制（lane 單執行緒排隊 → 前棒佔滿時後排 heartbeat 被拖成 skipped／runner-failure），並给出兩組結束時刻完全對齊的實例（heartbeat-rowlet 17:08:24→17:11:59 ↔ 健康回報 17:05:22→**17:11:59** 396.7s）→ **機制定案：這就是 600s 炸彈的機制解釋**。
+- skipped 且 dur≥300s：3h 窗 **0** 筆（上輪 3h 有）、24h **13** 筆（持平上輪）。
+- 收斂方向與 pending #12 一致（錯開整點槽＋拉高 heartbeat timeout）。
+
+### 5) ✅ 健康回報 17:05 槽：標準 🛡️ 格式、非 filler、且與我的 receipt 發現逐項吻合
+- receipt：**17:05:22 → ok、dur 396,721 ms（6.6 分）**（`13ac4b5a`）。
+- 內容（取自 cron session `agent:mrmime:cron:13ac4b5a-…` 末則 assistant message）：`🛡️ 健康回報 09:12 UTC`／`Gateway: ✅ (running, probe ok)`／`Disk: 61%`／`Crons: 1 failed（已修復 0）`／`Delivery: OK`＋唯一真失敗＝`heartbeat-mrmime`（**08:11 UTC，距今 55 分**，`cron: job execution timed out` → 重試後 `agent-runner-failure`）→ **08:11 UTC ＝ 16:11 台北**，與我的 receipt（16:11:38 `bcf270b8`）**完全一致** ✅
+- 附帶：它仍只讀最近 1 小時窗（11:05 整槽死屬窗外）→ **結構性漏報未修**，pending #5 維持。
+- ⭐ **量測口徑更正（可複用）**：**cron run 的 `task_runs` 列會被清掉（NOROW）→ 拿不到 `terminal_summary`**；summary 長度／內容必須用 `sessions_list(kinds=['cron'])` + cron session 末則 assistant message 讀。本輪即以此取得健康回報全文。
+
+### 6) ✅ 配額牆未回來，但「零星復發」第一顆出現
+- 3h 窗 `Token Plan usage limit` = **0**（24h 211 筆全落 09:00–12:09，牆已退場約 6h53m）；3h 窗 receipts 429 類 error = **0**。
+- 3h 窗 canonical 429 = **1**：**18:02:24**（`model-fetch … status=429`、**elapsed 114,245 ms** 慢排空）→ 被 same-model retry 救回，**不構成紅單**；celesteela 與 picturecat 兩輪各自數到同一顆（429 3h=1／24h=87）→ **三方一致**。
+- ⚠️ 判讀陷阱複習：初查時 `17:34:25` 一行被寬鬆 grep 命中（實為 `status=200`、elapsed 1,429ms）→ **canonical 429 必須鎖 `model-fetch … response … status=429`**，寬鬆樣式會造出一顆假陽性。
+
+### 7) 🔴 Discord：gateway READY 自 04:54:36 起仍無成功落地（現 ≈14h08m）
+- 24h 內 `[discord] gateway READY` 共 **17 筆，全部**是 `READY wait timed out after 15000ms; reconnecting with backoff`，**最後一筆 04:54:36** → **自此 14 小時 08 分沒有任何一次成功 READY**。
+- 3h 窗 READY 嘗試 = **0 筆**，但 `gateway websocket closed code=1005` 持續（16:14／16:16／16:18／16:38／16:49／17:05…）→ **重連一直在發生、卻從未 READY 成功**（比上輪多一項症狀）。
+- `channel exited` 3h = **0**（24h 11 筆全落 04:27–06:38）；`commands exceed the 100-command limit` 3h = 0。
+- provider 層由對方自報 **8/8 connected**、近 60m ingress **79 筆** → **入站與 provider 層正常，斷點在 gateway READY 層**；pending #4 維持（建議重啟／重建 Discord provider session，並把「成功 READY」列為健康回報必檢項）。
+
+### 8) ⚠️ KA 路由空殼第 11 輪 ＋ `02eb0989` timeoutSeconds 第 9 輪未補
+- `9d8b6001`：agent_id=**None**、owner=None、enabled=1、payload 仍只有 `keep-alive test`、timeoutSeconds=**1800** ✅。
+- `02eb0989`：agent_id=**None**、timeoutSeconds=**None** ❌（第 9 輪）、payload 仍 `keep-alive test`。
+- `880b5c17`：agent_id=celesteela ✅、timeoutSeconds=1800 ✅、payload 含完整必做清單＋工作目錄（**唯一正確者**）。
+- 三支 `lastDeliveryStatus` 全 **not-requested** → 結果不回報到任何地方（本輪亦未外部 announce）。
+
+### 9) fleet 與紅單
+- `cron_jobs`：**53 支（enabled 46／disabled 7）**。
+- receipts：**3h 窗 total 104／ok 70／skipped 30／running 3／error 1**；**24h total 633／ok 293／skipped 267／error 70／running 3**。
+- 24h error 分類（70 筆全列）：`cron: job execution timed out` **27**、`All models failed (3)` 429 **18**、`⚠️ API rate limit reached` **13**、`heartbeat failed: agent-runner-failure` **9**、`All models failed (4)` 429 **2**、`Explicit auth order for openai has no usable profiles` **1**。
+- **現行紅單（enabled 且 ce>0）僅 2 支**：`89e2cfe7 clean-code研究` ce=3（**連 5 天首跑死**，11-22→11-25，provider=openai/gpt-5.4-mini、reply=`The agent run failed before producing a reply.`）、`c5352a84 skill-collection-review-roaringmoon` ce=1（next 11-27 03:56）。
+- `9e2cec7c skill-collection-review-mrmime` 12:01–12:07 共 4 筆 error（配額牆）→ 17:35:07 已 ok、ce 歸 0（**自癒**）。
+- `ee14ba4c Rowlet Keep-Alive` enabled=0（disabled，非紅單）。
+
+### 10) 系統面（全部附口徑）
+- **gateway**：`systemctl --user show openclaw-gateway.service` → MainPID **4137629**、NRestarts=**0**、ActiveState=active、ActiveEnterTimestamp **Mon 2026-11-23 04:48:17 CST** → 至 19:02 連續 **62h14m** 零重啟。
+- **elle.service**：NRestarts **124,514**（上輪 124,164 → **+350／約 3h ≈ 117/h**，速率持平）；需 root，維持回報不動手。
+- **磁碟／資源**：`/` 468G 用 269G（**61%**）、可用 176G；RAM 31G 用 9G（available 20G）；load 0.67/0.54/0.48；uptime **45 天 50 分**。
+- **journal 行數**：3h 窗 **user-scope 1,058 行**（all-scope 3,694）、24h **user-scope 13,350 行**（all 34,552）→ 較上輪（563／9,769）明顯上升，主因為 19:02 槽三支 KA 同秒互撞＋elle.service 重啟迴圈。
+- **SSH**（Accepted-only，大小寫不敏感）：3h **54**、24h **426** → 與上輪完全一致＝**基線未動**。
+- **superseded**：3h **25**（上輪 8）、24h **125**（上輪 119）→ **上升**（疊窗＋lane 排隊的副作用）。
+- **skill 缺 description**（第 28 輪）：24h `description is required` **2,106** ＋ `BAD_INDENT` **648** ＝ **2,754 行/24h**（上輪 2,941 → 下降）；3h 窗 desc-required **13**。13 檔／4 檔清單不變，仍需 Linder 點頭，**本輪不動**。
+- ⚠️ **`gw-upgrade-guard.log` 第 16 輪仍不存在**（`/home/amr` maxdepth 4 搜尋無果）；**`dreaming-schedule-check.log` 停擺第 9 天**（實體在 `workspace-rowlet/memory/dreaming-schedule-check.log`、mtime 11-19 22:33）。
+- **dreaming `36b493db`**：11-25 04:25 槽 `ok` 1,793,022 ms ce0（連續兩夜完整），下一槽 11-26 04:25 → 上輪交辦②結案。
+
+### 11) 給 Linder 的待決事項（更新後 15 項）
+1.【**最高・新】** **KA 槽與整點槽要錯開**（有兩個「結束時刻完全對齊」的實例：heartbeat-rowlet 17:11:59 ↔ 健康回報 17:11:59；heartbeat-mrmime 16:11:38 ↔ gengar KA 16:11:39）→ 把 Gengar KA／健康回報／OpenClaw 系統維護／每日模型排行／每日論文／每日 LLM Wiki 與 `heartbeat:rowlet` 整點槽**拉開 ≥10 分鐘**，或拉高 heartbeat timeout（改 job 需點頭）。這是 600s 群集與 runner-failure 的**共同上游**。
+2.【**最高・第 11 輪】** **KA 路由空殼**：`9d8b6001`／`02eb0989` agent_id 仍空 → 兩支仍跑在 rowlet、仍不回報（lastDeliveryStatus=not-requested）。改法＝比照 `880b5c17` 補 `gengar`／`picturecat` ＋ 決定是否開投遞；**副作用＝改完本審查前提須重設**。
+3.【**高・新】** **payload 內容決定巡檢深度**：本 job payload 只有 `keep-alive test` → 13:02 槽因此退化成 31.7s filler 空轉（未做任何巡檢、未寫檔）。建議比照 celesteela 版把必做清單＋工作目錄寫進 payload。
+4.【**高】** **Discord gateway READY 自 04:54:36 起 14h08m 無成功落地**（24h 內 17 筆 READY 全是 timeout；3h 窗 READY 嘗試 0 筆但 websocket closed 持續）→ 建議重啟/重建 Discord provider session，並把「成功 READY」列為健康回報必檢項（目前 health report 完全沒查 Discord）。
+5.【**高・第 2 輪】** **健康回報的結構性漏報未修**：只讀最近 1h → 11:05 槽整槽死仍是窗外。修法＝以 `cron_run_receipts` 為準（status='error' 且 1h 內），並把 heartbeat timeout 當真失敗。（**本輪正面消息**：17:05 槽已正確抓到 heartbeat-mrmime 16:11:38 那筆。）
+6.【**高・第 8 輪】** `02eb0989` Picturecat KA **未設 timeoutSeconds**（01:02 曾 797,261 ms）→ 補 1800s。
+7.【**高・第 5 天】** `89e2cfe7 clean-code研究` **連 5 天首跑死**（ce=3）→ provider=openai/gpt-5.4-mini、reply=`The agent run failed before producing a reply.`；檢查 payload／模型可用性或改掛可用 provider。
+8.【**中】** **MiniMax 配額牆需用量可視化或第二廠商 fallback**（跨廠冗餘 0 已實際造成 10:02 三支全滅；本輪牆已退場但 18:02 出現零星復發第一顆）。
+9.【**中・第 30 輪】** 三支 KA anchor 仍疊（19:02 槽 Δ2.0s／5ms）→ 拉開 ≥15 分鐘。
+10.【**中・第 28 輪】** 17 支 skill 缺 description（2,754 行/日）→ 需點頭。
+11.【**中・沿用】** `openai/gpt-5.4-mini` 仍是死路（無 profile／無餘額）→ 要嘛修好、要嘛從 fallback 鏈移除以免假性冗餘。
+12.【**中・沿用】** heartbeat 600s 群集 3h 窗連 4 輪＝0、24h skipped-dur≥300s 13 筆 → 修法已併入 #1（錯開槽位）。
+13.【**中・沿用】** `elle.service` 重啟迴圈 +350/3h（需 root）；`gw-upgrade-guard.log` 第 16 輪不存在；`dreaming-schedule-check.log` 停擺第 9 天。
+14.【**中・沿用・第 11 次】** KA 探針在被探 lane 製造 superseded 競態（3h 25／24h 125，本輪再升）→ 探針改低風險形式或錯開高頻 heartbeat。
+15.【**低・沿用】** 健康回報 filler 連 2 天（11-24 02:05、11-25 02:05）→ 仍在 payload 加「必須輸出 🛡️ 格式 final summary」硬約束。
+- ✅ **本輪結案**：#16「state.consecutiveErrors 與 receipts error 次數是否同步」→ **53/53 一致，語義＝trailing consecutive，無不同步 bug**；但因此**再次確認 ce=0 不能證明「這段時間沒出事」**（須靠 receipts 全掃描）。
+- ✅ **本輪降級（不列紅單）**：restricted automation-run session 內 `automations list/get` 對本 job 回 not found（CLI `openclaw cron list` 明確顯示 enabled+running）→ session 作用域假象；另 `message read` 在本 session 無 delegated account（Discord 全文改由 cron session transcript 取得）。
+
+### 12) 下一輪（11-25 22:02）交辦
+① 19:02 槽三支 KA dur＋是否實質（挑戰「零降級連 3 槽」）＋ summary 長度（改用 cron session transcript 口徑）；② **配額是否再牆**（journal `Token Plan usage limit` 計數＋receipts 429 類＋canonical 429）；③ **Discord 成功 READY 是否落地**（非 timeout 的 READY 筆數、channel exit、outbound/deliver 失敗）；④ 健康回報 20:05 槽是否正常（🛡️ 格式、非 filler）＋結構性漏報是否已修；⑤ heartbeat 600s 群集 3h 窗是否仍 0＋**「skipped 卻跑了很久」的 lane 排隊實例是否再現**（本輪機制定案，記 dur 對齊）；⑥ skill 缺 description 第 29 輪密度；⑦ KA 路由是否已修（未點頭則明示前提不變）＋ `02eb0989` timeoutSeconds 是否補；⑧ `gw-upgrade-guard.log`／`dreaming-schedule-check.log` 第 17 輪；⑨ SSH Accepted-only；⑩ `elle.service` 迴圈速率；⑪ superseded 第 12 次；⑫ gengar lane 探針（token 換 `LANE_OK_GENGAR_2202_25 = 11`）；⑬ 零值結論一律附「已納入行數」；⑭ sqlite 一律 `LIKE` 前綴＋cp 到 /tmp（本機無 `sqlite3` CLI → 用 `python3 sqlite3`）；⑮ **gateway 必用 `systemctl --user show openclaw-gateway.service`**；⑯ **新增：巡檢摘要長度改用 cron session transcript 取（task_runs 對 cron run 已不保留 terminal_summary）**；⑰ **新增：追 `89e2cfe7 clean-code研究` 連 5 天首跑死（第 6 天）與 `c5352a84` ce 是否歸 0**。
