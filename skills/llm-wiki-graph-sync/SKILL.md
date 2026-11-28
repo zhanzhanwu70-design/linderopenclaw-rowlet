@@ -1,6 +1,6 @@
 ---
 name: "llm-wiki-graph-sync"
-description: "Sync llm-wiki pages into the graphify graph. Use after writing wiki sources/concepts/people. Produces graph nodes, wikilink edges, fresh GRAPH_REPORT.md."
+description: "Sync llm-wiki pages into the graphify graph. Use after writing wiki sources/concepts/people. Produces graph nodes, wikilink edges, refreshed graph.json."
 ---
 
 # llm-wiki Graph Sync
@@ -23,7 +23,9 @@ This rewrites `graphify-out/graph.json` deterministically: one `wiki_<sha256[:16
 
 Use the Python tool, not `tools/add-wiki-pages-to-graphify.ps1` — no PowerShell on this host.
 
-## 3. Recluster and regenerate the report — only with a verified rollback
+## 3. Optional: recluster and regenerate the report — only with a verified rollback
+
+Skip this step when the task is only to add pages; step 2 plus step 4 is the complete page-sync path.
 
 `cluster-only` rebuilds the graph from the extraction cache, so it **drops the `wiki_link` edges that step 2 added**. Measured on 2026-11-21: total edges **24,521 → 20,463** and `wiki_link` **16,347 → 12,289** (about 4,000 wiki links gone), the output key changed from `edges` to `links`, and `graph.html` was deleted. The run still reports success, so treat the graph as damaged until you check it.
 
@@ -86,7 +88,7 @@ PY
 
 Count against the graph step 2 wrote — a recluster in step 3 drops `wiki_link` edges entirely, so the count would be zero for every page. A page that still shows 0 incoming edges is an orphan: add its `wiki/index.md` wikilink and repeat step 2.
 
-Also confirm `graphify-out/GRAPH_REPORT.md` shows the current date and the expected node/edge totals.
+`graphify-out/graph.json` is the source of truth. If you ran the optional recluster in step 3, also confirm `graphify-out/GRAPH_REPORT.md` shows the current date and the expected node/edge totals; if you skipped step 3, a report that lags the graph is expected and acceptable.
 
 ## 5. Log the change
 

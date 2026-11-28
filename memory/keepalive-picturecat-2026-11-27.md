@@ -249,3 +249,95 @@
 ### 11) 對外投遞記錄（第 16 輪唯一外部寫入）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
 - 因 delivery.mode=none（最終回覆只進 run log），用 rowlet 帳號把巡檢摘要貼到 Discord 團隊頻道 `1482363974119854234` → **messageId `1575697772429180972`**、deliveryStatus `sent`（`openclaw message send` 回條）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
 - 紀錄檔：`memory/keepalive-picturecat-2026-11-27.md`（本檔，第 16 輪）＋ `memory/2026-11-27.md`（當日摘要一行）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+## 2026-11-27 16:02 — Picturecat Keep-Alive 第 17 輪：🟢 lane PASS、🟢 Discord 8/8 connected 且 inbound 277 筆零漏接、🔴 **DNS 風暴第三次（14h 峰值 22 筆 EAI_AGAIN）→ 紅單 11 → 17**、🔴 **`ca222989` 系統維護 ce=10 被自動停用（巡檢齒輪少一支）**、🔴 **跨廠 fallback 真相翻案：openai 真的被呼叫，但回 billing「no credits」**、🔴 **本 job 13:02 槽再次零紀錄** <!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 1) Picturecat lane：PASS<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `sessions_send` → `agent:picturecat:main` → runId `9eda42aa-1666-4430-84af-f63fa53c79f2`、status=ok、回覆「pong — idle, no errors in the last 3h, Discord inbound/outbound OK.」<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ **本 job 上一槽（13:02:02）是硬失敗**：`LLM request failed: DNS lookup for the provider endpoint failed.`、dur=332,880ms → **13:02 槽零紀錄**（本檔今日只有 3 節：01:02／04:04／10:02）→ **第 16 輪 §9-5「DNS 直接打死的槽＝零紀錄」再添一例**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 📊 **本 job 今日 7 槽 receipt 全覽**：01:02 ok(201,864ms)／04:02 error(99,769ms, network)／**04:04 ok(364,923ms)**／07:02 error(49,655ms, DNS)／10:02 ok(1,270,791ms)／13:02 error(332,880ms, DNS)／16:02（本輪）→ **3 個 ok 槽有紀錄、3 個 error 槽零紀錄**；另 11-26 19:02 那輪 dur=**19,945ms**、summary=`NO_REPLY` → 降級跑無紀錄（< 30s 門檻）三型齊備。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 本 job 設定（唯讀）：schedule=`every 10800000ms`（3h，anchorMs 1780452122531）、sessionTarget=isolated、payload=`agentTurn`「keep-alive test」、model `minimax-portal/MiniMax-M3`、fallbacks `['minimax/MiniMax-M3','minimax-portal/MiniMax-M2.7','openai/gpt-5.4-mini']`、**timeoutSeconds=None**、delivery.mode=none、**next=11-27 19:02:02**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 2) 🔴 頭號事件：DNS 三次風暴 + **跨廠 fallback 真相翻案（openai 有被呼叫，死因是餘額不是沒設定）**<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 3h 窗（13:07→16:07，5,616 行）canonical **EAI_AGAIN = 30**（逐時 **13h=4／14h=22／15h=4**）、`DNS lookup for the provider endpoint failed` = 16、`network connection error` = 22 → **同一根因**；直接打死 lane 的時點：13:12:26、14:20:07、14:39:11。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 🔴🔴 **修正前幾輪的敘述「跨廠 fallback 仍等於 0 / openai 全 Auth=no」**：**fallback 清單裡的 `openai/gpt-5.4-mini` 其實真的被呼叫了** → 14:49:43 `model-fetch start provider=openai model=gpt-5.4-mini` → 14:50:24 `response provider=openai status=429 elapsedMs=40,932` → `auth profile failure state updated: profile=sha256:a0ebe3f7… reason=billing window=disabled` → `model fallback decision: decision=candidate_failed reason=billing next=none detail=429 You have no credits` → `lane task error: lane=main error="openai (gpt-5.4-mini) returned a billing error — your API key has run out of credits"`。→ **真相：fallback 有接、但整條鏈在 billing 這關斷掉（帳戶沒餘額 ⇒ auth profile 被標 disabled ⇒ next=none）**；實務上冗餘仍＝0，但**根因要從「沒設定」改成「沒餘額」**，修法不同（前者要設定、後者要充值）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ **新簽章型別 #5：認證層 rematerialize 失敗**：`Unable to rematerialize minimax-portal-cn/MiniMax-M3 for its resolved auth profile` ×4、`minimax-cn/MiniMax-M3 …` ×2 → 與 DNS／限流無關的第三種失效（認證 profile 層）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ **新簽章型別 #6：Codex harness 拒絕執行且不 fallback**：`Codex agent harness cannot enforce this conversation's tool policy. Use the embedded runtime or ask in the main conversation.` ×2（13:18:19，lane=main ＋ lane=session:agent:mrmime:main，durationMs=33）＋ 上游 `Codex agent harness failed; not falling back to embedded OpenClaw backend` → **Codex 路徑整條斷，且明文不回退**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⚠️ **DNS 架構根因仍未修**：`resolvectl status` → **Link 2 (enp43s0) Current Scopes: none**（有線無 DNS scope）→ DNS 100% 靠 wlp0s20f3（1.1.1.1／192.168.1.1）＋ tailscale0（100.100.100.100）；此刻探測 **6/6 成功** → **症狀退場、架構沒修（第 17 輪連續第 3 次實測）**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 3) Fleet：54 jobs（46 enabled／8 disabled）— enabled: ok 27 / **error 17** / skipped 1 / none 1（**紅單 11 → 17**）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+| job | id | ce | 最後一輪 (CST) | dur | 根因簽章 |
+|---|---|---|---|---|---|
+| heartbeat-celesteela | 46242a4c | **8** | 11-27 14:52:44 | 600,006ms | `cron: job execution timed out` |
+| heartbeat-mrmime | bcf270b8 | **5** | 11-27 15:01:05 | 599,709ms | `cron: job execution timed out` |
+| heartbeat-charizard | ffc90b7d | **5** | 11-27 15:35:04 | 600,206ms | `cron: job execution timed out` |
+| Gengar Keep-Alive | 9d8b6001 | **5** | 11-27 16:02:03 | 164,442ms | network connection error（**01:02 之後連 5 輪紅**）|
+| 健康回報 | 13ac4b5a | 3 | 11-27 14:05:21 | 187,806ms | DNS lookup |
+| 每日論文討論 | 58fe15dc | 3 | 11-27 07:02:59 | 301,587ms | DNS lookup |
+| heartbeat-rowlet | d82f78e3 | 2 | 11-27 15:48:50 | 600,410ms | timeout |
+| Picturecat Keep-Alive（本 job）| 02eb0989 | 1 | 11-27 13:02:02 | 332,880ms | DNS lookup（**該槽零紀錄**）|
+| Celesteela Keep-Alive | 880b5c17 | 1 | 11-27 13:02:02 | 77,109ms | DNS lookup |
+| heartbeat-greninja／picturecat／roaringmoon | 7d633ff4／6525d155／3acd15c2 | 各 1 | 15:54–15:56 | ≈600,000ms | timeout |
+| BBC News Morning Discussion | 88810bfe | 1 | 11-27 07:00:00 | 332,008ms | DNS lookup |
+| 晨間情報 pipeline | 45ccf4e9 | 1 | 11-27 08:00:00 | 341,250ms | DNS lookup |
+| 群體智能架構研究 | b37129c0 | 1 | 11-27 08:09:29 | 102,259ms | DNS lookup |
+| clean-code研究 | 89e2cfe7 | 1 | 11-27 09:01:20 | 254,293ms | DNS lookup |
+| PTCGP Meta 三日彙整 | 6ddc8b4c | 1 | 11-27 11:19:59 | 64,530ms | DNS lookup（**新**）|
+- 🔴🔴 **`ca222989 OpenClaw 系統維護` ce=10 → 已自動停用（enabled=false）**：第 16 輪寫「距自動停用門檻 10 只剩 3 次」→ **本輪真的被停用**（11-27 12:51:01 最後一輪 dur=732,484ms）→ **整個 fleet 少了一支巡檢齒輪**，且是 DNS 連續打死的。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 🟢 綠燈重點：`d4cd45bc` selfheal **ok/ce=0**（15:43 槽 dur=754ms → no action，next 16:13）、`36b493db` dreaming **ok/ce=0**（04:25:01 dur=1,810,249ms、next 11-28 04:25）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ⭐ **三支 KA 疊窗第 42 次**：16:02:02 picturecat／16:02:02 celesteela／**16:02:03 gengar（那輪直接 error）** → Δ0–1s，同 anchor 撞在一起。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 4) Discord：8/8 connected、gateway 連續 10h49m 未重啟、inbound 277 筆零漏接<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `channels status`：8 個 bot **全部 running, connected**（greninja disabled 為設計如此）；Discord picturecat transport「just now」、rowlet in:1h ago。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- gateway：MainPID **1069355**、ActiveEnterTimestamp **11-27 05:13:52**、**NRestarts=0** → 連續 **10h49m 未重啟**（自 05:13 selfheal 救回後）；stamp 檔 `memory/discord-selfheal-last-restart.ts` mtime 仍 **05:13:03** → **沒有誤開火**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 3h 窗 Discord 簽章：**READY wait timed out 1／code=1006 3／channel exited 0／client initialized 1／reconnect scheduled 14／health-monitor 1／host timing gap 0** → 比 04:25 那場（521 READY／13 exit／全盲 48 分）**輕兩個數量級**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- ✅ **inbound 損失實測＝0**：`channel_ingress_events`（複製 `state/openclaw.sqlite`＋wal＋shm 唯讀）8h 共 **277 筆、not_completed = 0**；13:00–16:00 窗 30 分鐘桶皆有量（13:10=4、13:40=5、14:10=14、14:40=8、15:30=6、16:00=10）→ **DNS 風暴期間 Discord 沒掉任何訊息**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 5) Provider：配額牆連續第 3 輪零；canonical 429 = 2（兩種不同來源）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 3h 窗 canonical 429 = **2**：14:50:24 `provider=openai model=gpt-5.4-mini`（billing，elapsedMs=40,932）、**16:01:56 `provider=minimax-portal model=MiniMax-M3`（elapsedMs=196,280）** → 一個是餘額、一個是限流，**不要混算**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `Token Plan usage limit reached` = **0** → 第 14 輪那面配額牆確認是短暫事件，**連續第 3 輪零**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `status=529` = 0；`lane wait exceeded` = 0；`was superseded` = 2（良性）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 6) ✅ 第 16 輪 §9 五項交辦驗收<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+| 交辦 | 結果 |
+|---|---|
+| ① DNS 是否又炸 | 🔴 **又炸**：3h 窗 EAI_AGAIN 30（14h 峰值 22），13:12／14:20／14:39 直接打死 lane，15h 仍有 4 筆 |
+| ② 13:02 槽三支 KA 是否疊窗被打 | 🔴 **是**：picturecat 13:02 error(DNS, 332,880ms)／gengar 13:02 error(network)／celesteela 13:02 error(77,109ms) → **三張紅單同批誕生** |
+| ③ 紅單 11 → ? | 🔴 **17**，且 `ca222989` ce=10 **已被自動停用**（少一支齒輪）|
+| ④ selfheal arm 時機 | ✅ **全數 no action**（15:43 槽 dur=754ms、stamp 停在 05:13）→ Discord 健康時守門正確不誤開火 |
+| ⑤ 13:02 槽是否留紀錄 | 🔴 **沒有**（本檔今日只有 3 節）|
+
+### 7) 邊界（本次刻意沒動）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **零改動**：未改任何 cron（排程／payload／model／fallback／timeout 全未動）、未動 `scripts/discord-selfheal.sh` 守門、未改 config/provider/model/channel、**未碰憑證（含 openai 餘額與被標 disabled 的 auth profile）**、未重啟 gateway（Discord 健康 → 無須）、未改 DNS/網路設定、未 force-run 任何 job、**未重新啟用已被自動停用的 `ca222989`**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 探測全唯讀：`sessions_send`（picturecat）、`openclaw channels status`、`openclaw cron list --all --json`、`openclaw cron runs --id`（×3）、journalctl（3h 窗、逐項計數）、`systemctl --user show`、`resolvectl status`＋`getent`×6、`channel_ingress_events`（複製 DB+WAL+SHM 後唯讀）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **對外寫入**：因 delivery.mode=none（最終回覆只進 run log），沿用歷輪做法把巡檢摘要貼到 Discord 團隊頻道（rowlet 帳號）；檔案＝本檔＋`memory/2026-11-27.md`。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 8) 給 Linder 的待決事項（第 17 輪）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. **【最高・延續・第 17 次】DNS 架構根因**：`enp43s0` 仍無 DNS scope → 今天兩場風暴（07:00–10:05、13:07–15:xx）、紅單 11 → 17、還打死一支巡檢 job（`ca222989` 被自動停用）→ 給有線介面配 DNS，或把 1.1.1.1/8.8.8.8 設為全域 DNS。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+2. **【最高・延續・但歸因已修正】跨廠 fallback**：openai/gpt-5.4-mini **確實被呼叫**，死在 **billing（no credits）＋ auth profile 被標 window=disabled** → 要的是**第二廠可用餘額**（**我不碰憑證，需你處理**），不是再加一個 fallback 條目。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+3. **【高・新】`ca222989 OpenClaw 系統維護` 已被自動停用（ce=10）** → 要不要重新啟用（ce 歸零後）／或改成降頻＋容忍 DNS 失敗，避免它在風暴期間持續累 ce 直到自動下架。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+4. **【高・延續】三支 KA anchor 疊窗第 42 次（Δ0–1s）** → 每逢主機抖動＝三張紅單同批誕生；建議拉開 ≥15 分鐘（改 anchor／stagger 需你點頭）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+5. **【高・延續】本 job payload 仍只有一句「keep-alive test」** → 今日 **3 個 error 槽零紀錄**（04:02／07:02／13:02）＋ 1 個降級槽（11-26 19:02 NO_REPLY）→ 修法＝把必做五步、檔名、timeoutSeconds 寫進 job payload（**改 job 需你點頭**）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+6. **【新・中】Codex harness 整條斷**：13:18 `Codex agent harness failed; not falling back to embedded OpenClaw backend` → lane=main／mrmime:main 各死一次（durationMs=33）→ 若有 agent 依賴 Codex harness 需確認。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+7. **【中】heartbeat 群 7 支 ce 1–8 幾乎全是 600s timeout**（celesteela ce=8 最嚴）→ lane 排隊＋DNS 雙因，與 Discord 無關；且 timeout 後續跑會堆疊。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+8. **【中・待裁決】selfheal 04 點空窗**（第 16 輪建議加回 04:13 一槽）仍等你點頭；本輪 13:13–15:43 全 no action，Discord 這段確實健康。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+9. **【低】17 支 SKILL.md 缺 description 未修**（連續第 17+ 輪）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 9) 下一輪（11-27 19:02）請確認<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+1. ⭐ **DNS 14h 峰值後是否再起**：19:02 窗 EAI_AGAIN 筆數＋逐時分布（13h/14h/15h/16h/17h/18h）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+2. ⭐ **gengar ce=5 → 19:02 那輪是否再 error**（它從 01:02 之後連 5 輪紅；若第 6 輪仍紅，其 lane 可能已被 DNS 長期影響）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+3. **紅單 17 → ?**（尤其 `ca222989` 停用後 fleet 巡檢齒輪少一支；heartbeat 群 ce 是否繼續累）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+4. **openai billing 是否被補餘額**（auth profile `window=disabled` 需人工恢復；恢復前 fallback 鏈仍是斷的）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+5. **本 job 19:02 槽是否留紀錄**（三口徑：降級跑／硬失敗／真漏做）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+6. **16:13 selfheal 槽**：Discord 健康時應仍是 no action；stamp 若變動＝有人 arm 了。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 10) 量測備忘（本輪）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **`channel_ingress_events` 住在 `/home/amr/.openclaw/state/openclaw.sqlite`**（不是 `openclaw-memory/memory.db`）；欄位：`queue_name/event_id/channel_id/account_id/status/lane_key/payload_json/received_at/attempts/last_error/failed_reason/completed_at`；唯讀查詢＝**複製 db＋wal＋shm 到 /tmp 再開 `PRAGMA query_only=ON`**。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `openclaw cron list --all --json` 的狀態欄位：`state.lastRunStatus` / `consecutiveErrors` / `lastRunAtMs` / `lastDurationMs` / `lastError`；**已自動停用的 job 仍在清單裡但 `enabled=false` → 紅單計數要分 enabled／disabled 兩口徑**（本輪 enabled 46 中 17 紅、disabled 8 支另有 `ca222989` ce=10）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **openai fallback 失效三簽章**（一起出現就是整條鏈斷，不是 provider 掛）：`model-fetch response provider=openai status=429` → `auth profile failure state updated … reason=billing window=disabled` → `model fallback decision: decision=candidate_failed reason=billing next=none`。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- `Unable to rematerialize <provider>/<model> for its resolved auth profile` → 認證 profile 層失效（與 DNS／限流無關的新型別）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- **「紅單根因簽章」三類要分開讀**：`DNS lookup…`（主機層）／`network connection error`（主機層另一形態）／`429 + billing`（帳戶層）／`cron: job execution timed out` dur≈600,000ms（lane 排隊層）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+
+### 11) 對外投遞記錄（第 17 輪唯一外部寫入）<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 因 delivery.mode=none（最終回覆只進 run log），用 rowlet 帳號把巡檢摘要貼到 Discord 團隊頻道 `1482363974119854234` → messageId 待補。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
+- 紀錄檔：`memory/keepalive-picturecat-2026-11-27.md`（本檔，第 17 輪）＋ `memory/2026-11-27.md`（當日摘要一行）。<!-- project: github.com/zhanzhanwu70-design/linderopenclaw-rowlet -->
